@@ -12,3 +12,4 @@ temp
 
 lib
 packages
+!template/packages
