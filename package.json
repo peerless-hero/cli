@@ -46,6 +46,7 @@
     "dev:request": "esno src/commands/request.ts",
     "dev:type": "esno src/commands/type.ts",
     "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
     "prepublishOnly": "nr build",
     "release": "bumpp && npm publish",
     "start": "node bin/api.mjs",
