@@ -1,0 +1,93 @@
+{
+  "name": "@peerless_hero/cli",
+  "type": "module",
+  "version": "0.0.1",
+  "packageManager": "yarn@1.22.22",
+  "author": "peerless_hero <peerless_hero@outlook.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/peerless-hero/clir#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peerless-hero/cli.git"
+  },
+  "bugs": "https://github.com/peerless-hero/cli/issues",
+  "keywords": [],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/*",
+        "./dist/index.d.ts"
+      ]
+    }
+  },
+  "bin": {
+    "api": "bin/api.mjs",
+    "type": "bin/type.mjs"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "template"
+  ],
+  "scripts": {
+    "build": "unbuild",
+    "dev:api": "esno src/commands/api.ts",
+    "dev:request": "esno src/commands/request.ts",
+    "dev:type": "esno src/commands/type.ts",
+    "lint": "eslint .",
+    "prepublishOnly": "nr build",
+    "release": "bumpp && npm publish",
+    "start": "node bin/api.mjs",
+    "test": "vitest",
+    "typecheck": "tsc --noEmit",
+    "prepare": "simple-git-hooks"
+  },
+  "dependencies": {
+    "consola": "3.2.3",
+    "fs-extra": "^11.2.0",
+    "semver": "6.3.1",
+    "unbuild": "^2.0.0"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^2.14.0",
+    "@antfu/ni": "^0.21.12",
+    "@antfu/utils": "^0.7.7",
+    "@types/ejs": "^3.1.5",
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^20.12.7",
+    "@types/semver": "^7.5.8",
+    "axios": "0.27.2",
+    "bumpp": "^9.4.0",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "eslint": "^9.0.0",
+    "esno": "^4.7.0",
+    "lint-staged": "^15.2.2",
+    "openapi-types": "^12.1.3",
+    "rimraf": "^5.0.5",
+    "simple-git-hooks": "^2.11.1",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.9"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm lint-staged"
+  },
+  "lint-staged": {
+    "*": "eslint --fix"
+  },
+  "volta": {
+    "node": "20.12.2",
+    "yarn": "1.22.22"
+  }
+}

@@ -1,0 +1,19 @@
+declare interface Row<T = any> {
+  code: number
+  rows: T[]
+  total: number
+  msg: string
+}
+
+declare type ExtraRequestConfig = import("@uni-helper/uni-network").UnConfig & {
+  /**
+   * 失败时的提示形式
+   *
+   * - `toast` 消息提示框（默认）
+   * - `modal` 模态弹窗
+   * - `none` 不进行任何提示
+   */
+  tip?: 'toast' | 'modal' | 'none'
+  /** 不携带认证头 */
+  noAuth?: boolean
+}

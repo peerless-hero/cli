@@ -1,0 +1,45 @@
+/*
+ *                   ___====-_  _-====___
+ *             _--^^^#####//      \\#####^^^--_
+ *          _-^##########// (    ) \\##########^-_
+ *         -############//  |\^^/|  \\############-
+ *       _/############//   (@::@)   \############\_
+ *      /#############((     \\//     ))#############\
+ *     -###############\\    (oo)    //###############-
+ *    -#################\\  / VV \  //#################-
+ *   -###################\\/      \//###################-
+ *  _#/|##########/\######(   /\   )######/\##########|\#_
+ *  |/ |#/\#/\#/\/  \#/\##\  |  |  /##/\#/  \/\#/\#/\#| \|
+ *  `  |/  V  V  `   V  \#\| |  | |/#/  V   '  V  V  \|  '
+ *     `   `  `      `   / | |  | | \   '      '  '   '
+ *                      (  | |  | |  )
+ *                     __\ | |  | | /__
+ *                    (vvv(VVV)(VVV)vvv)
+ *
+ *      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *
+ *                神兽保佑            永无BUG
+ */
+
+export {}
+declare global {
+<% importsMap[pkgName].forEach(fun => { -%>
+  const <%- fun %>: typeof import('<%- pkgName %>')['<%- fun %>']
+<% }) -%>
+}
+// for vue template auto import
+import { UnwrapRef } from 'vue'
+declare module 'vue' {
+  interface ComponentCustomProperties {
+<% importsMap[pkgName].forEach(fun => { -%>
+    readonly <%- fun %>: UnwrapRef<typeof import('<%- pkgName %>')['<%- fun %>']>
+<% }) -%>
+  }
+}
+declare module '@vue/runtime-core' {
+  interface ComponentCustomProperties {
+<% importsMap[pkgName].forEach(fun => { -%>
+    readonly <%- fun %>: UnwrapRef<typeof import('<%- pkgName %>')['<%- fun %>']>
+<% }) -%>
+  }
+}

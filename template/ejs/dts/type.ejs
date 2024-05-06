@@ -1,0 +1,26 @@
+<% if(dts.notes.length) { -%>
+  /**
+  <% dts.notes.forEach(note => { -%>
+   * <%- note %>
+   *
+  <% }) -%>
+   */
+  <% } -%>
+  <% if(dts.type==='any') { -%>
+  declare interface <%- dts.name %> {
+  <% dts.properties.forEach(property => { -%>
+  <% if(property.notes.length) { -%>
+    /**
+  <% property.notes.forEach(note => { -%>
+     * <%- note %>
+     *
+  <% }) -%>
+     */
+  <% } -%>
+    <%- property.name -%><% if(!property.required){ %>?<% } %>: <%- property.type %>
+  <% }) -%>
+  }
+  <% } else { -%>
+  declare type <%- dts.name %> = <%- dts.type %>
+  <% } -%>
+  

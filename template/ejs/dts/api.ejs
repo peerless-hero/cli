@@ -1,0 +1,12 @@
+<% if(method.post) { -%>
+<%- include('request.ejs', {request: method.post}); %>
+<% } -%>
+<% if(method.delete) { -%>
+<%- include('request.ejs', {request: method.delete}); %>
+<% } -%>
+<% if(method.put) { -%>
+<%- include('request.ejs', {request: method.put}); %>
+<% } -%>
+<% if(method.get) { -%>
+<%- include('request.ejs', {request: method.get}); %>
+<% } -%>

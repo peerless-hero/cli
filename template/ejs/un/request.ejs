@@ -1,0 +1,42 @@
+
+/**
+<% request.notes.forEach(note => { -%>
+ * <%- note %>
+ *
+<% }) -%>
+ */
+export async function <%- request.action %><%- name %>(
+<% if(request.requestBody.length){ -%>
+  data: <%- request.requestBody.join(' & ') %>,
+<% } -%>
+<% request.requestPath.forEach(property => { -%>
+  <%- property.name %>?: string | number,
+<% }) -%>
+<% if(request.requestQuery.length){ -%>
+  params?: any,
+<% } -%>
+  extraRequestConfig?: ExtraRequestConfig
+) {
+  const res = await service<<%- request.responseDataType || request.responseType %>>({
+<% if(request.requestPath.length){ -%>
+    url: `<%- url %>`,
+<% } else { -%>
+    url,
+<% } -%>
+    method: '<%- request.method %>',
+<% if(request.requestQuery.length){ -%>
+    params,
+<% } -%>
+<% if(request.requestBody.length){ -%>
+    data,
+<% } -%>
+<% if (request.responseType === 'Blob') { -%>
+    dataType: 'arraybuffer',
+<% }   -%>
+    ...extraRequestConfig
+  })
+<% if (request.responseDataType){ -%>
+  return res.data!.data
+}<% }else{ -%>
+  return res.data
+}<% } -%>

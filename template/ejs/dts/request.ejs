@@ -1,0 +1,10 @@
+/**
+<% request.notes.forEach(note => { -%>
+ * <%- note %>
+ *
+<% }) -%>
+ */
+export declare function <%- request.action %><%- name %>(<% if(request.requestBody.length){ -%>data:<%- request.requestBody.join(' & ') %>,<% } -%>
+<% request.requestPath.forEach(property => { -%><%- property.name %>?:string | number, <% }) -%>
+<% if(request.requestQuery.length){ -%> params?:any, <% } -%>
+extraRequestConfig?:ExtraRequestConfig):Promise<<%- request.responseDataType || request.responseType %>>

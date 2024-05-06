@@ -1,0 +1,25 @@
+declare interface Row<T = any> {
+  code: number
+  rows: T[]
+  total: number
+  msg: string
+}
+
+
+declare type ExtraRequestConfig = import("axios").AxiosRequestConfig & {
+  /** 强制更新 */
+  forceUpdate?: boolean
+  /** 自定义缓存 */
+  cache?: boolean | import("axios-extensions").ICacheLike<any>
+  /**
+   * 失败时的提示形式
+   *
+   * - `message` 消息提示（默认）
+   * - `modal` 模态对话框
+   * - `notification` 通知提示
+   * - `none` 不进行任何提示
+   */
+  tip?: 'modal' | 'notification' | 'message' | 'none'
+  /** 不携带认证头 */
+  noAuth?: boolean
+}
