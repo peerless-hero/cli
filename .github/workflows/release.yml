@@ -25,6 +25,9 @@ jobs:
       - name: Install
         run: yarn --frozen-lockfile
 
+      - name: Build
+        run: yarn build
+
       - run: npx changelogithub
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
