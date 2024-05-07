@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-05 02:33:40
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-05-08 03:06:14
+ * @LastEditTime: 2024-05-08 03:42:00
  * @FilePath: \cli\src\request.ts
  * @Description:
  *
@@ -27,19 +27,17 @@ export async function renderRequest() {
   await Promise.all([
     copy(`${templateDir}/packages/axios`, 'packages/axios/dist/template'),
     copy(`${templateDir}/packages/un`, 'packages/un/dist/template'),
-    copy(`${templateDir}/packages/openapi-v3`, 'packages/openapi-v3', { filter: src => !src.endsWith('OpenAPIv3.json') }),
+    copy(`${templateDir}/packages/openapi-v3`, 'temp/openapi-v3'),
     renderAPI(),
     renderType(),
-    outputJSON(`${templateDir}/packages/openapi-v3/OpenAPIv3.json`, OpenApi3),
   ])
+  await outputJSON(`temp/openapi-v3/OpenAPIv3.json`, OpenApi3)
   // TODO: 改为接口获取
   const oldVersion = '0.0.0'
   consola.info('旧版本号为：', oldVersion)
   const newVersion = inc(oldVersion, 'patch')
   consola.info('版本号为：', newVersion)
   const workspace = cwd()
-  const tempPath = resolve(workspace, 'temp')
-
   const typescript: Pick<TranspileOptions, 'compilerOptions'> = {
     compilerOptions: {
       // 禁用自动解析功能
@@ -48,47 +46,50 @@ export async function renderRequest() {
   }
 
   consola.info('构建项目...')
-  await build(tempPath, false, {
+  await build(workspace, false, {
     entries: [{
       builder: 'mkdist',
-      input: 'axios',
-      outDir: '../packages/axios/dist',
+      input: 'temp/axios',
+      outDir: 'packages/axios/dist',
       format: 'esm',
       typescript,
     }, {
       builder: 'mkdist',
-      input: 'axios',
-      outDir: '../packages/axios/dist',
+      input: 'temp/axios',
+      outDir: 'packages/axios/dist',
       format: 'cjs',
+      ext: 'cjs',
       typescript,
     }, {
       builder: 'mkdist',
-      input: 'un',
-      outDir: '../packages/un/dist',
+      input: 'temp/un',
+      outDir: 'packages/un/dist',
       format: 'esm',
       typescript,
     }, {
       builder: 'mkdist',
-      input: 'un',
-      outDir: '../packages/un/dist',
+      input: 'temp/un',
+      outDir: 'packages/un/dist',
       format: 'cjs',
+      ext: 'cjs',
       typescript,
     }, {
       builder: 'mkdist',
-      input: 'openapi-v3',
-      outDir: '../packages/openapi-v3',
+      input: 'temp/openapi-v3',
+      outDir: 'packages/openapi-v3',
       format: 'esm',
       typescript,
     }, {
       builder: 'mkdist',
-      input: 'openapi-v3',
-      outDir: '../packages/openapi-v3',
+      input: 'temp/openapi-v3',
+      outDir: 'packages/openapi-v3',
       format: 'cjs',
+      ext: 'cjs',
       typescript,
     }],
     clean: false,
     declaration: true,
-
+    externals: ['openapi-types'],
   })
   consola.success('axios模块构建完成！', resolve(workspace, 'packages/axios'))
   consola.success('un模块构建完成！', resolve(workspace, 'packages/un'))
