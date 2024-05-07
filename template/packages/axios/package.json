@@ -23,9 +23,6 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "bin": {
-    "create-request": "./bin/request.js"
-  },
   "publishConfig": {
     "registry": "https://packages.aliyun.com/65efc42e46c5190743062feb/npm/npm-registry/"
   },
