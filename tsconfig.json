@@ -11,5 +11,5 @@
     "skipDefaultLibCheck": true,
     "skipLibCheck": true
   },
-  "exclude": ["temp", "packages"]
+  "exclude": ["./temp/**", "./packages/**"]
 }
