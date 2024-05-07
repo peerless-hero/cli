@@ -2,13 +2,14 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-04 10:32:14
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-05-05 03:27:04
+ * @LastEditTime: 2024-05-08 00:49:50
  * @FilePath: \cli\build.config.ts
  * @Description:
  *
  */
 import { basename } from 'node:path'
 import { defineBuildConfig } from 'unbuild'
+import { copy } from 'fs-extra/esm'
 import fg from 'fast-glob'
 
 export default defineBuildConfig({
@@ -33,5 +34,10 @@ export default defineBuildConfig({
   rollup: {
     emitCJS: true,
     inlineDependencies: true,
+  },
+  hooks: {
+    'build:done': function () {
+      return copy('template', 'dist/template')
+    },
   },
 })
