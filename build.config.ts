@@ -9,7 +9,6 @@
  */
 import { basename } from 'node:path'
 import { defineBuildConfig } from 'unbuild'
-import { copy } from 'fs-extra/esm'
 import fg from 'fast-glob'
 
 export default defineBuildConfig({
@@ -34,10 +33,5 @@ export default defineBuildConfig({
   rollup: {
     emitCJS: true,
     inlineDependencies: true,
-  },
-  hooks: {
-    'build:done': function () {
-      return copy('template', 'dist/template')
-    },
   },
 })

@@ -11,7 +11,7 @@
     "url": "git+https://github.com/peerless-hero/cli.git"
   },
   "bugs": "https://github.com/peerless-hero/cli/issues",
-  "keywords": [],
+  "keywords": ["peerless_hero", "cli"],
   "sideEffects": false,
   "exports": {
     ".": {
@@ -38,7 +38,8 @@
   },
   "files": [
     "bin",
-    "dist"
+    "dist",
+    "template"
   ],
   "scripts": {
     "build": "unbuild",
