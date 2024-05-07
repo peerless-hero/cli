@@ -31,6 +31,6 @@
     "node": ">=12"
   },
   "peerDependencies": {
-    "openapi-types": "^12.1.3"
+    "openapi-types": "*"
   }
 }
