@@ -2,11 +2,13 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2022-11-03 17:53:22
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-05-05 03:59:22
+ * @LastEditTime: 2024-05-08 01:26:08
  * @FilePath: \cli\src\api.ts
  * @Description:
  *
  */
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import consola from 'consola'
 import { copy, outputFile } from 'fs-extra/esm'
 import { renderFile } from 'ejs'
@@ -15,6 +17,8 @@ import axiosPKG from '../template/packages/axios/package.json'
 import unPKG from '../template/packages/un/package.json'
 import getOpenApi3 from './openapi3'
 import { DefineProperty, resolveSchemaType } from './type'
+
+const templateDir = resolve(dirname(fileURLToPath(import.meta.url)), '../template')
 
 const ACTION: Record<string, string> = {
   get: 'get',
@@ -69,8 +73,7 @@ export class DefineAPIMethod {
         parameter.schema,
         parameter.required,
       )
-      if (parameter.description)
-        defineProperty.title = parameter.description
+      defineProperty.title = parameter.description ?? ''
 
       switch (parameter.in) {
         case 'query':
@@ -80,7 +83,7 @@ export class DefineAPIMethod {
             return
           }
           if (defineProperty.type.endsWith('[]'))
-            defineProperty.type = 'any[]   '
+            defineProperty.type = 'any[]'
           this.requestQuery.push(defineProperty)
           break
         case 'path':
@@ -266,38 +269,37 @@ export class DefineAPI {
 }
 
 export async function renderDefineAxiosAPI(defineAPI: DefineAPI) {
-  const text = await renderFile('template/ejs/axios/api.ejs', defineAPI)
-  return outputFile(`lib/axios/api/${defineAPI.componentPrefix}.ts`, text)
+  const text = await renderFile(`${templateDir}/ejs/axios/api.ejs`, defineAPI)
+  return outputFile(`temp/axios/api/${defineAPI.componentPrefix}.ts`, text)
 }
 
 export async function renderDefineUnAPI(defineAPI: DefineAPI) {
-  const text = await renderFile('template/ejs/un/api.ejs', defineAPI)
-  return outputFile(`lib/un/api/${defineAPI.componentPrefix}.ts`, text)
+  const text = await renderFile(`${templateDir}/ejs/un/api.ejs`, defineAPI)
+  return outputFile(`temp/un/api/${defineAPI.componentPrefix}.ts`, text)
 }
 
 export async function renderDTSofAPI(defineAPI: DefineAPI) {
-  const text = await renderFile('template/ejs/dts/api.ejs', defineAPI)
+  const text = await renderFile(`${templateDir}/ejs/dts/api.ejs`, defineAPI)
   return Promise.all([
-    outputFile(`lib/axios/api/${defineAPI.componentPrefix}.d.ts`, text),
-    outputFile(`lib/un/api/${defineAPI.componentPrefix}.d.ts`, text),
+    outputFile(`temp/axios/api/${defineAPI.componentPrefix}.d.ts`, text),
+    outputFile(`temp/un/api/${defineAPI.componentPrefix}.d.ts`, text),
   ])
 }
 
 export async function renderDefineQuery(defineAPI: DefineAPI) {
   if (defineAPI.method.get?.requestQuery.length) {
-    const text = await renderFile('template/ejs/api-query.ejs', {
+    const text = await renderFile(`${templateDir}/ejs/api-query.ejs`, {
       request: defineAPI.method.get,
       name: defineAPI.name,
       url: defineAPI.url,
     })
-    return outputFile(`lib/types/${defineAPI.name}Query.d.ts`, text)
+    return outputFile(`temp/types/${defineAPI.name}Query.d.ts`, text)
   }
 }
 
 export async function renderAPI() {
   const { paths } = await getOpenApi3()
 
-  consola.info('正在生成api文件')
   const axiosImports: Record<string, string[]> = {
     [axiosPKG.name]: [],
   }
@@ -318,24 +320,24 @@ export async function renderAPI() {
   }
 
   const [indexTS, axiosAutoImport, unAutoImport, axiosExportJSON, unExportJSON] = await Promise.all([
-    renderFile('template/ejs/entry.ejs', { paths: pathList }),
-    renderFile('template/ejs/dts/unplugin-auto-import.ejs', { importsMap: axiosImports, pkgName: axiosPKG.name }),
-    renderFile('template/ejs/dts/unplugin-auto-import.ejs', { importsMap: unImports, pkgName: unPKG.name }),
-    renderFile('template/ejs/dts/imports-map.ejs', { importsMap: axiosImports }),
-    renderFile('template/ejs/dts/imports-map.ejs', { importsMap: unImports }),
+    renderFile(`${templateDir}/ejs/entry.ejs`, { paths: pathList }),
+    renderFile(`${templateDir}/ejs/dts/unplugin-auto-import.ejs`, { importsMap: axiosImports, pkgName: axiosPKG.name }),
+    renderFile(`${templateDir}/ejs/dts/unplugin-auto-import.ejs`, { importsMap: unImports, pkgName: unPKG.name }),
+    renderFile(`${templateDir}/ejs/dts/imports-map.ejs`, { importsMap: axiosImports }),
+    renderFile(`${templateDir}/ejs/dts/imports-map.ejs`, { importsMap: unImports }),
   ])
 
   await Promise.all([
-    outputFile('lib/axios/auto-imports.d.ts', axiosAutoImport),
-    outputFile('lib/un/auto-imports.d.ts', unAutoImport),
-    outputFile('lib/axios/index.ts', indexTS),
-    outputFile('lib/un/index.ts', indexTS),
-    outputFile('lib/axios/importsMap.ts', axiosExportJSON),
-    outputFile('lib/un/importsMap.ts', unExportJSON),
+    outputFile('temp/axios/auto-imports.d.ts', axiosAutoImport),
+    outputFile('temp/un/auto-imports.d.ts', unAutoImport),
+    outputFile('temp/axios/index.ts', indexTS),
+    outputFile('temp/un/index.ts', indexTS),
+    outputFile('temp/axios/importsMap.ts', axiosExportJSON),
+    outputFile('temp/un/importsMap.ts', unExportJSON),
   ])
   await Promise.all([
-    copy('template/ejs/axios/service.ejs', 'lib/axios/request.ts'),
-    copy('template/ejs/un/service.ejs', 'lib/un/request.ts'),
+    copy(`${templateDir}/ejs/axios/service.ejs`, 'temp/axios/request.ts'),
+    copy(`${templateDir}/ejs/un/service.ejs`, 'temp/un/request.ts'),
   ])
-  consola.success('本次生成了', count, '个api文件')
+  consola.success(`已生成api文件，数量共计：${count}`)
 }

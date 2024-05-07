@@ -1,9 +1,13 @@
 import { readFile } from 'node:fs/promises'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import consola from 'consola'
 import { renderFile } from 'ejs'
 import { outputFile } from 'fs-extra/esm'
 import type { OpenAPIV2, OpenAPIV3 } from 'openapi-types'
 import getOpenApi3 from './openapi3'
+
+const templateDir = resolve(dirname(fileURLToPath(import.meta.url)), '../template')
 
 const XApifox = 'x-apifox'
 
@@ -210,7 +214,6 @@ export class DefineProperty {
 }
 
 export async function renderType() {
-  consola.info('正在生成type文件')
   const { components = {} } = await getOpenApi3()
   const properties: DefineProperty[] = []
   for (const name in components.schemas) {
@@ -222,13 +225,13 @@ export async function renderType() {
     properties.push(new DefineProperty(name, schema))
   }
   const [globalType, axiosType, unType] = await Promise.all([
-    renderFile('template/ejs/dts/global.ejs', { properties }),
-    readFile('template/ejs/axios/extra-request-config.ejs', { encoding: 'utf-8' }),
-    readFile('template/ejs/un/extra-request-config.ejs', { encoding: 'utf-8' }),
+    renderFile(`${templateDir}/ejs/dts/global.ejs`, { properties }),
+    readFile(`${templateDir}/ejs/axios/extra-request-config.ejs`, { encoding: 'utf-8' }),
+    readFile(`${templateDir}/ejs/un/extra-request-config.ejs`, { encoding: 'utf-8' }),
   ])
   await Promise.all([
-    outputFile('lib/axios/global.d.ts', `${globalType}\n${axiosType}`),
-    outputFile('lib/un/global.d.ts', `${globalType}\n${unType}`),
+    outputFile('temp/axios/global.d.ts', `${globalType}\n${axiosType}`),
+    outputFile('temp/un/global.d.ts', `${globalType}\n${unType}`),
   ])
-  consola.success('已生成type类型文件')
+  consola.success(`已生成type类型文件，数量共计：${properties.length}`)
 }
