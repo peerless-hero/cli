@@ -7,19 +7,19 @@
  * @Description:
  *
  */
+import { resolve } from 'node:path'
 import { cwd } from 'node:process'
-import { dirname, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import consola from 'consola'
 import { copy, emptyDir, outputJSON } from 'fs-extra/esm'
-import { build } from 'unbuild'
+import { packageDirectorySync } from 'pkg-dir'
 import { inc } from 'semver'
 import type { TranspileOptions } from 'typescript'
+import { build } from 'unbuild'
 import { renderAPI } from './api'
-import { renderType } from './type'
 import getOpenApi3 from './openapi3'
+import { renderType } from './type'
 
-const templateDir = resolve(dirname(fileURLToPath(import.meta.url)), '../template')
+const templateDir = resolve(packageDirectorySync()!, 'template')
 
 export async function renderRequest() {
   const [OpenApi3] = await Promise.all([getOpenApi3(), emptyDir('packages'), emptyDir('temp')])

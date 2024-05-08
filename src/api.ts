@@ -7,18 +7,18 @@
  * @Description:
  *
  */
-import { dirname, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { resolve } from 'node:path'
 import consola from 'consola'
-import { copy, outputFile } from 'fs-extra/esm'
 import { renderFile } from 'ejs'
+import { copy, outputFile } from 'fs-extra/esm'
 import type { OpenAPIV3 } from 'openapi-types'
+import { packageDirectorySync } from 'pkg-dir'
 import axiosPKG from '../template/packages/axios/package.json'
 import unPKG from '../template/packages/un/package.json'
 import getOpenApi3 from './openapi3'
 import { DefineProperty, resolveSchemaType } from './type'
 
-const templateDir = resolve(dirname(fileURLToPath(import.meta.url)), '../template')
+const templateDir = resolve(packageDirectorySync()!, 'template')
 
 const ACTION: Record<string, string> = {
   get: 'get',

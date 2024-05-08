@@ -1,13 +1,13 @@
 import { readFile } from 'node:fs/promises'
-import { dirname, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { resolve } from 'node:path'
 import consola from 'consola'
 import { renderFile } from 'ejs'
 import { outputFile } from 'fs-extra/esm'
 import type { OpenAPIV2, OpenAPIV3 } from 'openapi-types'
+import { packageDirectorySync } from 'pkg-dir'
 import getOpenApi3 from './openapi3'
 
-const templateDir = resolve(dirname(fileURLToPath(import.meta.url)), '../template')
+const templateDir = resolve(packageDirectorySync()!, 'template')
 
 const XApifox = 'x-apifox'
 
