@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-05 02:33:40
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-05-08 03:42:00
+ * @LastEditTime: 2024-05-09 04:10:24
  * @FilePath: \cli\src\request.ts
  * @Description:
  *
@@ -11,7 +11,6 @@ import { resolve } from 'node:path'
 import { cwd } from 'node:process'
 import consola from 'consola'
 import { copy, emptyDir, outputJSON } from 'fs-extra/esm'
-import { packageDirectorySync } from 'pkg-dir'
 import { inc } from 'semver'
 import type { TranspileOptions } from 'typescript'
 import { build } from 'unbuild'
@@ -19,17 +18,15 @@ import { renderAPI } from './api'
 import getOpenApi3 from './openapi3'
 import { renderType } from './type'
 
-const templateDir = resolve(packageDirectorySync()!, 'template')
-
-export async function renderRequest() {
+export async function renderRequest(templateDir: string) {
   const [OpenApi3] = await Promise.all([getOpenApi3(), emptyDir('packages'), emptyDir('temp')])
   consola.info('复制项目模板...')
   await Promise.all([
-    copy(`${templateDir}/packages/axios`, 'packages/axios/dist/template'),
-    copy(`${templateDir}/packages/un`, 'packages/un/dist/template'),
-    copy(`${templateDir}/packages/openapi-v3`, 'temp/openapi-v3'),
-    renderAPI(),
-    renderType(),
+    copy(resolve(templateDir, 'packages/axios'), 'packages/axios/dist/template'),
+    copy(resolve(templateDir, 'packages/un'), 'packages/un/dist/template'),
+    copy(resolve(templateDir, 'packages/openapi-v3'), 'temp/openapi-v3'),
+    renderAPI(templateDir),
+    renderType(templateDir),
   ])
   await outputJSON(`temp/openapi-v3/OpenAPIv3.json`, OpenApi3)
   // TODO: 改为接口获取

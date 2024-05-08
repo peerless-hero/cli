@@ -4,10 +4,9 @@ import consola from 'consola'
 import { renderFile } from 'ejs'
 import { outputFile } from 'fs-extra/esm'
 import type { OpenAPIV2, OpenAPIV3 } from 'openapi-types'
-import { packageDirectorySync } from 'pkg-dir'
 import getOpenApi3 from './openapi3'
 
-const templateDir = resolve(packageDirectorySync()!, 'template')
+let templateDir = ''
 
 const XApifox = 'x-apifox'
 
@@ -213,7 +212,8 @@ export class DefineProperty {
   }
 }
 
-export async function renderType() {
+export async function renderType(dir: string) {
+  templateDir = dir
   const { components = {} } = await getOpenApi3()
   const properties: DefineProperty[] = []
   for (const name in components.schemas) {
@@ -225,9 +225,9 @@ export async function renderType() {
     properties.push(new DefineProperty(name, schema))
   }
   const [globalType, axiosType, unType] = await Promise.all([
-    renderFile(`${templateDir}/ejs/dts/global.ejs`, { properties }),
-    readFile(`${templateDir}/ejs/axios/extra-request-config.ejs`, { encoding: 'utf-8' }),
-    readFile(`${templateDir}/ejs/un/extra-request-config.ejs`, { encoding: 'utf-8' }),
+    renderFile(resolve(templateDir, 'ejs/dts/global.ejs'), { properties }),
+    readFile(resolve(templateDir, 'ejs/axios/extra-request-config.ejs'), { encoding: 'utf-8' }),
+    readFile(resolve(templateDir, 'ejs/un/extra-request-config.ejs'), { encoding: 'utf-8' }),
   ])
   await Promise.all([
     outputFile('temp/axios/global.d.ts', `${globalType}\n${axiosType}`),
