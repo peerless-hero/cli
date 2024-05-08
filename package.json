@@ -86,7 +86,7 @@
     "vite": "^5.2.9"
   },
   "simple-git-hooks": {
-    "pre-commit": "pnpm lint-staged"
+    "pre-commit": "yarn lint-staged"
   },
   "lint-staged": {
     "*": "eslint --fix"
