@@ -25,13 +25,16 @@ export async function renderRequest() {
   const [OpenApi3] = await Promise.all([getOpenApi3(), emptyDir('packages'), emptyDir('temp')])
   consola.info('复制项目模板...')
   await Promise.all([
-    copy(`${templateDir}/packages/axios`, 'packages/axios/dist/template'),
-    copy(`${templateDir}/packages/un`, 'packages/un/dist/template'),
+    copy(`${templateDir}/packages/axios`, 'packages/axios'),
+    copy(`${templateDir}/packages/un`, 'packages/un'),
     copy(`${templateDir}/packages/openapi-v3`, 'temp/openapi-v3'),
+  ])
+  consola.info('根据ejs模板生成接口请求及类型文件...')
+  await Promise.all([
+    outputJSON(`temp/openapi-v3/OpenAPIv3.json`, OpenApi3),
     renderAPI(),
     renderType(),
   ])
-  await outputJSON(`temp/openapi-v3/OpenAPIv3.json`, OpenApi3)
   // TODO: 改为接口获取
   const oldVersion = '0.0.0'
   consola.info('旧版本号为：', oldVersion)
@@ -52,6 +55,7 @@ export async function renderRequest() {
       input: 'temp/axios',
       outDir: 'packages/axios/dist',
       format: 'esm',
+      cleanDist: false,
       typescript,
     }, {
       builder: 'mkdist',
@@ -59,12 +63,14 @@ export async function renderRequest() {
       outDir: 'packages/axios/dist',
       format: 'cjs',
       ext: 'cjs',
+      cleanDist: false,
       typescript,
     }, {
       builder: 'mkdist',
       input: 'temp/un',
       outDir: 'packages/un/dist',
       format: 'esm',
+      cleanDist: false,
       typescript,
     }, {
       builder: 'mkdist',
@@ -72,12 +78,14 @@ export async function renderRequest() {
       outDir: 'packages/un/dist',
       format: 'cjs',
       ext: 'cjs',
+      cleanDist: false,
       typescript,
     }, {
       builder: 'mkdist',
       input: 'temp/openapi-v3',
       outDir: 'packages/openapi-v3',
       format: 'esm',
+      cleanDist: false,
       typescript,
     }, {
       builder: 'mkdist',
@@ -85,6 +93,7 @@ export async function renderRequest() {
       outDir: 'packages/openapi-v3',
       format: 'cjs',
       ext: 'cjs',
+      cleanDist: false,
       typescript,
     }],
     clean: false,
