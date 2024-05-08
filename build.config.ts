@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-04 10:32:14
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-05-08 00:49:50
+ * @LastEditTime: 2024-05-09 04:04:18
  * @FilePath: \cli\build.config.ts
  * @Description:
  *
@@ -21,6 +21,7 @@ export default defineBuildConfig({
   externals: [
     // 类型定义依赖，无需打包
     'openapi-types',
+    'typescript',
     // 因关联包较多打包会出错，故而将其列入生产依赖，打包时排除处理
     'unbuild',
     // 以下3个包属于ubuild的关联依赖，安装ubuild时会自动安装，故而不用打包
