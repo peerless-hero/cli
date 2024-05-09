@@ -37,7 +37,8 @@
   "bin": {
     "api": "bin/api.mjs",
     "request": "bin/request.mjs",
-    "type": "bin/type.mjs"
+    "type": "bin/type.mjs",
+    "version": "bin/version.mjs"
   },
   "files": [
     "bin",
@@ -49,11 +50,15 @@
     "dev:api": "esno src/commands/api.ts",
     "dev:request": "esno src/commands/request.ts",
     "dev:type": "esno src/commands/type.ts",
+    "dev:version": "esno src/commands/version.ts",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "prepublishOnly": "nr build",
-    "release": "bumpp && npm publish",
-    "start": "node bin/api.mjs",
+    "release": "bumpp",
+    "start:api": "node bin/api.mjs",
+    "start:request": "node bin/request.mjs",
+    "start:type": "node bin/type.mjs",
+    "start:version": "node bin/version.mjs",
     "test": "vitest",
     "typecheck": "tsc --noEmit",
     "prepare": "simple-git-hooks"
