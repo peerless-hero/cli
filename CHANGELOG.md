@@ -2,6 +2,22 @@
 
 ## v0.1.1
 
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.1.0...v0.1.1)
+
+### 📖 Documentation
+
+- 更新日志 ([834f329](https://github.com/peerless-hero/cli/commit/834f329))
+
+### 🏡 Chore
+
+- Exports;bin;scripts ([a7ec0bc](https://github.com/peerless-hero/cli/commit/a7ec0bc))
+
+### ❤️ Contributors
+
+- Peerless_hero <peerless_hero@outlook.com>
+
+## v0.1.1
+
 [compare changes](https://github.com/peerless-hero/cli/compare/4d2c1b7c25885cf740cb35fbaa03d3e2e807cd60...v0.1.1)
 
 ### 🚀 Enhancements
