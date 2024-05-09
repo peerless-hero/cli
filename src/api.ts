@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2022-11-03 17:53:22
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-05-09 04:15:58
+ * @LastEditTime: 2024-05-09 23:02:12
  * @FilePath: \cli\src\api.ts
  * @Description:
  *
@@ -15,9 +15,8 @@ import type { OpenAPIV3 } from 'openapi-types'
 import axiosPKG from '../template/packages/axios/package.json'
 import unPKG from '../template/packages/un/package.json'
 import getOpenApi3 from './openapi3'
+import { templateDir } from './paths'
 import { DefineProperty, resolveSchemaType } from './type'
-
-let templateDir = ''
 
 const ACTION: Record<string, string> = {
   get: 'get',
@@ -296,9 +295,7 @@ export async function renderDefineQuery(defineAPI: DefineAPI) {
   }
 }
 
-export async function renderAPI(dir: string) {
-  templateDir = dir
-
+export async function renderAPI() {
   const { paths } = await getOpenApi3()
 
   const axiosImports: Record<string, string[]> = {
@@ -314,9 +311,9 @@ export async function renderAPI(dir: string) {
     const defineAPI = new DefineAPI(path, paths[path])
     axiosImports[axiosPKG.name].push(...defineAPI.exports)
     unImports[unPKG.name].push(...defineAPI.exports)
-    renderDefineAxiosAPI(defineAPI).catch(consola.error)
-    renderDefineUnAPI(defineAPI).catch(consola.error)
-    renderDTSofAPI(defineAPI).catch(consola.error)
+    renderDefineAxiosAPI(defineAPI)
+    renderDefineUnAPI(defineAPI)
+    renderDTSofAPI(defineAPI)
     pathList.push(`./api/${defineAPI.componentPrefix}`)
   }
 

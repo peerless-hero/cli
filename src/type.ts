@@ -5,8 +5,7 @@ import { renderFile } from 'ejs'
 import { outputFile } from 'fs-extra/esm'
 import type { OpenAPIV2, OpenAPIV3 } from 'openapi-types'
 import getOpenApi3 from './openapi3'
-
-let templateDir = ''
+import { templateDir } from './paths'
 
 const XApifox = 'x-apifox'
 
@@ -212,8 +211,7 @@ export class DefineProperty {
   }
 }
 
-export async function renderType(dir: string) {
-  templateDir = dir
+export async function renderType() {
   const { components = {} } = await getOpenApi3()
   const properties: DefineProperty[] = []
   for (const name in components.schemas) {
