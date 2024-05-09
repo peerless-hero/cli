@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-04 10:32:14
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-05-09 04:04:18
+ * @LastEditTime: 2024-05-10 02:34:06
  * @FilePath: \cli\build.config.ts
  * @Description:
  *
@@ -13,6 +13,7 @@ import fg from 'fast-glob'
 
 export default defineBuildConfig({
   entries: [
+    'src/paths.ts',
     ...fg.sync('src/commands/*.ts').map(i => ({
       input: i.slice(0, -3),
       name: basename(i).slice(0, -3),
@@ -29,7 +30,6 @@ export default defineBuildConfig({
     'fs-extra',
     'semver',
   ],
-  clean: true,
   declaration: true,
   rollup: {
     emitCJS: true,
