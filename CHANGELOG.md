@@ -1,5 +1,29 @@
 # Changelog
 
+## v0.1.2
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.1.1...v0.1.2)
+
+### 🚀 Enhancements
+
+- 忽略环境变量文件 ([8cd63af](https://github.com/peerless-hero/cli/commit/8cd63af))
+- 版本号自动生成 ([f90bf7d](https://github.com/peerless-hero/cli/commit/f90bf7d))
+- 检查环境变量方法 ([83daa67](https://github.com/peerless-hero/cli/commit/83daa67))
+- 修改版本号方法 ([078c01b](https://github.com/peerless-hero/cli/commit/078c01b))
+- 统一管理生成路径地址 ([46a6da0](https://github.com/peerless-hero/cli/commit/46a6da0))
+
+### 🔥 Performance
+
+- 优化构建顺序和内容输出 ([53f05fb](https://github.com/peerless-hero/cli/commit/53f05fb))
+
+### 🏡 Chore
+
+- 移除推送配置 ([ec59c40](https://github.com/peerless-hero/cli/commit/ec59c40))
+
+### ❤️ Contributors
+
+- Peerless_hero <peerless_hero@outlook.com>
+
 ## v0.1.1
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.1.0...v0.1.1)
