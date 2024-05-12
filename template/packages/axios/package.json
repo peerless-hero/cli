@@ -3,10 +3,6 @@
   "type": "module",
   "version": "0.0.0",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://codeup.aliyun.com/65efc42e46c5190743062feb/base/requset.git"
-  },
   "keywords": [
     "接口定义",
     "api",
@@ -23,9 +19,6 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "publishConfig": {
-    "registry": "https://packages.aliyun.com/65efc42e46c5190743062feb/npm/npm-registry/"
-  },
   "engines": {
     "yarn": "1.x",
     "node": ">=12"
