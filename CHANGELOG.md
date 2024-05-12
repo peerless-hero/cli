@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.1.4
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.1.3...v0.1.5)
+
+### 🩹 Fixes
+
+- OPENAPI_V3 ([b2fbaf2](https://github.com/peerless-hero/cli/commit/b2fbaf2))
+- 获取不到类型的问题 ([c16c650](https://github.com/peerless-hero/cli/commit/c16c650))
+
+### 🏡 Chore
+
+- 移除推送配置 ([483808d](https://github.com/peerless-hero/cli/commit/483808d))
+- Release v0.1.4 ([71451e3](https://github.com/peerless-hero/cli/commit/71451e3))
+
+### ❤️ Contributors
+
+- Peerless_hero <peerless_hero@outlook.com>
+
 ## v0.1.3
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.1.1...v0.1.3)
@@ -69,7 +87,7 @@
 
 - Peerless_hero <peerless_hero@outlook.com>
 
-## v0.1.1
+## v0.1.0
 
 [compare changes](https://github.com/peerless-hero/cli/compare/4d2c1b7c25885cf740cb35fbaa03d3e2e807cd60...v0.1.1)
 
@@ -139,7 +157,3 @@
 ### ❤️ Contributors
 
 - Peerless_hero <peerless_hero@outlook.com>
-
-## v0.1.1
-
-[compare changes](https://github.com/peerless-hero/cli/compare/v0.1.0...v0.1.1)
