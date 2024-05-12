@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { cacheAdapterEnhancer, throttleAdapterEnhancer } from 'axios-extensions'
 
-export const service = axios.create({
+export const service: import('axios').AxiosInstance = axios.create({
 	adapter: throttleAdapterEnhancer(cacheAdapterEnhancer(axios.defaults.adapter)),
   timeout: 10000
 })
