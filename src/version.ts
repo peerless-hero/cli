@@ -2,17 +2,19 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-10 00:25:28
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-05-13 01:42:12
+ * @LastEditTime: 2024-05-13 02:23:31
  * @FilePath: \cli\src\version.ts
  * @Description:
  *
  */
 import { execSync } from 'node:child_process'
 import { env, exit } from 'node:process'
+import { resolve } from 'node:path'
 import consola from 'consola'
 import { inc } from 'semver'
 import { outputJSON, readJSON } from 'fs-extra/esm'
 import { name, version } from '../package.json'
+import { PACKAGE_AXIOS_PATH, PACKAGE_UN_PATH, TEMP_OPENAPI_V3_PATH } from './paths'
 
 export function getCliVersion() {
   return version
@@ -42,12 +44,13 @@ const {
   INITIAL_VERSION = '0.0.0',
 } = env
 
-async function changePackage(name: string, version: string) {
+async function changePackage(basePath: string, name: string, version: string) {
   const newName = `${PACKAGE_SCOPE}/${name}`
-  const res = await readJSON(`temp/${newName}/package.json`)
+  const filePath = resolve(basePath, 'package.json')
+  const res = await readJSON(filePath)
   res.name = newName
   res.version = version
-  await outputJSON(`temp/${newName}/package.json`, res, { spaces: 2 })
+  await outputJSON(filePath, res, { spaces: 2 })
 }
 
 /**
@@ -55,11 +58,11 @@ async function changePackage(name: string, version: string) {
  * 将所有包的版本号更新为新版本号
  */
 export function updateRequestVersion() {
+  consola.info('获取当前版本号')
   let currentVersion = getPackageLatestVersion(`${PACKAGE_SCOPE}/${PACKAGE_OPENAPI_V3_NAME}`) || getPackageLatestVersion(`${PACKAGE_SCOPE}/${PACKAGE_AXIOS_NAME}`) || getPackageLatestVersion(`${PACKAGE_SCOPE}/${PACKAGE_UN_NAME}`)
   if (!currentVersion) {
     consola.info('当前版本号不存在，自动设置为初始版本号：', INITIAL_VERSION)
     currentVersion = INITIAL_VERSION
-    return currentVersion
   }
 
   consola.info('当前版本号为：', currentVersion)
@@ -70,9 +73,9 @@ export function updateRequestVersion() {
   }
   consola.info('新版本号为：', newVersion)
   return Promise.all([
-    changePackage(PACKAGE_UN_NAME, newVersion),
-    changePackage(PACKAGE_AXIOS_NAME, newVersion),
-    changePackage(PACKAGE_OPENAPI_V3_NAME, newVersion),
+    changePackage(PACKAGE_UN_PATH, PACKAGE_UN_NAME, newVersion),
+    changePackage(PACKAGE_AXIOS_PATH, PACKAGE_AXIOS_NAME, newVersion),
+    changePackage(TEMP_OPENAPI_V3_PATH, PACKAGE_OPENAPI_V3_NAME, newVersion),
   ])
 }
 

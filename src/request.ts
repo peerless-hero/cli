@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-05 02:33:40
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-05-13 01:48:40
+ * @LastEditTime: 2024-05-13 02:22:11
  * @FilePath: \cli\src\request.ts
  * @Description:
  *
@@ -105,8 +105,8 @@ export async function renderRequest() {
 
   consola.info('复制预设NPM包模板...')
   await Promise.all([
-    copy(resolve(TEMPLATE_DIR, 'packages/axios'), TEMP_AXIOS_PATH),
-    copy(resolve(TEMPLATE_DIR, 'packages/un'), TEMP_UN_PATH),
+    copy(resolve(TEMPLATE_DIR, 'packages/axios'), PACKAGE_AXIOS_PATH),
+    copy(resolve(TEMPLATE_DIR, 'packages/un'), PACKAGE_UN_PATH),
     copy(resolve(TEMPLATE_DIR, 'packages/openapi-v3'), TEMP_OPENAPI_V3_PATH),
   ])
   consola.info('生成定义文件')
@@ -115,9 +115,9 @@ export async function renderRequest() {
     renderType(),
   ])
 
-  // 更新版本号
   await Promise.all([
     updateRequestVersion(),
+    // 写入OpenAPIv3定义文件
     outputJSON(resolve(TEMP_OPENAPI_V3_PATH, 'OpenAPIv3.json'), OpenApi3),
   ])
 
