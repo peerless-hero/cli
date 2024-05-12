@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-05 02:33:40
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-05-13 02:22:11
+ * @LastEditTime: 2024-05-13 02:31:46
  * @FilePath: \cli\src\request.ts
  * @Description:
  *
@@ -68,7 +68,7 @@ function buildRequset(workspace: string) {
       },
       {
         builder: 'mkdist',
-        input: TEMP_UN_PATH,
+        input: TEMP_OPENAPI_V3_PATH,
         outDir: PACKAGE_OPENAPI_V3_PATH,
         format: 'esm',
         typescript,
