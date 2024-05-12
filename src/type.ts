@@ -5,7 +5,8 @@ import { renderFile } from 'ejs'
 import { outputFile } from 'fs-extra/esm'
 import type { OpenAPIV2, OpenAPIV3 } from 'openapi-types'
 import getOpenApi3 from './openapi3'
-import { templateDir } from './paths'
+import { TEMPLATE_DIR, TEMP_AXIOS_PATH, TEMP_UN_PATH } from './paths'
+import { checkTypeEnv } from './env'
 
 const XApifox = 'x-apifox'
 
@@ -212,7 +213,9 @@ export class DefineProperty {
 }
 
 export async function renderType() {
-  const { components = {} } = await getOpenApi3()
+  checkTypeEnv()
+  const OpenApi3 = await getOpenApi3()
+  const { components = {} } = OpenApi3
   const properties: DefineProperty[] = []
   for (const name in components.schemas) {
     const schema = components.schemas[name]
@@ -223,13 +226,18 @@ export async function renderType() {
     properties.push(new DefineProperty(name, schema))
   }
   const [globalType, axiosType, unType] = await Promise.all([
-    renderFile(resolve(templateDir, 'ejs/dts/global.ejs'), { properties }),
-    readFile(resolve(templateDir, 'ejs/axios/extra-request-config.ejs'), { encoding: 'utf-8' }),
-    readFile(resolve(templateDir, 'ejs/un/extra-request-config.ejs'), { encoding: 'utf-8' }),
+    renderFile(resolve(TEMPLATE_DIR, 'ejs/dts/global.ejs'), { properties }),
+    readFile(resolve(TEMPLATE_DIR, 'ejs/axios/extra-request-config.ejs'), { encoding: 'utf-8' }),
+    readFile(resolve(TEMPLATE_DIR, 'ejs/un/extra-request-config.ejs'), { encoding: 'utf-8' }),
   ])
+  const axiosOutputPath = resolve(TEMP_AXIOS_PATH, 'global.d.ts')
+  const unOutputPath = resolve(TEMP_UN_PATH, 'global.d.ts')
   await Promise.all([
-    outputFile('temp/axios/global.d.ts', `${globalType}\n${axiosType}`),
-    outputFile('temp/un/global.d.ts', `${globalType}\n${unType}`),
+    outputFile(axiosOutputPath, `${globalType}\n${axiosType}`),
+    outputFile(unOutputPath, `${globalType}\n${unType}`),
   ])
-  consola.success(`已生成type类型文件，数量共计：${properties.length}`)
+  consola.info(`axios类型文件生成位置：${axiosOutputPath}`)
+  consola.info(`un类型文件生成位置：${unOutputPath}`)
+  consola.success(`已生成type类型文件，包含类型数量：${properties.length}`)
+  return OpenApi3
 }
