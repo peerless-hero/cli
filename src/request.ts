@@ -2,24 +2,32 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-05 02:33:40
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-05-10 02:44:00
+ * @LastEditTime: 2024-05-13 01:48:40
  * @FilePath: \cli\src\request.ts
  * @Description:
  *
  */
 import { resolve } from 'node:path'
 import { cwd } from 'node:process'
-import type { TranspileOptions } from 'typescript'
 import consola from 'consola'
+import type { TranspileOptions } from 'typescript'
 import { copy, emptyDir, outputJSON } from 'fs-extra/esm'
-import { inc } from 'semver'
 import { build } from 'unbuild'
 import { renderAPI } from './api'
-import getOpenApi3 from './openapi3'
+import {
+  PACKAGE_AXIOS_PATH,
+  PACKAGE_OPENAPI_V3_PATH,
+  PACKAGE_UN_PATH,
+  TEMPLATE_DIR,
+  TEMP_AXIOS_PATH,
+  TEMP_OPENAPI_V3_PATH,
+  TEMP_UN_PATH,
+} from './paths'
 import { renderType } from './type'
-import { templateDir } from './paths'
+import { title, updateRequestVersion } from './version'
 
 function buildRequset(workspace: string) {
+  consola.info('构建项目...')
   const typescript: TranspileOptions = {
     compilerOptions: {
       // 禁用自动解析功能
@@ -27,46 +35,53 @@ function buildRequset(workspace: string) {
     },
   }
   return build(workspace, false, {
-    entries: [{
-      builder: 'mkdist',
-      input: 'temp/axios',
-      outDir: 'packages/axios/dist',
-      format: 'esm',
-      typescript,
-    }, {
-      builder: 'mkdist',
-      input: 'temp/axios',
-      outDir: 'packages/axios/dist',
-      format: 'cjs',
-      ext: 'cjs',
-      typescript,
-    }, {
-      builder: 'mkdist',
-      input: 'temp/un',
-      outDir: 'packages/un/dist',
-      format: 'esm',
-      typescript,
-    }, {
-      builder: 'mkdist',
-      input: 'temp/un',
-      outDir: 'packages/un/dist',
-      format: 'cjs',
-      ext: 'cjs',
-      typescript,
-    }, {
-      builder: 'mkdist',
-      input: 'temp/openapi-v3',
-      outDir: 'packages/openapi-v3',
-      format: 'esm',
-      typescript,
-    }, {
-      builder: 'mkdist',
-      input: 'temp/openapi-v3',
-      outDir: 'packages/openapi-v3',
-      format: 'cjs',
-      ext: 'cjs',
-      typescript,
-    }],
+    entries: [
+      {
+        builder: 'mkdist',
+        input: TEMP_AXIOS_PATH,
+        outDir: resolve(PACKAGE_AXIOS_PATH, 'dist'),
+        format: 'esm',
+        typescript,
+      },
+      {
+        builder: 'mkdist',
+        input: TEMP_AXIOS_PATH,
+        outDir: resolve(PACKAGE_AXIOS_PATH, 'dist'),
+        format: 'cjs',
+        ext: 'cjs',
+        typescript,
+      },
+      {
+        builder: 'mkdist',
+        input: TEMP_UN_PATH,
+        outDir: resolve(PACKAGE_UN_PATH, 'dist'),
+        format: 'esm',
+        typescript,
+      },
+      {
+        builder: 'mkdist',
+        input: TEMP_UN_PATH,
+        outDir: resolve(PACKAGE_UN_PATH, 'dist'),
+        format: 'cjs',
+        ext: 'cjs',
+        typescript,
+      },
+      {
+        builder: 'mkdist',
+        input: TEMP_UN_PATH,
+        outDir: PACKAGE_OPENAPI_V3_PATH,
+        format: 'esm',
+        typescript,
+      },
+      {
+        builder: 'mkdist',
+        input: TEMP_OPENAPI_V3_PATH,
+        outDir: PACKAGE_OPENAPI_V3_PATH,
+        format: 'cjs',
+        ext: 'cjs',
+        typescript,
+      },
+    ],
     // 前面的步骤已清理过目录，这里不用再清理
     clean: false,
     declaration: true,
@@ -75,38 +90,41 @@ function buildRequset(workspace: string) {
 }
 
 export async function renderRequest() {
-  consola.box(`I am the default banner`)
-
   consola.box({
-    title: 'Box with options',
-    message: `I am a banner with different options`,
+    title,
+    message: 'Generate request modules by OpenAPIv3.',
     style: {
       padding: 1,
-      borderColor: 'magenta',
+      borderColor: 'blue',
       borderStyle: 'double-single-rounded',
     },
   })
+
   consola.info('清空构建目录...')
-  const [OpenApi3] = await Promise.all([getOpenApi3(), emptyDir('packages'), emptyDir('temp')])
-  consola.info('复制项目模板...')
+  await Promise.all([emptyDir('packages'), emptyDir('temp')])
+
+  consola.info('复制预设NPM包模板...')
   await Promise.all([
-    copy(resolve(templateDir, 'packages/axios'), 'packages/axios/dist/template'),
-    copy(resolve(templateDir, 'packages/un'), 'packages/un/dist/template'),
-    copy(resolve(templateDir, 'packages/openapi-v3'), 'temp/openapi-v3'),
+    copy(resolve(TEMPLATE_DIR, 'packages/axios'), TEMP_AXIOS_PATH),
+    copy(resolve(TEMPLATE_DIR, 'packages/un'), TEMP_UN_PATH),
+    copy(resolve(TEMPLATE_DIR, 'packages/openapi-v3'), TEMP_OPENAPI_V3_PATH),
+  ])
+  consola.info('生成定义文件')
+  const [OpenApi3] = await Promise.all([
     renderAPI(),
     renderType(),
   ])
-  await outputJSON(`temp/openapi-v3/OpenAPIv3.json`, OpenApi3)
-  // TODO: 改为接口获取
-  const oldVersion = '0.0.0'
-  consola.info('旧版本号为：', oldVersion)
-  const newVersion = inc(oldVersion, 'patch')
-  consola.info('版本号为：', newVersion)
+
+  // 更新版本号
+  await Promise.all([
+    updateRequestVersion(),
+    outputJSON(resolve(TEMP_OPENAPI_V3_PATH, 'OpenAPIv3.json'), OpenApi3),
+  ])
 
   const workspace = cwd()
-  consola.info('构建项目...')
+  consola.info('启动ubuild构建...')
   await buildRequset(workspace)
-  consola.success('axios模块构建完成！', resolve(workspace, 'packages/axios'))
-  consola.success('un模块构建完成！', resolve(workspace, 'packages/un'))
-  consola.success('openapi-v3模块构建完成！', resolve(workspace, 'packages/openapi-v3'))
+  consola.success('axios模块构建完成！', PACKAGE_AXIOS_PATH)
+  consola.success('un模块构建完成！', PACKAGE_UN_PATH)
+  consola.success('openapi-v3模块构建完成！', PACKAGE_OPENAPI_V3_PATH)
 }
