@@ -91,6 +91,15 @@ export class DefineProperty {
   dict = ''
   notes: string[] = []
   properties: DefineProperty[] = []
+
+  diff = {
+    /** 变动数量 */
+    change: 0,
+    add: [] as DefineProperty[],
+    update: {} as Record<string, string[]>,
+    remove: [] as DefineProperty[],
+  }
+
   constructor(
     name: string,
     schema?: (OpenAPIV3.SchemaObject & ApifoxPlus) | OpenAPIV3.ReferenceObject,
@@ -210,6 +219,29 @@ export class DefineProperty {
       )
     }
   }
+
+  compare(other: DefineProperty) {
+    const result: string[] = []
+    for (const thisQuery of this.properties) {
+      const otherQuery = other.properties.find(
+        item => item.name === thisQuery.name,
+      )
+      if (!otherQuery) {
+        this.diff.add.push(thisQuery)
+        continue
+      }
+      if (thisQuery.notes.join('') !== otherQuery.notes.join(''))
+        result.push(`参数【${thisQuery.name}】描述变动`)
+    }
+    for (const otherQuery of other.properties) {
+      const thisQuery = this.properties.find(
+        item => item.name === otherQuery.name,
+      )
+      if (!thisQuery)
+        this.diff.remove.push(otherQuery)
+    }
+    return result
+  }
 }
 
 export async function renderType() {
@@ -240,4 +272,27 @@ export async function renderType() {
   consola.info(`un类型文件生成位置：${unOutputPath}`)
   consola.success(`已生成type类型文件，包含类型数量：${properties.length}`)
   return OpenApi3
+}
+
+export function compareType(oldDocument: OpenAPIV3.Document, newDocument: OpenAPIV3.Document) {
+  // 比较两个openapi文档components部分的差异
+  const list: DefineProperty[] = []
+  let count = 0
+  const { components: newComponents = {} } = newDocument
+  const { components: oldComponents = {} } = oldDocument
+  for (const name in newComponents.schemas) {
+    const newSchema = newComponents.schemas[name]
+    const oldSchema = oldComponents.schemas?.[name]
+    const newProperty = new DefineProperty(name, newSchema)
+    const oldProperty = new DefineProperty(name, oldSchema)
+    newProperty.compare(oldProperty)
+    if (newProperty.diff.change) {
+      count += newProperty.diff.change
+      list.push(newProperty)
+    }
+  }
+  return {
+    list,
+    count,
+  }
 }

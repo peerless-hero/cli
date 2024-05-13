@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2022-11-03 17:53:22
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-05-13 01:32:18
+ * @LastEditTime: 2024-05-14 02:33:38
  * @FilePath: \cli\src\api.ts
  * @Description:
  *
@@ -175,6 +175,52 @@ export class DefineAPIMethod {
     if (responseDataType)
       this.responseDataType = resolveSchemaType(responseDataType)
   }
+
+  private compareQuery(other: DefineAPIMethod) {
+    const result: string[] = []
+    for (const thisQuery of this.requestQuery) {
+      const otherQuery = other.requestQuery.find(
+        item => item.name === thisQuery.name,
+      )
+      if (!otherQuery) {
+        result.push(`新增：请求参数【${thisQuery.name}】`)
+        continue
+      }
+      if (thisQuery.notes.join('') !== otherQuery.notes.join(''))
+        result.push(`请求参数【${thisQuery.name}】描述变动`)
+    }
+    for (const otherQuery of other.requestQuery) {
+      const thisQuery = this.requestQuery.find(
+        item => item.name === otherQuery.name,
+      )
+      if (!thisQuery)
+        result.push(`删除：请求参数【${otherQuery.name}】`)
+    }
+    return result
+  }
+
+  compareRequestBody(other: DefineAPIMethod, result: string[]) {
+    const requestBody = this.requestBody.join('')
+    const otherRequestBody = other.requestBody.join('')
+    if (!requestBody && otherRequestBody) {
+      result.push(`原请求体类型【${requestBody}】已被删除`)
+      return
+    }
+    if (requestBody && !otherRequestBody) {
+      result.push(`新增请求体类型【${requestBody}】`)
+      return
+    }
+    if (requestBody !== otherRequestBody)
+      result.push(`请求体类型变更为【${requestBody}】`)
+  }
+
+  compare(other: DefineAPIMethod) {
+    const result = this.compareQuery(other)
+    this.compareRequestBody(other, result)
+    if (this.responseDataType !== other.responseDataType || this.responseType !== other.responseType)
+      result.push(`响应体类型变更为【${this.responseDataType || this.responseType}】`)
+    return result
+  }
 }
 
 /**
@@ -195,6 +241,14 @@ export class DefineAPI {
   } = {}
 
   exports: string[] = []
+
+  diff = {
+    /** 变动数量 */
+    change: 0,
+    add: [] as (keyof DefineAPI['method'])[],
+    update: {} as Record<string, string[]>,
+    remove: [] as (keyof DefineAPI['method'])[],
+  }
 
   constructor(path: string, pathItem: OpenAPIV3.PathItemObject = {}) {
     this.path = path.replace('/api', '')
@@ -262,6 +316,36 @@ export class DefineAPI {
           break
       }
     }
+  }
+
+  private compareMethod(other: DefineAPI, method: keyof DefineAPI['method']) {
+    const thisMethod = this.method[method]
+    const otherMethod = other.method[method]
+    if (thisMethod) {
+      if (!otherMethod) {
+        this.diff.change++
+        this.diff.add.push(method)
+        return
+      }
+      const diffList = thisMethod.compare(otherMethod)
+      if (diffList.length) {
+        this.diff.change++
+        this.diff.update[method] = diffList
+      }
+      return
+    }
+    if (otherMethod) {
+      this.diff.change++
+      this.diff.remove.push(method)
+    }
+  }
+
+  compare(other: DefineAPI) {
+    this.compareMethod(other, 'get')
+    this.compareMethod(other, 'patch')
+    this.compareMethod(other, 'put')
+    this.compareMethod(other, 'patch')
+    this.compareMethod(other, 'delete')
   }
 }
 
@@ -344,4 +428,23 @@ export async function renderAPI() {
   ])
   consola.success(`已生成api文件，数量共计：${count}`)
   return OpenApi3
+}
+
+export function compareAPI(oldDocument: OpenAPIV3.Document, newDocument: OpenAPIV3.Document) {
+  // 比较两个openapi文档paths部分的差异
+  const list: DefineAPI[] = []
+  let count = 0
+  for (const path in newDocument.paths) {
+    const newAPI = new DefineAPI(path, newDocument.paths[path])
+    const oldAPI = new DefineAPI(path, oldDocument.paths[path])
+    newAPI.compare(oldAPI)
+    if (newAPI.diff.change) {
+      count += newAPI.diff.change
+      list.push(newAPI)
+    }
+  }
+  return {
+    count,
+    list,
+  }
 }
