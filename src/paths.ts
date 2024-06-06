@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-09 22:25:18
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-05-13 01:39:04
+ * @LastEditTime: 2024-05-14 00:22:16
  * @FilePath: \cli\src\paths.ts
  * @Description:
  *
@@ -14,8 +14,13 @@ import { env } from 'node:process'
 export const TEMPLATE_DIR = resolve(import.meta.dirname || __dirname, '../template')
 
 export function getNpmGlobalRoot() {
-  return execSync('npm root -g', { encoding: 'utf-8' })
+  return execSync('npm root -g', { encoding: 'utf-8' }).trim()
 }
+export function getNpmGlobalFilepath(...paths: string[]) {
+  const npmGlobalRoot = getNpmGlobalRoot()
+  return resolve(npmGlobalRoot, ...paths)
+}
+
 const {
   PACKAGE_AXIOS_NAME = 'axios',
   PACKAGE_UN_NAME = 'un',

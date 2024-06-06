@@ -2,13 +2,14 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-13 00:10:10
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-05-13 01:23:02
+ * @LastEditTime: 2024-05-14 00:38:46
  * @FilePath: \cli\src\env.ts
  * @Description:
  *
  */
 import { env, exit } from 'node:process'
 import consola from 'consola'
+import 'dotenv/config'
 
 /**
  *

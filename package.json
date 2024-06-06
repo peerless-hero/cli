@@ -41,6 +41,7 @@
   },
   "bin": {
     "api": "bin/api.mjs",
+    "changelog": "bin/changelog.mjs",
     "cli": "bin/version.mjs",
     "request": "bin/request.mjs",
     "type": "bin/type.mjs",
@@ -54,6 +55,7 @@
   "scripts": {
     "build": "unbuild",
     "dev:api": "esno src/commands/api.ts",
+    "dev:changelog": "esno src/commands/changelog.ts",
     "dev:request": "esno src/commands/request.ts",
     "dev:type": "esno src/commands/type.ts",
     "dev:version": "esno src/commands/version.ts",
@@ -66,6 +68,7 @@
     "bump:major": "changelogen --bump --release --major --push",
     "start": "node bin/version.mjs",
     "start:api": "node bin/api.mjs",
+    "start:changelog": "node bin/changelog.mjs",
     "start:request": "node bin/request.mjs",
     "start:type": "node bin/type.mjs",
     "test": "vitest",
