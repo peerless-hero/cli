@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.1.6
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.1.5...v0.1.6)
+
+### 🩹 Fixes
+
+- 补充axios和un的推送 ([2b11b9c](https://github.com/peerless-hero/cli/commit/2b11b9c))
+
+### 🏡 Chore
+
+- Scripts ([ff3883d](https://github.com/peerless-hero/cli/commit/ff3883d))
+
+### ❤️ Contributors
+
+- Peerless_hero <peerless_hero@outlook.com>
+
 ## v0.1.4
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.1.3...v0.1.5)
