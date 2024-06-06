@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-05 02:33:40
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-06-07 02:18:27
+ * @LastEditTime: 2024-06-07 02:54:53
  * @FilePath: \cli\src\request.ts
  * @Description:
  *
@@ -131,5 +131,7 @@ export async function renderRequest() {
   if (argv.includes('--publish')) {
     consola.start('正在发布至NPM仓库...')
     publishNPM(PACKAGE_OPENAPI_V3_PATH)
+    publishNPM(PACKAGE_AXIOS_PATH)
+    publishNPM(PACKAGE_UN_PATH)
   }
 }
