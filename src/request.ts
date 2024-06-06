@@ -2,17 +2,18 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-05 02:33:40
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-05-13 02:31:46
+ * @LastEditTime: 2024-06-07 02:18:27
  * @FilePath: \cli\src\request.ts
  * @Description:
  *
  */
 import { resolve } from 'node:path'
-import { cwd } from 'node:process'
+import { argv, cwd } from 'node:process'
 import consola from 'consola'
 import type { TranspileOptions } from 'typescript'
 import { copy, emptyDir, outputJSON } from 'fs-extra/esm'
 import { build } from 'unbuild'
+import { publishNPM } from './publish'
 import { renderAPI } from './api'
 import {
   PACKAGE_AXIOS_PATH,
@@ -127,4 +128,8 @@ export async function renderRequest() {
   consola.success('axios模块构建完成！', PACKAGE_AXIOS_PATH)
   consola.success('un模块构建完成！', PACKAGE_UN_PATH)
   consola.success('openapi-v3模块构建完成！', PACKAGE_OPENAPI_V3_PATH)
+  if (argv.includes('--publish')) {
+    consola.start('正在发布至NPM仓库...')
+    publishNPM(PACKAGE_OPENAPI_V3_PATH)
+  }
 }
