@@ -32,6 +32,9 @@ export async function <%- request.action %><%- name %>(
 <% if (request.responseType === 'Blob') { -%>
     responseType: 'blob',
 <% }   -%>
+<% if(request.requestBody.includes('string')){ -%>
+  headers: { 'content-type': 'application/json;charset=UTF-8' },
+<% } -%>
     ...extraRequestConfig
   })
 <% if (request.responseDataType){ -%>
