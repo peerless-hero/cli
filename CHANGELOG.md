@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.8
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.1.7...v0.1.8)
+
+### 🏡 Chore
+
+- Axios-extensions 默认不启用 ([6f6805e](https://github.com/peerless-hero/cli/commit/6f6805e))
+
+### ❤️ Contributors
+
+- Peerless_hero <peerless_hero@outlook.com>
+
 ## v0.1.7
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.1.6...v0.1.7)
