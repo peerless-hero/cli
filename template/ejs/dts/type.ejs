@@ -7,7 +7,7 @@
  */
 <% } -%>
 <% if(dts.type==='any') { -%>
-export declare interface <%- dts.name %> {
+declare interface <%- dts.name %> {
 <% dts.properties.forEach(property => { -%>
 <% if(property.notes.length) { -%>
   /**
@@ -21,5 +21,5 @@ export declare interface <%- dts.name %> {
 <% }) -%>
 }
 <% } else { -%>
-export declare type <%- dts.name %> = <%- dts.type %>
+declare type <%- dts.name %> = <%- dts.type %>
 <% } -%>
