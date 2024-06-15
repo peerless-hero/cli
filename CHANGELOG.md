@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.7
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.1.6...v0.1.7)
+
+### 🏡 Chore
+
+- 删除export ([5f54b5a](https://github.com/peerless-hero/cli/commit/5f54b5a))
+
+### ❤️ Contributors
+
+- Peerless_hero <peerless_hero@outlook.com>
+
 ## v0.1.6
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.1.5...v0.1.6)
