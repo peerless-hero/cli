@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.1.9
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.1.8...v0.1.9)
+
+### 📦 Build
+
+- 移除prepublishOnly ([24ee4c3](https://github.com/peerless-hero/cli/commit/24ee4c3))
+
+### 🏡 Chore
+
+- **axios:** 版本改为^0.27.2 ([09425c6](https://github.com/peerless-hero/cli/commit/09425c6))
+
+### ❤️ Contributors
+
+- Peerless_hero <peerless_hero@outlook.com>
+
 ## v0.1.8
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.1.7...v0.1.8)
