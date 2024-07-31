@@ -31,7 +31,7 @@ export function textInBrackets(text = '') {
   return regExpMatchArray?.[0]
 }
 
-export function tranformType(type: string | string[] = 'any', append = '') {
+export function transformType(type: string | string[] = 'any', append = '') {
   if (Array.isArray(type))
     return resolveEnumType(type)
 
@@ -69,10 +69,10 @@ export function resolveSchemaType(
   if (schema.type === 'array')
     return `${resolveSchemaType(schema.items)}[]`
 
-  return tranformType(schema.type, append)
+  return transformType(schema.type, append)
 }
 
-export function reloveRef(ref = 'any') {
+export function resolveRef(ref = 'any') {
   return ref
     .replace('#/components/schemas/', '')
     .replace('#/definitions/', '')
@@ -112,7 +112,7 @@ export class DefineProperty {
       return
     }
     if ('$ref' in schema) {
-      this.type = reloveRef(schema.$ref)
+      this.type = resolveRef(schema.$ref)
       return
     }
     this.setNotes(schema)
@@ -197,6 +197,18 @@ export class DefineProperty {
       case 'object':
         this.type = 'any'
         this.defaultValue = 'null'
+        break
+      case 'string':
+        if (property.format === 'binary') {
+          this.type = 'MultipartFile'
+          this.defaultValue = 'null'
+        }
+        else {
+          this.type = 'string'
+          this.defaultValue = this.required
+            ? `'${property.default}'`
+            : 'undefined'
+        }
         break
       default:
         this.type = property.type ?? 'any'
