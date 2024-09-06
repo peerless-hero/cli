@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2022-11-03 17:53:22
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-05-14 02:33:38
+ * @LastEditTime: 2024-09-06 15:10:29
  * @FilePath: \cli\src\api.ts
  * @Description:
  *
@@ -156,7 +156,7 @@ export class DefineAPIMethod {
 
       return
     }
-    const schema = successRes.content?.['application/json']?.schema
+    const schema = successRes.content?.['application/json']?.schema || successRes.content?.['*/*']?.schema
     if (!schema) {
       if (successRes.content)
         this.responseType = 'Blob'
@@ -169,6 +169,11 @@ export class DefineAPIMethod {
         this.resolveResultData(this.responseType)
         return
       }
+      return
+    }
+    const responseRowType = schema.properties?.rows
+    if (responseRowType) {
+      this.responseType = `Row<${resolveSchemaType(responseRowType)}>`
       return
     }
     const responseDataType = schema.properties?.data
