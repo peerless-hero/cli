@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.1.10
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.1.9...v0.1.10)
+
+### 🩹 Fixes
+
+- 拼写错误；流的判断 ([5595007](https://github.com/peerless-hero/cli/commit/5595007))
+- */*无法匹配正确JSON响应类型 ([b4a95cc](https://github.com/peerless-hero/cli/commit/b4a95cc))
+
+### ❤️ Contributors
+
+- Peerless_hero <peerless_hero@outlook.com>
+
 ## v0.1.9
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.1.8...v0.1.9)
