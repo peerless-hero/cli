@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.11
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.1.10...v0.1.11)
+
+### 🩹 Fixes
+
+- Rows类型问题 ([b1093af](https://github.com/peerless-hero/cli/commit/b1093af))
+
+### ❤️ Contributors
+
+- Peerless_hero <peerless_hero@outlook.com>
+
 ## v0.1.10
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.1.9...v0.1.10)
