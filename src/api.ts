@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2022-11-03 17:53:22
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-09-06 15:10:29
+ * @LastEditTime: 2024-09-09 15:36:28
  * @FilePath: \cli\src\api.ts
  * @Description:
  *
@@ -172,8 +172,8 @@ export class DefineAPIMethod {
       return
     }
     const responseRowType = schema.properties?.rows
-    if (responseRowType) {
-      this.responseType = `Row<${resolveSchemaType(responseRowType)}>`
+    if (responseRowType && 'items' in responseRowType) {
+      this.responseType = `Row<${resolveSchemaType(responseRowType.items)}>`
       return
     }
     const responseDataType = schema.properties?.data
