@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.12
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.1.11...v0.1.12)
+
+### 🏡 Chore
+
+- 请求库的依赖版本改为* ([3e55175](https://github.com/peerless-hero/cli/commit/3e55175))
+
+### ❤️ Contributors
+
+- Peerless_hero <peerless_hero@outlook.com>
+
 ## v0.1.11
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.1.10...v0.1.11)
