@@ -26,6 +26,6 @@
     "node": ">=12"
   },
   "dependencies": {
-    "@uni-helper/uni-network": "^0.18.1"
+    "@uni-helper/uni-network": "*"
   }
 }
