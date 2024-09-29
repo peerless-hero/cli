@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.13
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.1.12...v0.1.13)
+
+### 🏡 Chore
+
+- 请求库模块的依赖级别调整为peerDependencies；axios增加版本限制<1.0.0 ([1e66cae](https://github.com/peerless-hero/cli/commit/1e66cae))
+
+### ❤️ Contributors
+
+- Peerless_hero <peerless_hero@outlook.com>
+
 ## v0.1.12
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.1.11...v0.1.12)
