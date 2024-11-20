@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.14
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.1.13...v0.1.14)
+
+### 🚀 Enhancements
+
+- 补丁版本号过大时，自动增加次版本号 ([93df5d7](https://github.com/peerless-hero/cli/commit/93df5d7))
+
+### ❤️ Contributors
+
+- Peerless_hero ([@peerless-hero](http://github.com/peerless-hero))
+
 ## v0.1.13
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.1.12...v0.1.13)
