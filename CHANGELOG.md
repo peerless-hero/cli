@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.15
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.1.14...v0.1.15)
+
+### 🩹 Fixes
+
+- 获取版本号携带换行符，导致无法生成新版本的问题 ([eb12760](https://github.com/peerless-hero/cli/commit/eb12760))
+
+### ❤️ Contributors
+
+- Peerless_hero ([@peerless-hero](http://github.com/peerless-hero))
+
 ## v0.1.14
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.1.13...v0.1.14)
