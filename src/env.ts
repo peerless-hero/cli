@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-13 00:10:10
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-05-14 00:38:46
+ * @LastEditTime: 2024-12-10 21:52:12
  * @FilePath: \cli\src\env.ts
  * @Description:
  *
@@ -43,4 +43,5 @@ export function checkTypeEnv() {
     consola.error('请设置以@开头的环境变量 `PACKAGE_SCOPE`')
     exit()
   }
+  return { PACKAGE_SCOPE }
 }
