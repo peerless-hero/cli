@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-10 00:25:28
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-11-26 11:14:29
+ * @LastEditTime: 2024-12-10 22:18:15
  * @FilePath: \cli\src\version.ts
  * @Description:
  *
@@ -22,9 +22,13 @@ export function getCliVersion() {
 
 export const title = `${name} (v${version})`
 
+const npmVersionRecord: Record<string, string> = {}
+
 export function getPackageLatestVersion(pkgName?: string) {
   if (!pkgName)
     return ''
+  if (npmVersionRecord[pkgName])
+    return npmVersionRecord[pkgName]
 
   try {
     const latestVersion = execSync(`npm view ${pkgName} version --silent`, { encoding: 'utf-8' })
@@ -54,20 +58,18 @@ async function changePackage(basePath: string, name: string, version: string) {
   await outputJSON(filePath, res, { spaces: 2 })
 }
 
-/**
- *
- * 将所有包的版本号更新为新版本号
- */
-export function updateRequestVersion() {
-  consola.info('获取当前版本号')
-  const currentVersion = getPackageLatestVersion(`${PACKAGE_SCOPE}/${PACKAGE_OPENAPI_V3_NAME}`) || getPackageLatestVersion(`${PACKAGE_SCOPE}/${PACKAGE_AXIOS_NAME}`) || getPackageLatestVersion(`${PACKAGE_SCOPE}/${PACKAGE_UN_NAME}`)
+const newVersionRecord: Record<string, string> = {}
+
+export function getNewVersion(oldVersion: string) {
+  if (newVersionRecord[oldVersion])
+    return newVersionRecord[oldVersion]
   let maxPatchVersion = Number(MAX_PATCH_VERSION)
   // 最大补丁版本号不能为非正数
   maxPatchVersion = maxPatchVersion > 0 ? maxPatchVersion : 99
   let newVersion: string | null = null
-  if (currentVersion) {
-    consola.info('当前版本号为：', currentVersion)
-    const semver = parse(currentVersion)
+  if (oldVersion) {
+    consola.info('当前版本号为：', oldVersion)
+    const semver = parse(oldVersion)
     if (!semver) {
       consola.error('无法根据当前版本号自动生成新版本号')
       exit()
@@ -85,6 +87,20 @@ export function updateRequestVersion() {
     consola.info('无法从NPM获取当前版本号，故使用初始版本号作为当前版本号', INITIAL_VERSION)
     newVersion = INITIAL_VERSION
   }
+  newVersionRecord[name] = newVersion
+  return newVersion
+}
+
+/**
+ *
+ * 将所有包的版本号更新为新版本号
+ */
+export function updateRequestVersion() {
+  consola.info('获取当前版本号')
+  const currentVersion = getPackageLatestVersion(`${PACKAGE_SCOPE}/${PACKAGE_OPENAPI_V3_NAME}`) || getPackageLatestVersion(`${PACKAGE_SCOPE}/${PACKAGE_AXIOS_NAME}`) || getPackageLatestVersion(`${PACKAGE_SCOPE}/${PACKAGE_UN_NAME}`)
+
+  const newVersion = getNewVersion(currentVersion)
+
   return Promise.all([
     changePackage(PACKAGE_UN_PATH, PACKAGE_UN_NAME, newVersion),
     changePackage(PACKAGE_AXIOS_PATH, PACKAGE_AXIOS_NAME, newVersion),
