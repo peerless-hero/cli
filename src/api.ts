@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2022-11-03 17:53:22
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-09-09 15:36:28
+ * @LastEditTime: 2024-12-10 17:34:32
  * @FilePath: \cli\src\api.ts
  * @Description:
  *
@@ -228,6 +228,8 @@ export class DefineAPIMethod {
   }
 }
 
+type Method = keyof DefineAPI['method']
+
 /**
  * 接口定义
  */
@@ -250,9 +252,9 @@ export class DefineAPI {
   diff = {
     /** 变动数量 */
     change: 0,
-    add: [] as (keyof DefineAPI['method'])[],
+    add: [] as Method[],
     update: {} as Record<string, string[]>,
-    remove: [] as (keyof DefineAPI['method'])[],
+    remove: [] as Method[],
   }
 
   constructor(path: string, pathItem: OpenAPIV3.PathItemObject = {}) {
@@ -448,8 +450,26 @@ export function compareAPI(oldDocument: OpenAPIV3.Document, newDocument: OpenAPI
       list.push(newAPI)
     }
   }
+  const add: string[] = []
+  const change: string[] = []
+  const remove: string[] = []
+  for (const api of list) {
+    for (const method of api.diff.add) {
+      const note = api.method[method]?.notes.at(-1)
+      add.push(note ? `${api.url} ${method.toUpperCase()} ${note}` : `${api.url} ${method.toUpperCase()}`)
+    }
+    for (const method of api.diff.remove)
+      remove.push(`${api.url} ${method.toUpperCase()}`)
+
+    for (const method in api.diff.update) {
+      const note = api.method[method as Method]?.notes.at(-1)
+      change.push(note ? `${api.url} ${method.toUpperCase()} ${note}\n${api.diff.update[method]}` : `${api.url} ${method.toUpperCase()}\n${api.diff.update[method]}`)
+    }
+  }
   return {
+    add,
+    change,
     count,
-    list,
+    remove,
   }
 }
