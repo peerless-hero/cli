@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2022-11-03 17:53:22
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-12-10 17:34:32
+ * @LastEditTime: 2024-12-11 03:21:24
  * @FilePath: \cli\src\api.ts
  * @Description:
  *
@@ -184,22 +184,23 @@ export class DefineAPIMethod {
   private compareQuery(other: DefineAPIMethod) {
     const result: string[] = []
     for (const thisQuery of this.requestQuery) {
+      const note = thisQuery.notes.join('')
       const otherQuery = other.requestQuery.find(
         item => item.name === thisQuery.name,
       )
       if (!otherQuery) {
-        result.push(`新增：请求参数【${thisQuery.name}】`)
+        result.push(`新增参数字段【${thisQuery.name}】“${note}”`)
         continue
       }
-      if (thisQuery.notes.join('') !== otherQuery.notes.join(''))
-        result.push(`请求参数【${thisQuery.name}】描述变动`)
+      if (note !== otherQuery.notes.join(''))
+        result.push(`参数字段【${thisQuery.name}】描述更新为“${note}”`)
     }
     for (const otherQuery of other.requestQuery) {
       const thisQuery = this.requestQuery.find(
         item => item.name === otherQuery.name,
       )
       if (!thisQuery)
-        result.push(`删除：请求参数【${otherQuery.name}】`)
+        result.push(`删除参数字段【${otherQuery.name}】`)
     }
     return result
   }
@@ -208,22 +209,25 @@ export class DefineAPIMethod {
     const requestBody = this.requestBody.join('')
     const otherRequestBody = other.requestBody.join('')
     if (!requestBody && otherRequestBody) {
-      result.push(`原请求体类型【${requestBody}】已被删除`)
+      result.push(`原请求体【${requestBody}】已被删除`)
       return
     }
     if (requestBody && !otherRequestBody) {
-      result.push(`新增请求体类型【${requestBody}】`)
+      result.push(`新增请求体【${requestBody}】`)
       return
     }
     if (requestBody !== otherRequestBody)
-      result.push(`请求体类型变更为【${requestBody}】`)
+      result.push(`请求体【${otherRequestBody}】变更为【${requestBody}】`)
   }
 
   compare(other: DefineAPIMethod) {
     const result = this.compareQuery(other)
     this.compareRequestBody(other, result)
-    if (this.responseDataType !== other.responseDataType || this.responseType !== other.responseType)
-      result.push(`响应体类型变更为【${this.responseDataType || this.responseType}】`)
+    if (this.responseDataType && (this.responseDataType !== other.responseDataType))
+      result.push(other.responseDataType ? `data字段类型【${other.responseDataType}】变更为【${this.responseDataType}】` : `data字段类型添加为【${this.responseDataType}】`)
+    else if (this.responseType !== other.responseType)
+      result.push(`响应整体类型【${other.responseType}】变更为【${this.responseType}】`)
+
     return result
   }
 }
@@ -250,8 +254,6 @@ export class DefineAPI {
   exports: string[] = []
 
   diff = {
-    /** 变动数量 */
-    change: 0,
     add: [] as Method[],
     update: {} as Record<string, string[]>,
     remove: [] as Method[],
@@ -325,25 +327,17 @@ export class DefineAPI {
     }
   }
 
-  private compareMethod(other: DefineAPI, method: keyof DefineAPI['method']) {
+  private compareMethod(other: DefineAPI, method: Method) {
     const thisMethod = this.method[method]
     const otherMethod = other.method[method]
     if (thisMethod) {
       if (!otherMethod) {
-        this.diff.change++
         this.diff.add.push(method)
         return
       }
       const diffList = thisMethod.compare(otherMethod)
-      if (diffList.length) {
-        this.diff.change++
+      if (diffList.length)
         this.diff.update[method] = diffList
-      }
-      return
-    }
-    if (otherMethod) {
-      this.diff.change++
-      this.diff.remove.push(method)
     }
   }
 
@@ -437,39 +431,51 @@ export async function renderAPI() {
   return OpenApi3
 }
 
+interface CompareResult {
+  total: number
+  add: string[]
+  update: [string, string[]][]
+  remove: string[]
+}
+
+function eachNew(result: CompareResult, newAPI: DefineAPI) {
+  if (newAPI.diff.add.length) {
+    result.total += newAPI.diff.add.length
+    result.add.push(`${newAPI.path} ${newAPI.diff.add.join(' ')}`)
+  }
+
+  for (const method in newAPI.diff.update) {
+    const update = newAPI.diff.update[method]
+    result.total += update.length
+    result.update.push([`${newAPI.path} ${method.toUpperCase()}`, update])
+  }
+}
+
+function eachOld(result: CompareResult, oldAPI: DefineAPI, isDelete: boolean) {
+  if (isDelete) {
+    for (const method in oldAPI.method) {
+      result.total++
+      result.remove.push(`${oldAPI.path} ${method.toUpperCase()}`)
+    }
+  }
+}
+
 export function compareAPI(oldDocument: OpenAPIV3.Document, newDocument: OpenAPIV3.Document) {
   // 比较两个openapi文档paths部分的差异
-  const list: DefineAPI[] = []
-  let count = 0
+  const result: CompareResult = {
+    total: 0,
+    add: [],
+    update: [],
+    remove: [],
+  }
   for (const path in newDocument.paths) {
     const newAPI = new DefineAPI(path, newDocument.paths[path])
     const oldAPI = new DefineAPI(path, oldDocument.paths[path])
     newAPI.compare(oldAPI)
-    if (newAPI.diff.change) {
-      count += newAPI.diff.change
-      list.push(newAPI)
-    }
+    eachNew(result, newAPI)
   }
-  const add: string[] = []
-  const change: string[] = []
-  const remove: string[] = []
-  for (const api of list) {
-    for (const method of api.diff.add) {
-      const note = api.method[method]?.notes.at(-1)
-      add.push(note ? `${api.url} ${method.toUpperCase()} ${note}` : `${api.url} ${method.toUpperCase()}`)
-    }
-    for (const method of api.diff.remove)
-      remove.push(`${api.url} ${method.toUpperCase()}`)
+  for (const path in oldDocument.paths)
+    eachOld(result, new DefineAPI(path, oldDocument.paths[path]), !newDocument.paths[path])
 
-    for (const method in api.diff.update) {
-      const note = api.method[method as Method]?.notes.at(-1)
-      change.push(note ? `${api.url} ${method.toUpperCase()} ${note}\n${api.diff.update[method]}` : `${api.url} ${method.toUpperCase()}\n${api.diff.update[method]}`)
-    }
-  }
-  return {
-    add,
-    change,
-    count,
-    remove,
-  }
+  return result
 }

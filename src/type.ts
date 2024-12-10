@@ -82,6 +82,11 @@ export function resolveRef(ref = 'any') {
     .replace('List<', 'Array<')
 }
 
+function formatNote({ name, notes }: DefineProperty) {
+  const note = notes.at(-1)
+  return note ? `${name} ${note}` : name
+}
+
 export class DefineProperty {
   name: string
   required: boolean
@@ -93,11 +98,11 @@ export class DefineProperty {
   properties: DefineProperty[] = []
 
   diff = {
-    /** 变动数量 */
-    change: 0,
-    add: [] as DefineProperty[],
-    update: {} as Record<string, string[]>,
-    remove: [] as DefineProperty[],
+    /** 变动总数 */
+    total: 0,
+    add: [] as string[],
+    update: [] as string[],
+    remove: [] as string[],
   }
 
   constructor(
@@ -232,27 +237,32 @@ export class DefineProperty {
     }
   }
 
-  compare(other: DefineProperty) {
-    const result: string[] = []
+  compare(old: DefineProperty) {
     for (const thisQuery of this.properties) {
-      const otherQuery = other.properties.find(
+      const oldQuery = old.properties.find(
         item => item.name === thisQuery.name,
       )
-      if (!otherQuery) {
-        this.diff.add.push(thisQuery)
-        continue
+      if (!oldQuery) {
+        // 如果旧属性集中没有找到匹配的属性，则认为是新增的属性
+        this.diff.add.push(formatNote(thisQuery))
+        this.diff.total++
       }
-      if (thisQuery.notes.join('') !== otherQuery.notes.join(''))
-        result.push(`参数【${thisQuery.name}】描述变动`)
+      else if (thisQuery.notes.join('') !== oldQuery.notes.join('')) {
+        // 如果当前属性的描述与旧属性的描述不一致，则认为是描述修改了
+        this.diff.update.push(`+ ${thisQuery.name}`)
+        this.diff.total++
+      }
     }
-    for (const otherQuery of other.properties) {
-      const thisQuery = this.properties.find(
-        item => item.name === otherQuery.name,
+    for (const oldQuery of old.properties) {
+      const isExist = this.properties.some(
+        item => item.name === oldQuery.name,
       )
-      if (!thisQuery)
-        this.diff.remove.push(otherQuery)
+      if (!isExist) {
+        // 如果当前属性集中没有找到匹配的属性，则认为是删除的属性
+        this.diff.update.push(`- ${oldQuery.name}`)
+        this.diff.total++
+      }
     }
-    return result
   }
 }
 
@@ -286,10 +296,40 @@ export async function renderType() {
   return OpenApi3
 }
 
+interface CompareResult {
+  total: number
+  add: string[]
+  update: [string, string[]][]
+  remove: string[]
+}
+
+function eachNew(result: CompareResult, newProperty: DefineProperty) {
+  if (newProperty.diff.add.length) {
+    result.total++
+    result.add.push(newProperty.name)
+  }
+
+  if (newProperty.diff.update.length) {
+    result.total++
+    result.update.push([newProperty.name, newProperty.diff.update])
+  }
+}
+
+function eachOld(result: CompareResult, oldProperty: DefineProperty, isDelete: boolean) {
+  if (isDelete) {
+    result.total++
+    result.remove.push(oldProperty.name)
+  }
+}
+
 export function compareType(oldDocument: OpenAPIV3.Document, newDocument: OpenAPIV3.Document) {
   // 比较两个openapi文档components部分的差异
-  const list: DefineProperty[] = []
-  let count = 0
+  const result: CompareResult = {
+    total: 0,
+    add: [],
+    update: [],
+    remove: [],
+  }
   const { components: newComponents = {} } = newDocument
   const { components: oldComponents = {} } = oldDocument
   for (const name in newComponents.schemas) {
@@ -298,13 +338,10 @@ export function compareType(oldDocument: OpenAPIV3.Document, newDocument: OpenAP
     const newProperty = new DefineProperty(name, newSchema)
     const oldProperty = new DefineProperty(name, oldSchema)
     newProperty.compare(oldProperty)
-    if (newProperty.diff.change) {
-      count += newProperty.diff.change
-      list.push(newProperty)
-    }
+    eachNew(result, newProperty)
   }
-  return {
-    list,
-    count,
-  }
+  for (const name in oldComponents.schemas)
+    eachOld(result, new DefineProperty(name, oldComponents.schemas[name]), !newComponents.schemas?.[name])
+
+  return result
 }
