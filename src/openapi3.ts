@@ -2,7 +2,7 @@
  * @Author: zhaojinfeng 121016171@qq.com
  * @Date: 2022-11-01 00:15:54
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-12-10 18:02:44
+ * @LastEditTime: 2024-12-10 23:05:26
  * @FilePath: \cli\src\openapi3.ts
  * @Description: 获取openapi
  *
@@ -16,7 +16,7 @@ import { getNpmGlobalFilepath } from './paths'
 
 const { OPENAPI_HOST, PACKAGE_SCOPE = '.', PACKAGE_OPENAPI_V3_NAME = 'openapi-v3', OPENAPI_DATASOURCE = 'openapi', APIFOX_TOKEN, APIFOX_PROJECT_ID } = env
 
-async function byAPIFox(projectId = APIFOX_PROJECT_ID) {
+async function byAPIFox(projectId?: string) {
   if (!projectId)
     throw new Error('缺少环境变量：APIFOX_PROJECT_ID')
   if (!APIFOX_TOKEN)
@@ -37,7 +37,7 @@ async function byAPIFox(projectId = APIFOX_PROJECT_ID) {
     },
     {
       headers: {
-        'x-apifox-version': '2024-01-20',
+        'x-apifox-version': '2024-03-28',
         'authorization': `Bearer ${APIFOX_TOKEN}`,
       },
     },
@@ -53,10 +53,10 @@ function byGlobalDir() {
   return readJSON(GLOBAL_OPENAPI_PATH, { encoding: 'utf-8' })
 }
 
-export default async (source = OPENAPI_DATASOURCE) => {
+export default async (source = OPENAPI_DATASOURCE, projectId = APIFOX_PROJECT_ID): Promise<OpenAPIV3.Document> => {
   switch (source) {
     case 'apifox':
-      return byAPIFox()
+      return byAPIFox(projectId)
     case 'module':{
       const res = await import(`${PACKAGE_SCOPE}/${PACKAGE_OPENAPI_V3_NAME}`)
       return res.default
