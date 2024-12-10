@@ -2,7 +2,7 @@
  * @Author: zhaojinfeng 121016171@qq.com
  * @Date: 2022-11-01 00:15:54
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-06-07 01:33:17
+ * @LastEditTime: 2024-12-10 18:02:44
  * @FilePath: \cli\src\openapi3.ts
  * @Description: 获取openapi
  *
@@ -11,16 +11,18 @@ import { env } from 'node:process'
 import axios from 'axios'
 import type { OpenAPIV3 } from 'openapi-types'
 import 'dotenv/config'
+import { readJSON } from 'fs-extra/esm'
+import { getNpmGlobalFilepath } from './paths'
 
-const { OPENAPI_HOST, OPENAPI_DATASOURCE = 'openapi', APIFOX_TOKEN, APIFOX_PROJECT_ID } = env
+const { OPENAPI_HOST, PACKAGE_SCOPE = '.', PACKAGE_OPENAPI_V3_NAME = 'openapi-v3', OPENAPI_DATASOURCE = 'openapi', APIFOX_TOKEN, APIFOX_PROJECT_ID } = env
 
-async function byAPIFox() {
-  if (!APIFOX_PROJECT_ID)
+async function byAPIFox(projectId = APIFOX_PROJECT_ID) {
+  if (!projectId)
     throw new Error('缺少环境变量：APIFOX_PROJECT_ID')
   if (!APIFOX_TOKEN)
     throw new Error('缺少环境变量：APIFOX_TOKEN')
   const { data } = await axios.post<OpenAPIV3.Document>(
-    `https://api.apifox.com/api/v1/projects/${APIFOX_PROJECT_ID}/export-openapi`,
+    `https://api.apifox.com/api/v1/projects/${projectId}/export-openapi`,
     {
       version: '3.0',
       excludeExtension: true,
@@ -44,10 +46,24 @@ async function byAPIFox() {
   return data
 }
 
-export default async () => {
-  switch (OPENAPI_DATASOURCE) {
+function byGlobalDir() {
+  const {
+    GLOBAL_OPENAPI_PATH = getNpmGlobalFilepath(PACKAGE_SCOPE, PACKAGE_OPENAPI_V3_NAME, 'OpenAPIv3.json'),
+  } = env
+  return readJSON(GLOBAL_OPENAPI_PATH, { encoding: 'utf-8' })
+}
+
+export default async (source = OPENAPI_DATASOURCE) => {
+  switch (source) {
     case 'apifox':
       return byAPIFox()
+    case 'module':{
+      const res = await import(`${PACKAGE_SCOPE}/${PACKAGE_OPENAPI_V3_NAME}`)
+      return res.default
+    }
+    case 'global_dir':{
+      return byGlobalDir()
+    }
     case 'openapi':{
       if (!OPENAPI_HOST)
         throw new Error('缺少环境变量：VITE_OPENAPI_URL')
