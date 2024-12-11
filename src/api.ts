@@ -1,8 +1,8 @@
 /*
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2022-11-03 17:53:22
- * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-12-11 03:21:24
+ * @LastEditors: zhaojinfeng 121016171@qq.com
+ * @LastEditTime: 2024-12-11 11:42:37
  * @FilePath: \cli\src\api.ts
  * @Description:
  *
@@ -182,27 +182,33 @@ export class DefineAPIMethod {
   }
 
   private compareQuery(other: DefineAPIMethod) {
-    const result: string[] = []
+    const result = {
+      add: [] as string[],
+      remove: [] as string[],
+      update: [] as string[],
+    }
     for (const thisQuery of this.requestQuery) {
       const note = thisQuery.notes.join('')
       const otherQuery = other.requestQuery.find(
         item => item.name === thisQuery.name,
       )
       if (!otherQuery) {
-        result.push(`新增参数字段【${thisQuery.name}】“${note}”`)
+        result.add.push(thisQuery.name)
         continue
       }
       if (note !== otherQuery.notes.join(''))
-        result.push(`参数字段【${thisQuery.name}】描述更新为“${note}”`)
+        result.update.push(thisQuery.name)
     }
     for (const otherQuery of other.requestQuery) {
       const thisQuery = this.requestQuery.find(
         item => item.name === otherQuery.name,
       )
       if (!thisQuery)
-        result.push(`删除参数字段【${otherQuery.name}】`)
+        result.remove.push(otherQuery.name)
     }
-    return result
+    const array = [result.add.length ? `新增字段：${result.add.join('、')}` : '', result.remove.length ? `删除字段：${result.remove.join('、')}` : '', result.update.length ? `修改字段：${result.update.join('、')}` : '']
+
+    return array.filter(Boolean)
   }
 
   compareRequestBody(other: DefineAPIMethod, result: string[]) {
@@ -254,9 +260,9 @@ export class DefineAPI {
   exports: string[] = []
 
   diff = {
-    add: [] as Method[],
+    add: [] as string[],
     update: {} as Record<string, string[]>,
-    remove: [] as Method[],
+    remove: [] as string[],
   }
 
   constructor(path: string, pathItem: OpenAPIV3.PathItemObject = {}) {
@@ -332,12 +338,12 @@ export class DefineAPI {
     const otherMethod = other.method[method]
     if (thisMethod) {
       if (!otherMethod) {
-        this.diff.add.push(method)
+        this.diff.add.push(method.toUpperCase())
         return
       }
       const diffList = thisMethod.compare(otherMethod)
       if (diffList.length)
-        this.diff.update[method] = diffList
+        this.diff.update[method.toUpperCase()] = diffList
     }
   }
 
@@ -447,16 +453,14 @@ function eachNew(result: CompareResult, newAPI: DefineAPI) {
   for (const method in newAPI.diff.update) {
     const update = newAPI.diff.update[method]
     result.total += update.length
-    result.update.push([`${newAPI.path} ${method.toUpperCase()}`, update])
+    result.update.push([`${newAPI.path} ${method}`, update])
   }
 }
 
 function eachOld(result: CompareResult, oldAPI: DefineAPI, isDelete: boolean) {
   if (isDelete) {
-    for (const method in oldAPI.method) {
-      result.total++
-      result.remove.push(`${oldAPI.path} ${method.toUpperCase()}`)
-    }
+    const methods = Object.keys(oldAPI.method).map(method => method.toUpperCase())
+    result.remove.push(`${oldAPI.path} ${methods.join(' ')}`)
   }
 }
 
