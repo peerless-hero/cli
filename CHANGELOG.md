@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.2.1
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.2.0...v0.2.1)
+
+### 🚀 Enhancements
+
+- **cli:** 添加生成变更日志功能 ([6586a5b](https://github.com/peerless-hero/cli/commit/6586a5b))
+
+### 💅 Refactors
+
+- **changelog:** 重构变更日志生成逻辑 ([00a5cf3](https://github.com/peerless-hero/cli/commit/00a5cf3))
+
+### ❤️ Contributors
+
+- Zhaojinfeng <121016171@qq.com>
+
 ## v0.2.0
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.1.15...v0.2.0)
