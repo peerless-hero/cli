@@ -1,5 +1,95 @@
 # Changelog
 
+## v0.2.0
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.1.15...v0.2.0)
+
+### 🚀 Enhancements
+
+- **api:** 优化 API 对比功能并添加详细变更记录 ([826aa75](https://github.com/peerless-hero/cli/commit/826aa75))
+- **template:** 添加 Markdown 模板 ([29433be](https://github.com/peerless-hero/cli/commit/29433be))
+- **changelog:** 生成 CHANGELOG.md 文件 ([3d5022c](https://github.com/peerless-hero/cli/commit/3d5022c))
+- **paths:** 添加 CHANGELOG.md 临时路径 ([f607584](https://github.com/peerless-hero/cli/commit/f607584))
+
+### 💅 Refactors
+
+- **version:** 优化版本号更新逻辑 ([dc78557](https://github.com/peerless-hero/cli/commit/dc78557))
+- **cli:** 更新 OpenAPI 获取方式并优化代码 ([4a52904](https://github.com/peerless-hero/cli/commit/4a52904))
+- **env:** 更新环境变量检查逻辑 ([ef245da](https://github.com/peerless-hero/cli/commit/ef245da))
+- **cli:** 重构接口和模型比较逻辑 ([661fabd](https://github.com/peerless-hero/cli/commit/661fabd))
+- **env:** 重构环境变量配置 ([b49e014](https://github.com/peerless-hero/cli/commit/b49e014))
+- **compare:** 优化 API 变更比较逻辑和输出格式 ([97f64fd](https://github.com/peerless-hero/cli/commit/97f64fd))
+
+### 📖 Documentation
+
+- **template:** 更新 Markdown 模板 ([88c29de](https://github.com/peerless-hero/cli/commit/88c29de))
+- **template:** 优化 API 变更日志和标题的 Markdown 模板 ([2db4bf2](https://github.com/peerless-hero/cli/commit/2db4bf2))
+
+### ❤️ Contributors
+
+- Zhaojinfeng <121016171@qq.com>
+- Peerless_hero ([@peerless-hero](http://github.com/peerless-hero))
+
+## v0.1.16
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.1.15...v0.1.16)
+
+### 🚀 Enhancements
+
+- **api:** 优化 API 对比功能并添加详细变更记录 ([826aa75](https://github.com/peerless-hero/cli/commit/826aa75))
+- **template:** 添加 Markdown 模板 ([29433be](https://github.com/peerless-hero/cli/commit/29433be))
+- **changelog:** 生成 CHANGELOG.md 文件 ([3d5022c](https://github.com/peerless-hero/cli/commit/3d5022c))
+- **paths:** 添加 CHANGELOG.md 临时路径 ([f607584](https://github.com/peerless-hero/cli/commit/f607584))
+
+### 💅 Refactors
+
+- **version:** 优化版本号更新逻辑 ([dc78557](https://github.com/peerless-hero/cli/commit/dc78557))
+- **cli:** 更新 OpenAPI 获取方式并优化代码 ([4a52904](https://github.com/peerless-hero/cli/commit/4a52904))
+- **env:** 更新环境变量检查逻辑 ([ef245da](https://github.com/peerless-hero/cli/commit/ef245da))
+- **cli:** 重构接口和模型比较逻辑 ([661fabd](https://github.com/peerless-hero/cli/commit/661fabd))
+- **env:** 重构环境变量配置 ([b49e014](https://github.com/peerless-hero/cli/commit/b49e014))
+- **compare:** 优化 API 变更比较逻辑和输出格式 ([97f64fd](https://github.com/peerless-hero/cli/commit/97f64fd))
+
+### 📖 Documentation
+
+- **template:** 更新 Markdown 模板 ([88c29de](https://github.com/peerless-hero/cli/commit/88c29de))
+- **template:** 优化 API 变更日志和标题的 Markdown 模板 ([2db4bf2](https://github.com/peerless-hero/cli/commit/2db4bf2))
+
+### ❤️ Contributors
+
+- Zhaojinfeng <121016171@qq.com>
+- Peerless_hero ([@peerless-hero](http://github.com/peerless-hero))
+
+## v0.1.17
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.1.15...v0.1.17)
+
+### 🚀 Enhancements
+
+- **api:** 优化 API 对比功能并添加详细变更记录 ([826aa75](https://github.com/peerless-hero/cli/commit/826aa75))
+- **template:** 添加 Markdown 模板 ([29433be](https://github.com/peerless-hero/cli/commit/29433be))
+- **changelog:** 生成 CHANGELOG.md 文件 ([3d5022c](https://github.com/peerless-hero/cli/commit/3d5022c))
+- **paths:** 添加 CHANGELOG.md 临时路径 ([f607584](https://github.com/peerless-hero/cli/commit/f607584))
+
+### 💅 Refactors
+
+- **version:** 优化版本号更新逻辑 ([dc78557](https://github.com/peerless-hero/cli/commit/dc78557))
+- **cli:** 更新 OpenAPI 获取方式并优化代码 ([4a52904](https://github.com/peerless-hero/cli/commit/4a52904))
+- **env:** 更新环境变量检查逻辑 ([ef245da](https://github.com/peerless-hero/cli/commit/ef245da))
+- **cli:** 重构接口和模型比较逻辑 ([661fabd](https://github.com/peerless-hero/cli/commit/661fabd))
+- **env:** 重构环境变量配置 ([b49e014](https://github.com/peerless-hero/cli/commit/b49e014))
+- **compare:** 优化 API 变更比较逻辑和输出格式 ([97f64fd](https://github.com/peerless-hero/cli/commit/97f64fd))
+
+### 📖 Documentation
+
+- **template:** 更新 Markdown 模板 ([88c29de](https://github.com/peerless-hero/cli/commit/88c29de))
+- **template:** 优化 API 变更日志和标题的 Markdown 模板 ([2db4bf2](https://github.com/peerless-hero/cli/commit/2db4bf2))
+
+### ❤️ Contributors
+
+- Zhaojinfeng <121016171@qq.com>
+- Peerless_hero ([@peerless-hero](http://github.com/peerless-hero))
+
 ## v0.1.15
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.1.14...v0.1.15)
