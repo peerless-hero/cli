@@ -1,8 +1,8 @@
 /*
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-10 00:25:28
- * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-12-10 22:18:15
+ * @LastEditors: zhaojinfeng 121016171@qq.com
+ * @LastEditTime: 2024-12-11 14:26:40
  * @FilePath: \cli\src\version.ts
  * @Description:
  *
@@ -118,6 +118,7 @@ export async function outputVersion() {
     `current version: \`${version}\``,
     `latest version: \`${latestVersion}\``,
     '`api` - Generate api service template.',
+    '`changelog` - Generate changelog files compare with previous version.',
     '`type` - Generate `.d.ts` files by OpenAPIv3.',
     '`request` - Generate request modules by OpenAPIv3.',
     '`version` - Display the version of the cli.',
