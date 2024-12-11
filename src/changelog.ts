@@ -29,7 +29,7 @@ interface Changelog {
 const TITLE_TEMPLATE = resolve(TEMPLATE_DIR, 'ejs/markdown/title.ejs')
 const CONTENT_TEMPLATE = resolve(TEMPLATE_DIR, 'ejs/markdown/api-changelog.ejs')
 const { PACKAGE_SCOPE, PACKAGE_OPENAPI_V3_NAME } = checkApiEnv()
-const { OLD_OPENAPI_SOURCE = 'module', OLD_OPENAPI_APIFOX_PROJECT_ID } = env
+const { OLD_OPENAPI_DATASOURCE = 'module', OLD_OPENAPI_APIFOX_PROJECT_ID } = env
 export async function generateMarkdown(api: Changelog, type: Changelog, title = PACKAGE_SCOPE) {
   const currentVersion = getPackageLatestVersion(`${PACKAGE_SCOPE}/${PACKAGE_OPENAPI_V3_NAME}`)
   const newVersion = getNewVersion(currentVersion)
@@ -44,7 +44,7 @@ export async function generateMarkdown(api: Changelog, type: Changelog, title = 
 }
 
 export async function renderApiChangelog() {
-  const oldDocument = await getOpenapi3(OLD_OPENAPI_SOURCE, OLD_OPENAPI_APIFOX_PROJECT_ID)
+  const oldDocument = await getOpenapi3(OLD_OPENAPI_DATASOURCE, OLD_OPENAPI_APIFOX_PROJECT_ID)
   const newDocument = await getOpenapi3()
   outputJSON('temp/newDocument.json', newDocument)
   outputJSON('temp/oldDocument.json', oldDocument)
