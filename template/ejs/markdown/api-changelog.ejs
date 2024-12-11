@@ -1,24 +1,24 @@
 <% if (changelog.add.length) { -%>
-## <font color="info">新增<%- type %></font>
-<% for(const h3 of changelog.update) { -%>
-><%- h3 %>
 
+## <font color="info">新增<%- type %></font>
+
+<% for(const content of changelog.add) { -%>
+<%- content %>
 <% } -%>
 <% } -%>
 <% if (changelog.update.length) { -%>
-## <font color="warning">更新<%- type %></font>
-<% for(const [h3, items] of changelog.update) { -%>
-### <%- h3 %>
-<% for(const item of items) { -%>
-><%- item %>
 
-<% } -%>
+## <font color="warning">更新<%- type %></font>
+
+<% for(const [h3, items] of changelog.update) { -%>
+<%- h3 %><% for(const item of items) { %> `<%- item %>`<% } %>
 <% } -%>
 <% } -%>
 <% if (changelog.remove.length) { -%>
-## <font color="comment">删除<%- type %></font>
-<% for(const h3 of changelog.update) { -%>
-> <%- h3 %>
 
+## <font color="comment">删除<%- type %></font>
+
+<% for(const content of changelog.remove) { -%>
+<%- content %>
 <% } -%>
 <% } -%>
