@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-05 02:33:40
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-06-07 02:54:53
+ * @LastEditTime: 2024-12-20 23:42:12
  * @FilePath: \cli\src\request.ts
  * @Description:
  *
@@ -13,8 +13,9 @@ import consola from 'consola'
 import type { TranspileOptions } from 'typescript'
 import { copy, emptyDir, outputJSON } from 'fs-extra/esm'
 import { build } from 'unbuild'
-import { publishNPM } from './publish'
 import { renderAPI } from './api'
+import { renderRequestChangelog } from './changelog'
+import { publishNPM } from './publish'
 import {
   PACKAGE_AXIOS_PATH,
   PACKAGE_OPENAPI_V3_PATH,
@@ -27,7 +28,7 @@ import {
 import { renderType } from './type'
 import { title, updateRequestVersion } from './version'
 
-function buildRequset(workspace: string) {
+function buildRequest(workspace: string) {
   consola.info('构建项目...')
   const typescript: TranspileOptions = {
     compilerOptions: {
@@ -116,15 +117,15 @@ export async function renderRequest() {
     renderType(),
   ])
 
-  await Promise.all([
+  const [version] = await Promise.all([
     updateRequestVersion(),
     // 写入OpenAPIv3定义文件
     outputJSON(resolve(TEMP_OPENAPI_V3_PATH, 'OpenAPIv3.json'), OpenApi3),
   ])
 
   const workspace = cwd()
-  consola.info('启动ubuild构建...')
-  await buildRequset(workspace)
+  consola.info('启动unbuild构建...')
+  await buildRequest(workspace)
   consola.success('axios模块构建完成！', PACKAGE_AXIOS_PATH)
   consola.success('un模块构建完成！', PACKAGE_UN_PATH)
   consola.success('openapi-v3模块构建完成！', PACKAGE_OPENAPI_V3_PATH)
@@ -134,4 +135,6 @@ export async function renderRequest() {
     publishNPM(PACKAGE_AXIOS_PATH)
     publishNPM(PACKAGE_UN_PATH)
   }
+  if (argv.includes('--changelog'))
+    renderRequestChangelog({ newDocument: OpenApi3, newVersion: version.new })
 }

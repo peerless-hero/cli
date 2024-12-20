@@ -1,14 +1,14 @@
 /*
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-10 00:25:28
- * @LastEditors: zhaojinfeng 121016171@qq.com
- * @LastEditTime: 2024-12-11 14:26:40
+ * @LastEditors: peerless_hero peerless_hero@outlook.com
+ * @LastEditTime: 2024-12-20 23:33:43
  * @FilePath: \cli\src\version.ts
  * @Description:
  *
  */
 import { execSync } from 'node:child_process'
-import { env, exit } from 'node:process'
+import { env } from 'node:process'
 import { resolve } from 'node:path'
 import consola from 'consola'
 import { parse } from 'semver'
@@ -70,10 +70,9 @@ export function getNewVersion(oldVersion: string) {
   if (oldVersion) {
     consola.info('当前版本号为：', oldVersion)
     const semver = parse(oldVersion)
-    if (!semver) {
-      consola.error('无法根据当前版本号自动生成新版本号')
-      exit()
-    }
+    if (!semver)
+      throw new Error('无法根据当前版本号自动生成新版本号')
+
     if (semver.patch + 1 >= maxPatchVersion) {
       consola.warn(`当前补丁版本号数值【${semver.patch}】已达到设定最大值【${maxPatchVersion}】，故次版本号将增加1`)
       newVersion = semver.inc('minor').format()
@@ -95,17 +94,18 @@ export function getNewVersion(oldVersion: string) {
  *
  * 将所有包的版本号更新为新版本号
  */
-export function updateRequestVersion() {
+export async function updateRequestVersion() {
   consola.info('获取当前版本号')
   const currentVersion = getPackageLatestVersion(`${PACKAGE_SCOPE}/${PACKAGE_OPENAPI_V3_NAME}`) || getPackageLatestVersion(`${PACKAGE_SCOPE}/${PACKAGE_AXIOS_NAME}`) || getPackageLatestVersion(`${PACKAGE_SCOPE}/${PACKAGE_UN_NAME}`)
 
   const newVersion = getNewVersion(currentVersion)
 
-  return Promise.all([
+  await Promise.all([
     changePackage(PACKAGE_UN_PATH, PACKAGE_UN_NAME, newVersion),
     changePackage(PACKAGE_AXIOS_PATH, PACKAGE_AXIOS_NAME, newVersion),
     changePackage(TEMP_OPENAPI_V3_PATH, PACKAGE_OPENAPI_V3_NAME, newVersion),
   ])
+  return { old: currentVersion, new: newVersion }
 }
 
 /**
