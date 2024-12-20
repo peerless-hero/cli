@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.2.3
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.2.2...v0.2.3)
+
+### 💅 Refactors
+
+- 重构模块导入逻辑，只接受默认导出为json的模块 ([c11a1c1](https://github.com/peerless-hero/cli/commit/c11a1c1))
+- **version:** 为 npm view 命令添加超时限制 ([61020ac](https://github.com/peerless-hero/cli/commit/61020ac))
+- Openapi-v3的输出内容 ([50598e5](https://github.com/peerless-hero/cli/commit/50598e5))
+
+### ❤️ Contributors
+
+- Peerless_hero ([@peerless-hero](http://github.com/peerless-hero))
+
 ## v0.2.2
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.2.1...v0.2.2)
