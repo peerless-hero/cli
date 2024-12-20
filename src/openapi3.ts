@@ -2,7 +2,7 @@
  * @Author: zhaojinfeng 121016171@qq.com
  * @Date: 2022-11-01 00:15:54
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-12-10 23:05:26
+ * @LastEditTime: 2024-12-21 01:46:02
  * @FilePath: \cli\src\openapi3.ts
  * @Description: 获取openapi
  *
@@ -58,8 +58,8 @@ export default async (source = OPENAPI_DATASOURCE, projectId = APIFOX_PROJECT_ID
     case 'apifox':
       return byAPIFox(projectId)
     case 'module':{
-      const res = await import(`${PACKAGE_SCOPE}/${PACKAGE_OPENAPI_V3_NAME}`)
-      return res.default
+      const res = await import(`${PACKAGE_SCOPE}/${PACKAGE_OPENAPI_V3_NAME}`, { with: { type: 'json' } })
+      return res.default || res
     }
     case 'global_dir':{
       return byGlobalDir()
