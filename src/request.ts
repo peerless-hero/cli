@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-05 02:33:40
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-12-20 23:42:12
+ * @LastEditTime: 2024-12-21 01:41:51
  * @FilePath: \cli\src\request.ts
  * @Description:
  *
@@ -120,7 +120,7 @@ export async function renderRequest() {
   const [version] = await Promise.all([
     updateRequestVersion(),
     // 写入OpenAPIv3定义文件
-    outputJSON(resolve(TEMP_OPENAPI_V3_PATH, 'OpenAPIv3.json'), OpenApi3),
+    outputJSON(resolve(TEMP_OPENAPI_V3_PATH, 'index.json'), OpenApi3),
   ])
 
   const workspace = cwd()
@@ -129,12 +129,12 @@ export async function renderRequest() {
   consola.success('axios模块构建完成！', PACKAGE_AXIOS_PATH)
   consola.success('un模块构建完成！', PACKAGE_UN_PATH)
   consola.success('openapi-v3模块构建完成！', PACKAGE_OPENAPI_V3_PATH)
+  if (argv.includes('--changelog'))
+    renderRequestChangelog({ newDocument: OpenApi3, newVersion: version.new })
   if (argv.includes('--publish')) {
     consola.start('正在发布至NPM仓库...')
     publishNPM(PACKAGE_OPENAPI_V3_PATH)
     publishNPM(PACKAGE_AXIOS_PATH)
     publishNPM(PACKAGE_UN_PATH)
   }
-  if (argv.includes('--changelog'))
-    renderRequestChangelog({ newDocument: OpenApi3, newVersion: version.new })
 }
