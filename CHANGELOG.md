@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.2.2
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.2.1...v0.2.2)
+
+### 🚀 Enhancements
+
+- **cli:** 升级日志功能并添加 webhook 支持 ([813d029](https://github.com/peerless-hero/cli/commit/813d029))
+- **cli:** 添加企业微信群和钉钉群 webhook 消息发送功能 ([d9c20a9](https://github.com/peerless-hero/cli/commit/d9c20a9))
+
+### 💅 Refactors
+
+- **compare:** 优化接口变更比较逻辑和输出格式 ([afe870a](https://github.com/peerless-hero/cli/commit/afe870a))
+
+### 📦 Build
+
+- 用 tsx 替代 esno 执行 TypeScript 脚本 ([179034b](https://github.com/peerless-hero/cli/commit/179034b))
+
+### ❤️ Contributors
+
+- Peerless_hero ([@peerless-hero](http://github.com/peerless-hero))
+
 ## v0.2.1
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.2.0...v0.2.1)
