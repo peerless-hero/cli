@@ -1,8 +1,8 @@
 /*
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2022-11-03 17:53:22
- * @LastEditors: zhaojinfeng 121016171@qq.com
- * @LastEditTime: 2024-12-11 11:42:37
+ * @LastEditors: peerless_hero peerless_hero@outlook.com
+ * @LastEditTime: 2024-12-20 22:59:25
  * @FilePath: \cli\src\api.ts
  * @Description:
  *
@@ -219,20 +219,27 @@ export class DefineAPIMethod {
       return
     }
     if (requestBody && !otherRequestBody) {
-      result.push(`新增请求体【${requestBody}】`)
+      result.push(`+ 请求体【${requestBody}】`)
       return
     }
     if (requestBody !== otherRequestBody)
-      result.push(`请求体【${otherRequestBody}】变更为【${requestBody}】`)
+      result.push(`请求体 ${otherRequestBody} → ${requestBody}`)
+  }
+
+  getResponseType({ responseDataType, responseType }: DefineAPIMethod) {
+    if (responseDataType)
+      return `${responseDataType}（data字段）`
+
+    return responseType
   }
 
   compare(other: DefineAPIMethod) {
     const result = this.compareQuery(other)
     this.compareRequestBody(other, result)
-    if (this.responseDataType && (this.responseDataType !== other.responseDataType))
-      result.push(other.responseDataType ? `data字段类型【${other.responseDataType}】变更为【${this.responseDataType}】` : `data字段类型添加为【${this.responseDataType}】`)
-    else if (this.responseType !== other.responseType)
-      result.push(`响应整体类型【${other.responseType}】变更为【${this.responseType}】`)
+    const thisModel = this.getResponseType(this)
+    const otherModel = this.getResponseType(other)
+    if (thisModel !== otherModel)
+      result.push(`${thisModel} → ${otherModel}`)
 
     return result
   }
