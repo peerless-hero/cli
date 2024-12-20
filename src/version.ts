@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-10 00:25:28
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-12-20 23:33:43
+ * @LastEditTime: 2024-12-21 00:28:41
  * @FilePath: \cli\src\version.ts
  * @Description:
  *
@@ -31,7 +31,7 @@ export function getPackageLatestVersion(pkgName?: string) {
     return npmVersionRecord[pkgName]
 
   try {
-    const latestVersion = execSync(`npm view ${pkgName} version --silent`, { encoding: 'utf-8' })
+    const latestVersion = execSync(`npm view ${pkgName} version --silent`, { encoding: 'utf-8', timeout: 2000 })
     return latestVersion.trim()
   }
   catch (err) {
