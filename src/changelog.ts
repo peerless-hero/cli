@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-13 18:49:35
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-12-20 23:39:18
+ * @LastEditTime: 2024-12-21 18:40:19
  * @FilePath: \cli\src\changelog.ts
  * @Description:
  *
@@ -49,8 +49,9 @@ export async function generateMarkdown({ api, type, infoTitle = PACKAGE_SCOPE, n
   let text = content1 + content2
   if (!text)
     text += '暂无变动'
+  if (argv.includes('--generate-local'))
+    await outputFile(resolve(CHANGELOG_OUTPUT_DIR, 'CHANGELOG.md'), title + text)
 
-  await outputFile(resolve(CHANGELOG_OUTPUT_DIR, 'CHANGELOG.md'), title + text)
   return { title, text }
 }
 
