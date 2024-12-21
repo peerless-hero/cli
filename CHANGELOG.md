@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.2.4
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.2.3...v0.2.4)
+
+### 🚀 Enhancements
+
+- **arg:** 仅在参数中存在--generate-local时才生成本地文件 ([fa6c0d0](https://github.com/peerless-hero/cli/commit/fa6c0d0))
+
+### 📖 Documentation
+
+- 完善文档说明 ([3e2caea](https://github.com/peerless-hero/cli/commit/3e2caea))
+
+### ❤️ Contributors
+
+- Peerless_hero ([@peerless-hero](http://github.com/peerless-hero))
+
 ## v0.2.3
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.2.2...v0.2.3)
