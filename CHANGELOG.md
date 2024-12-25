@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.2.5
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.2.4...v0.2.5)
+
+### 🩹 Fixes
+
+- 响应体日志输出 ([c038455](https://github.com/peerless-hero/cli/commit/c038455))
+
+### 💅 Refactors
+
+- **type:** 重构属性说明生成逻辑 ([2e598e9](https://github.com/peerless-hero/cli/commit/2e598e9))
+
+### ❤️ Contributors
+
+- Zhaojinfeng <121016171@qq.com>
+
 ## v0.2.4
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.2.3...v0.2.4)
