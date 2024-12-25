@@ -1,8 +1,8 @@
 /*
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2022-11-03 17:53:22
- * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-12-20 22:59:25
+ * @LastEditors: zhaojinfeng 121016171@qq.com
+ * @LastEditTime: 2024-12-25 16:12:04
  * @FilePath: \cli\src\api.ts
  * @Description:
  *
@@ -126,6 +126,15 @@ export class DefineAPIMethod {
       case 'ResultInteger':
         this.responseDataType = 'number'
         break
+      case 'ResultLong':
+        this.responseDataType = 'number'
+        break
+      case 'ResultObject':
+        this.responseType = 'any'
+        break
+      case 'ResultMap':
+        this.responseType = 'Record<string, any>'
+        break
       case 'ResultPage':
         this.responseType = 'Row<any>'
         break
@@ -211,9 +220,9 @@ export class DefineAPIMethod {
     return array.filter(Boolean)
   }
 
-  compareRequestBody(other: DefineAPIMethod, result: string[]) {
+  compareRequestBody(oldAPI: DefineAPIMethod, result: string[]) {
     const requestBody = this.requestBody.join('')
-    const otherRequestBody = other.requestBody.join('')
+    const otherRequestBody = oldAPI.requestBody.join('')
     if (!requestBody && otherRequestBody) {
       result.push(`原请求体【${requestBody}】已被删除`)
       return
@@ -233,13 +242,13 @@ export class DefineAPIMethod {
     return responseType
   }
 
-  compare(other: DefineAPIMethod) {
-    const result = this.compareQuery(other)
-    this.compareRequestBody(other, result)
-    const thisModel = this.getResponseType(this)
-    const otherModel = this.getResponseType(other)
-    if (thisModel !== otherModel)
-      result.push(`${thisModel} → ${otherModel}`)
+  compare(oldAPI: DefineAPIMethod) {
+    const result = this.compareQuery(oldAPI)
+    this.compareRequestBody(oldAPI, result)
+    const newModel = this.getResponseType(this)
+    const oldModel = this.getResponseType(oldAPI)
+    if (newModel !== oldModel)
+      result.push(`${oldModel} → ${newModel}`)
 
     return result
   }
