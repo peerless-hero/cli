@@ -82,11 +82,6 @@ export function resolveRef(ref = 'any') {
     .replace('List<', 'Array<')
 }
 
-function formatNote({ name, notes }: DefineProperty) {
-  const note = notes.at(-1)
-  return note ? `${name} ${note}` : name
-}
-
 export class DefineProperty {
   name: string
   required: boolean
@@ -242,19 +237,19 @@ export class DefineProperty {
       const oldQuery = old.properties.find(
         item => item.name === thisQuery.name,
       )
+      const newNote = thisQuery.notes[0]
       if (oldQuery) {
         // 仅取第一项，其余皆为字段最大长度等限制属性
-        const thisNote = thisQuery.notes[0]
         const oldNote = oldQuery.notes[0]
-        if (thisNote !== oldNote) {
+        if (newNote !== oldNote) {
           // 如果当前属性的描述与旧属性的描述不一致，则认为是描述修改了
-          this.diff.update.push(`${thisQuery.name} ${oldNote}→${thisNote}`)
+          this.diff.update.push(`${thisQuery.name} ${oldNote}→${newNote}`)
           this.diff.total++
         }
       }
       else {
         // 如果旧属性集中没有找到匹配的属性，则认为是新增的属性
-        this.diff.add.push(`+ ${formatNote(thisQuery)}`)
+        this.diff.add.push(`+ ${newNote}`)
         this.diff.total++
       }
     }
@@ -264,7 +259,7 @@ export class DefineProperty {
       )
       if (!isExist) {
         // 如果当前属性集中没有找到匹配的属性，则认为是删除的属性
-        this.diff.update.push(`- ${oldQuery.name}`)
+        this.diff.remove.push(`- ${oldQuery.name}`)
         this.diff.total++
       }
     }
