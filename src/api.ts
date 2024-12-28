@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2022-11-03 17:53:22
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-12-29 02:06:39
+ * @LastEditTime: 2024-12-29 01:54:23
  * @FilePath: \cli\src\api.ts
  * @Description:
  *
@@ -401,13 +401,13 @@ export async function renderDefineQuery(defineAPI: DefineAPI) {
   }
 }
 
-export async function renderAPI() {
+export async function renderAPI(document?: OpenAPIV3.Document) {
+  const openApi3 = document || await getOpenApi3()
   const {
     PACKAGE_SCOPE,
     PACKAGE_UN_NAME = 'un',
     PACKAGE_AXIOS_NAME = 'axios',
   } = checkApiEnv()
-  const OpenApi3 = await getOpenApi3()
   const axiosPackageName = `${PACKAGE_SCOPE}/${PACKAGE_AXIOS_NAME}`
   const unPackageName = `${PACKAGE_SCOPE}/${PACKAGE_UN_NAME}`
   const axiosImports: Record<string, string[]> = {
@@ -418,9 +418,9 @@ export async function renderAPI() {
   }
   let count = 0
   const pathList = ['./importsMap', './request']
-  for (const path in OpenApi3.paths) {
+  for (const path in openApi3.paths) {
     count++
-    const defineAPI = new DefineAPI(path, OpenApi3.paths[path])
+    const defineAPI = new DefineAPI(path, openApi3.paths[path])
     axiosImports[axiosPackageName].push(...defineAPI.exports)
     unImports[unPackageName].push(...defineAPI.exports)
     renderDefineAxiosAPI(defineAPI)
@@ -450,7 +450,7 @@ export async function renderAPI() {
     copy(resolve(TEMPLATE_DIR, 'ejs/un/service.ejs'), resolve(TEMP_UN_PATH, 'request.ts')),
   ])
   consola.success(`已生成api文件，数量共计：${count}`)
-  return OpenApi3
+  return openApi3
 }
 
 export interface CompareResult {

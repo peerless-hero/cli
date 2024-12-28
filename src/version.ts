@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-10 00:25:28
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-12-21 00:28:41
+ * @LastEditTime: 2024-12-29 01:46:17
  * @FilePath: \cli\src\version.ts
  * @Description:
  *
@@ -68,7 +68,6 @@ export function getNewVersion(oldVersion: string) {
   maxPatchVersion = maxPatchVersion > 0 ? maxPatchVersion : 99
   let newVersion: string | null = null
   if (oldVersion) {
-    consola.info('当前版本号为：', oldVersion)
     const semver = parse(oldVersion)
     if (!semver)
       throw new Error('无法根据当前版本号自动生成新版本号')
@@ -90,16 +89,22 @@ export function getNewVersion(oldVersion: string) {
   return newVersion
 }
 
+export function getVersion() {
+  // 获取当前版本号
+  const currentVersion = getPackageLatestVersion(`${PACKAGE_SCOPE}/${PACKAGE_OPENAPI_V3_NAME}`) || getPackageLatestVersion(`${PACKAGE_SCOPE}/${PACKAGE_AXIOS_NAME}`) || getPackageLatestVersion(`${PACKAGE_SCOPE}/${PACKAGE_UN_NAME}`)
+  // 获取新版本号
+  const newVersion = getNewVersion(currentVersion)
+  return {
+    currentVersion,
+    newVersion,
+  }
+}
+
 /**
  *
  * 将所有包的版本号更新为新版本号
  */
-export async function updateRequestVersion() {
-  consola.info('获取当前版本号')
-  const currentVersion = getPackageLatestVersion(`${PACKAGE_SCOPE}/${PACKAGE_OPENAPI_V3_NAME}`) || getPackageLatestVersion(`${PACKAGE_SCOPE}/${PACKAGE_AXIOS_NAME}`) || getPackageLatestVersion(`${PACKAGE_SCOPE}/${PACKAGE_UN_NAME}`)
-
-  const newVersion = getNewVersion(currentVersion)
-
+export async function updateRequestVersion(currentVersion: string, newVersion: string) {
   await Promise.all([
     changePackage(PACKAGE_UN_PATH, PACKAGE_UN_NAME, newVersion),
     changePackage(PACKAGE_AXIOS_PATH, PACKAGE_AXIOS_NAME, newVersion),

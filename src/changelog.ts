@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-13 18:49:35
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-12-29 01:05:17
+ * @LastEditTime: 2024-12-29 01:44:24
  * @FilePath: \cli\src\changelog.ts
  * @Description:
  *
@@ -15,35 +15,30 @@ import consola from 'consola'
 import type { OpenAPIV3 } from 'openapi-types'
 import { TEMPLATE_DIR } from './paths'
 import getOpenapi3 from './openapi3'
+import type { CompareResult } from './api'
 import { compareAPI } from './api'
 import { compareType } from './type'
 import { createWebhookDingTalk, createWebhookWeCom } from './webhook'
 import { checkApiEnv } from './env'
-import { getNewVersion, getPackageLatestVersion } from './version'
+import { getVersion } from './version'
 import 'dotenv/config'
-
-interface Changelog {
-  add: string[]
-  update: [string, string[]][]
-  remove: string[]
-}
 
 const TITLE_TEMPLATE = resolve(TEMPLATE_DIR, 'ejs/markdown/title.ejs')
 const CONTENT_TEMPLATE = resolve(TEMPLATE_DIR, 'ejs/markdown/api-changelog.ejs')
-const { PACKAGE_SCOPE, PACKAGE_OPENAPI_V3_NAME } = checkApiEnv()
+const { PACKAGE_SCOPE } = checkApiEnv()
 const { OLD_OPENAPI_DATASOURCE = 'module', OLD_OPENAPI_APIFOX_PROJECT_ID, CHANGELOG_OUTPUT_DIR = 'temp' } = env
 
 interface MarkdownOption {
-  api: Changelog
-  type: Changelog
+  apiCompareResult: CompareResult
+  typeCompareResult: CompareResult
   newVersion: string
   infoTitle?: string
 }
-export async function generateMarkdown({ api, type, infoTitle = PACKAGE_SCOPE, newVersion }: MarkdownOption) {
+export async function generateMarkdown({ apiCompareResult, typeCompareResult, infoTitle = PACKAGE_SCOPE, newVersion }: MarkdownOption) {
   const [title, content1, content2] = await Promise.all([
     renderFile(TITLE_TEMPLATE, { h1: `${infoTitle} ${newVersion}` }),
-    renderFile(CONTENT_TEMPLATE, { changelog: api, type: '接口' }),
-    renderFile(CONTENT_TEMPLATE, { changelog: type, type: '模型' }),
+    renderFile(CONTENT_TEMPLATE, { changelog: apiCompareResult, type: '接口' }),
+    renderFile(CONTENT_TEMPLATE, { changelog: typeCompareResult, type: '模型' }),
   ])
 
   let text = content1 + content2
@@ -57,6 +52,10 @@ export async function generateMarkdown({ api, type, infoTitle = PACKAGE_SCOPE, n
 
 interface RequestChangelogOption {
   /**
+   * 旧版本文档
+   */
+  oldDocument: OpenAPIV3.Document
+  /**
    * 新版本文档
    */
   newDocument: OpenAPIV3.Document
@@ -64,19 +63,30 @@ interface RequestChangelogOption {
    * 新版本版本号
    */
   newVersion: string
+  /**
+   * 新旧接口差异
+   */
+  apiCompareResult?: CompareResult
+  /**
+   * 新旧类型差异
+   */
+  typeCompareResult?: CompareResult
 }
 
-export async function renderRequestChangelog({ newDocument, newVersion }: RequestChangelogOption) {
-  const oldDocument = await getOpenapi3(OLD_OPENAPI_DATASOURCE, OLD_OPENAPI_APIFOX_PROJECT_ID)
-  const api = compareAPI(oldDocument, newDocument)
-  const type = compareType(oldDocument, newDocument)
-  consola.info('接口变动总数：', api.total)
-  consola.info('模型变动总数：', type.total)
-  const markdown = await generateMarkdown({ api, type, infoTitle: newDocument.info?.title, newVersion })
+export async function renderRequestChangelog({
+  newDocument,
+  newVersion,
+  oldDocument,
+  apiCompareResult = compareAPI(oldDocument, newDocument),
+  typeCompareResult = compareType(oldDocument, newDocument),
+}: RequestChangelogOption) {
+  consola.info('接口变动总数：', apiCompareResult.total)
+  consola.info('模型变动总数：', typeCompareResult.total)
+  const markdown = await generateMarkdown({ apiCompareResult, typeCompareResult, infoTitle: newDocument.info?.title, newVersion })
   if (argv.includes('--changelog-debug')) {
     outputJSON('temp/newDocument.json', newDocument)
     outputJSON('temp/oldDocument.json', oldDocument)
-    outputJSON(resolve(CHANGELOG_OUTPUT_DIR, 'CHANGELOG.json'), { api, type })
+    outputJSON(resolve(CHANGELOG_OUTPUT_DIR, 'CHANGELOG.json'), { apiCompareResult, typeCompareResult })
   }
   if (argv.includes('--webhook-wecom'))
     createWebhookWeCom(markdown)
@@ -86,9 +96,11 @@ export async function renderRequestChangelog({ newDocument, newVersion }: Reques
 }
 
 export async function renderChangelog() {
-  const currentVersion = getPackageLatestVersion(`${PACKAGE_SCOPE}/${PACKAGE_OPENAPI_V3_NAME}`)
-  const newVersion = getNewVersion(currentVersion)
-  const newDocument = await getOpenapi3()
-
-  renderRequestChangelog({ newDocument, newVersion })
+  const { currentVersion, newVersion } = getVersion()
+  if (currentVersion) {
+    consola.info('当前版本号为：', currentVersion)
+    consola.info('新版本号为：', currentVersion)
+  }
+  const [newDocument, oldDocument] = await Promise.all([getOpenapi3(), getOpenapi3(OLD_OPENAPI_DATASOURCE, OLD_OPENAPI_APIFOX_PROJECT_ID)])
+  await renderRequestChangelog({ newDocument, oldDocument, newVersion })
 }

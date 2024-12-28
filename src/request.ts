@@ -2,18 +2,20 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-05 02:33:40
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-12-21 01:41:51
+ * @LastEditTime: 2024-12-29 01:55:56
  * @FilePath: \cli\src\request.ts
  * @Description:
  *
  */
 import { resolve } from 'node:path'
-import { argv, cwd } from 'node:process'
+import { argv, cwd, env, exit } from 'node:process'
 import consola from 'consola'
 import type { TranspileOptions } from 'typescript'
 import { copy, emptyDir, outputJSON } from 'fs-extra/esm'
 import { build } from 'unbuild'
-import { renderAPI } from './api'
+import type { OpenAPIV3 } from 'openapi-types'
+import getOpenapi3 from './openapi3'
+import { compareAPI, renderAPI } from './api'
 import { renderRequestChangelog } from './changelog'
 import { publishNPM } from './publish'
 import {
@@ -25,8 +27,10 @@ import {
   TEMP_OPENAPI_V3_PATH,
   TEMP_UN_PATH,
 } from './paths'
-import { renderType } from './type'
-import { title, updateRequestVersion } from './version'
+import { compareType, renderType } from './type'
+import { getVersion, title, updateRequestVersion } from './version'
+
+const { OLD_OPENAPI_DATASOURCE = 'module', OLD_OPENAPI_APIFOX_PROJECT_ID } = env
 
 function buildRequest(workspace: string) {
   consola.info('构建项目...')
@@ -91,6 +95,36 @@ function buildRequest(workspace: string) {
   })
 }
 
+async function renderRequestFile(newDocument: OpenAPIV3.Document) {
+  const { currentVersion, newVersion } = getVersion()
+  consola.info('清空构建目录...')
+  await Promise.all([emptyDir('packages'), emptyDir('temp')])
+
+  consola.info('复制预设NPM包模板...')
+  await Promise.all([
+    copy(resolve(TEMPLATE_DIR, 'packages/axios'), PACKAGE_AXIOS_PATH),
+    copy(resolve(TEMPLATE_DIR, 'packages/un'), PACKAGE_UN_PATH),
+    copy(resolve(TEMPLATE_DIR, 'packages/openapi-v3'), TEMP_OPENAPI_V3_PATH),
+  ])
+
+  consola.info('生成定义文件')
+  await Promise.all([
+    renderAPI(newDocument),
+    renderType(newDocument),
+    updateRequestVersion(currentVersion, newVersion),
+    // 写入OpenAPIv3定义文件
+    outputJSON(resolve(TEMP_OPENAPI_V3_PATH, 'index.json'), newDocument),
+  ])
+
+  const workspace = cwd()
+  consola.info('启动unbuild构建...')
+  await buildRequest(workspace)
+  consola.success('axios模块构建完成！', PACKAGE_AXIOS_PATH)
+  consola.success('un模块构建完成！', PACKAGE_UN_PATH)
+  consola.success('openapi-v3模块构建完成！', PACKAGE_OPENAPI_V3_PATH)
+  return newVersion
+}
+
 export async function renderRequest() {
   consola.box({
     title,
@@ -101,36 +135,22 @@ export async function renderRequest() {
       borderStyle: 'double-single-rounded',
     },
   })
+  const [newDocument, oldDocument] = await Promise.all([getOpenapi3(), getOpenapi3(OLD_OPENAPI_DATASOURCE, OLD_OPENAPI_APIFOX_PROJECT_ID)])
 
-  consola.info('清空构建目录...')
-  await Promise.all([emptyDir('packages'), emptyDir('temp')])
+  if (argv.includes('--changelog')) {
+    const apiCompareResult = compareAPI(oldDocument, newDocument)
+    const typeCompareResult = compareType(oldDocument, newDocument)
+    if (!apiCompareResult.total || !typeCompareResult.total) {
+      consola.warn('未检测到API或类型变更，本次构建结束。如果需要强制生成，请去除--changelog参数。')
+      exit()
+    }
+    const newVersion = await renderRequestFile(newDocument)
+    await renderRequestChangelog({ newDocument, newVersion, oldDocument, apiCompareResult, typeCompareResult })
+  }
+  else {
+    await renderRequestFile(newDocument)
+  }
 
-  consola.info('复制预设NPM包模板...')
-  await Promise.all([
-    copy(resolve(TEMPLATE_DIR, 'packages/axios'), PACKAGE_AXIOS_PATH),
-    copy(resolve(TEMPLATE_DIR, 'packages/un'), PACKAGE_UN_PATH),
-    copy(resolve(TEMPLATE_DIR, 'packages/openapi-v3'), TEMP_OPENAPI_V3_PATH),
-  ])
-  consola.info('生成定义文件')
-  const [OpenApi3] = await Promise.all([
-    renderAPI(),
-    renderType(),
-  ])
-
-  const [version] = await Promise.all([
-    updateRequestVersion(),
-    // 写入OpenAPIv3定义文件
-    outputJSON(resolve(TEMP_OPENAPI_V3_PATH, 'index.json'), OpenApi3),
-  ])
-
-  const workspace = cwd()
-  consola.info('启动unbuild构建...')
-  await buildRequest(workspace)
-  consola.success('axios模块构建完成！', PACKAGE_AXIOS_PATH)
-  consola.success('un模块构建完成！', PACKAGE_UN_PATH)
-  consola.success('openapi-v3模块构建完成！', PACKAGE_OPENAPI_V3_PATH)
-  if (argv.includes('--changelog'))
-    renderRequestChangelog({ newDocument: OpenApi3, newVersion: version.new })
   if (argv.includes('--publish')) {
     consola.start('正在发布至NPM仓库...')
     publishNPM(PACKAGE_OPENAPI_V3_PATH)

@@ -261,10 +261,10 @@ export class DefineProperty {
   }
 }
 
-export async function renderType() {
+export async function renderType(document?: OpenAPIV3.Document) {
   checkTypeEnv()
-  const OpenApi3 = await getOpenApi3()
-  const { components = {} } = OpenApi3
+  const openApi3 = document || await getOpenApi3()
+  const { components = {} } = openApi3
   const properties: DefineProperty[] = []
   for (const name in components.schemas) {
     const schema = components.schemas[name]
@@ -288,7 +288,7 @@ export async function renderType() {
   consola.info(`axios类型文件生成位置：${axiosOutputPath}`)
   consola.info(`un类型文件生成位置：${unOutputPath}`)
   consola.success(`已生成type类型文件，包含类型数量：${properties.length}`)
-  return OpenApi3
+  return openApi3
 }
 
 interface CompareResult {
