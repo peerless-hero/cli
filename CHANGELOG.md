@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.2.6
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.2.5...v0.2.6)
+
+### 🔥 Performance
+
+- 移除环境变量输出代码 ([7d8a54a](https://github.com/peerless-hero/cli/commit/7d8a54a))
+- 暴漏CompareResult供其他模块使用 ([f736031](https://github.com/peerless-hero/cli/commit/f736031))
+- 使用emoji表情优化类型输出内容； ([49a9116](https://github.com/peerless-hero/cli/commit/49a9116))
+
+### 🩹 Fixes
+
+- 类型比较错误 ([0202cdb](https://github.com/peerless-hero/cli/commit/0202cdb))
+- **changelog:** 默认日志命令无法生成日志的bug ([5f40d9d](https://github.com/peerless-hero/cli/commit/5f40d9d))
+
+### 💅 Refactors
+
+- 重构构建步骤，又换执行顺序，减少重复的网络请求和多余的日志输出 ([75d348c](https://github.com/peerless-hero/cli/commit/75d348c))
+
+### ❤️ Contributors
+
+- Peerless_hero ([@peerless-hero](http://github.com/peerless-hero))
+
 ## v0.2.5
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.2.4...v0.2.5)
