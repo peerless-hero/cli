@@ -93,8 +93,6 @@ export class DefineProperty {
   properties: DefineProperty[] = []
 
   diff = {
-    /** 变动总数 */
-    total: 0,
     add: [] as string[],
     update: [] as string[],
     remove: [] as string[],
@@ -244,13 +242,11 @@ export class DefineProperty {
         if (newNote !== oldNote) {
           // 如果当前属性的描述与旧属性的描述不一致，则认为是描述修改了
           this.diff.update.push(`${thisQuery.name} ${oldNote}→${newNote}`)
-          this.diff.total++
         }
       }
       else {
         // 如果旧属性集中没有找到匹配的属性，则认为是新增的属性
         this.diff.add.push(`+ ${newNote}`)
-        this.diff.total++
       }
     }
     for (const oldQuery of old.properties) {
@@ -259,8 +255,7 @@ export class DefineProperty {
       )
       if (!isExist) {
         // 如果当前属性集中没有找到匹配的属性，则认为是删除的属性
-        this.diff.remove.push(`- ${oldQuery.name}`)
-        this.diff.total++
+        this.diff.update.push(`- ${oldQuery.name}`)
       }
     }
   }
@@ -303,25 +298,6 @@ interface CompareResult {
   remove: string[]
 }
 
-function eachNew(result: CompareResult, newProperty: DefineProperty) {
-  if (newProperty.diff.add.length) {
-    result.total++
-    result.add.push(newProperty.name)
-  }
-
-  if (newProperty.diff.update.length) {
-    result.total++
-    result.update.push([newProperty.name, newProperty.diff.update])
-  }
-}
-
-function eachOld(result: CompareResult, oldProperty: DefineProperty, isDelete: boolean) {
-  if (isDelete) {
-    result.total++
-    result.remove.push(oldProperty.name)
-  }
-}
-
 export function compareType(oldDocument: OpenAPIV3.Document, newDocument: OpenAPIV3.Document) {
   // 比较两个openapi文档components部分的差异
   const result: CompareResult = {
@@ -335,13 +311,27 @@ export function compareType(oldDocument: OpenAPIV3.Document, newDocument: OpenAP
   for (const name in newComponents.schemas) {
     const newSchema = newComponents.schemas[name]
     const oldSchema = oldComponents.schemas?.[name]
+    if (!oldSchema) {
+      // 如果旧文档中没有找到匹配的属性，则认为是新增的属性
+      result.add.push(name)
+      continue
+    }
     const newProperty = new DefineProperty(name, newSchema)
     const oldProperty = new DefineProperty(name, oldSchema)
     newProperty.compare(oldProperty)
-    eachNew(result, newProperty)
+    const update = [...newProperty.diff.add, ...newProperty.diff.remove, ...newProperty.diff.update]
+    if (update.length) {
+      result.total++
+      result.update.push([name, update])
+    }
   }
-  for (const name in oldComponents.schemas)
-    eachOld(result, new DefineProperty(name, oldComponents.schemas[name]), !newComponents.schemas?.[name])
-
+  for (const name in oldComponents.schemas) {
+    const newSchema = newComponents.schemas?.[name]
+    if (!newSchema) {
+      // 如果新文档中没有找到匹配的属性，则认为是删除的属性
+      result.total++
+      result.remove.push(name)
+    }
+  }
   return result
 }
