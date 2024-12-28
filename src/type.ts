@@ -230,33 +230,63 @@ export class DefineProperty {
     }
   }
 
+  /**
+   * 比较当前属性与旧属性的差异
+   * @param old - 旧的属性定义
+   */
   compare(old: DefineProperty) {
+    // 遍历当前属性集，比较每个属性与旧属性的差异
     for (const thisQuery of this.properties) {
-      const oldQuery = old.properties.find(
-        item => item.name === thisQuery.name,
-      )
-      const newNote = thisQuery.notes[0]
+      // 在旧属性集中查找与当前属性同名的属性
+      const oldQuery = old.properties.find(item => item.name === thisQuery.name)
       if (oldQuery) {
-        // 仅取第一项，其余皆为字段最大长度等限制属性
-        const oldNote = oldQuery.notes[0]
-        if (newNote !== oldNote) {
-          // 如果当前属性的描述与旧属性的描述不一致，则认为是描述修改了
-          this.diff.update.push(`${thisQuery.name} ${oldNote}→${newNote}`)
-        }
+        // 如果找到同名属性，则比较它们的差异
+        this.compareProperties(thisQuery, oldQuery)
       }
       else {
-        // 如果旧属性集中没有找到匹配的属性，则认为是新增的属性
-        this.diff.add.push(`+ ${newNote}`)
+        // 如果旧属性集中没有找到同名属性，则认为是新增的属性
+        this.diff.add.push(`➕${thisQuery.name}`)
       }
     }
+
+    // 遍历旧属性集，检查是否有属性在当前属性集中被删除
     for (const oldQuery of old.properties) {
-      const isExist = this.properties.some(
-        item => item.name === oldQuery.name,
-      )
+      // 检查当前属性集中是否存在同名属性
+      const isExist = this.properties.some(item => item.name === oldQuery.name)
       if (!isExist) {
-        // 如果当前属性集中没有找到匹配的属性，则认为是删除的属性
-        this.diff.update.push(`- ${oldQuery.name}`)
+        // 如果当前属性集中没有找到同名属性，则认为是删除的属性
+        this.diff.update.push(`❌${oldQuery.name}`)
       }
+    }
+  }
+
+  /**
+   * 比较两个属性的差异
+   * @param thisQuery - 当前属性
+   * @param oldQuery - 旧属性
+   */
+  private compareProperties(thisQuery: DefineProperty, oldQuery: DefineProperty) {
+    // 获取当前属性的描述
+    const newNote = thisQuery.notes[0]
+    // 获取旧属性的描述
+    const oldNote = oldQuery.notes[0]
+
+    let diff = ''
+
+    // 如果当前属性的描述与旧属性的描述不一致，则认为是描述修改了
+    if (newNote !== oldNote) {
+      // 添加描述差异
+      diff = ` ${newNote}→${oldNote}`
+    }
+
+    // 如果当前属性的必填性与旧属性的必填性不一致，则认为是必填性修改了
+    if (oldQuery.required !== thisQuery.required) {
+      // 添加必填性差异
+      diff += thisQuery.required ? ' 非必填→必填' : ' 必填→非必填'
+    }
+    if (diff) {
+      // 添加差异更新到更新数组
+      this.diff.update.push(`🛠️${thisQuery.name}${diff}`)
     }
   }
 }
