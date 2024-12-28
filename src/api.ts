@@ -1,8 +1,8 @@
 /*
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2022-11-03 17:53:22
- * @LastEditors: zhaojinfeng 121016171@qq.com
- * @LastEditTime: 2024-12-25 16:12:04
+ * @LastEditors: peerless_hero peerless_hero@outlook.com
+ * @LastEditTime: 2024-12-29 02:06:39
  * @FilePath: \cli\src\api.ts
  * @Description:
  *
@@ -453,7 +453,7 @@ export async function renderAPI() {
   return OpenApi3
 }
 
-interface CompareResult {
+export interface CompareResult {
   total: number
   add: string[]
   update: [string, string[]][]
