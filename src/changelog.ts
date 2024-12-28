@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-13 18:49:35
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-12-21 18:40:19
+ * @LastEditTime: 2024-12-29 01:05:17
  * @FilePath: \cli\src\changelog.ts
  * @Description:
  *
@@ -88,8 +88,7 @@ export async function renderRequestChangelog({ newDocument, newVersion }: Reques
 export async function renderChangelog() {
   const currentVersion = getPackageLatestVersion(`${PACKAGE_SCOPE}/${PACKAGE_OPENAPI_V3_NAME}`)
   const newVersion = getNewVersion(currentVersion)
-
-  const newDocument = await getOpenapi3(OLD_OPENAPI_DATASOURCE, OLD_OPENAPI_APIFOX_PROJECT_ID)
+  const newDocument = await getOpenapi3()
 
   renderRequestChangelog({ newDocument, newVersion })
 }
