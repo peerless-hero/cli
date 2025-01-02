@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.2.7
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.2.6...v0.2.7)
+
+### 🩹 Fixes
+
+- **compare:** 修正接口总数统计逻辑 ([d45c9f9](https://github.com/peerless-hero/cli/commit/d45c9f9))
+
+### ❤️ Contributors
+
+- Zhaojinfeng <121016171@qq.com>
+
 ## v0.2.6
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.2.5...v0.2.6)
