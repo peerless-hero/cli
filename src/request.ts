@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-05 02:33:40
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-12-29 01:55:56
+ * @LastEditTime: 2025-01-02 20:00:11
  * @FilePath: \cli\src\request.ts
  * @Description:
  *
@@ -140,8 +140,8 @@ export async function renderRequest() {
   if (argv.includes('--changelog')) {
     const apiCompareResult = compareAPI(oldDocument, newDocument)
     const typeCompareResult = compareType(oldDocument, newDocument)
-    if (!apiCompareResult.total || !typeCompareResult.total) {
-      consola.warn('未检测到API或类型变更，本次构建结束。如果需要强制生成，请去除--changelog参数。')
+    if (!apiCompareResult.total && !typeCompareResult.total) {
+      consola.warn('未检测到API变更或类型变更，本次构建结束。如果需要强制生成，请去除--changelog参数。')
       exit()
     }
     const newVersion = await renderRequestFile(newDocument)
