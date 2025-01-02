@@ -1,8 +1,8 @@
 /*
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2022-11-03 17:53:22
- * @LastEditors: zhaojinfeng 121016171@qq.com
- * @LastEditTime: 2025-01-02 18:00:51
+ * @LastEditors: peerless_hero peerless_hero@outlook.com
+ * @LastEditTime: 2025-01-02 20:05:05
  * @FilePath: \cli\src\api.ts
  * @Description:
  *
@@ -478,7 +478,7 @@ function eachOld(result: CompareResult, oldAPI: DefineAPI, isDelete: boolean) {
   if (isDelete) {
     const methods = Object.keys(oldAPI.method).map(method => method.toUpperCase())
     result.remove.push(`${oldAPI.path} ${methods.join(' ')}`)
-    result.total++
+    result.total += methods.length
   }
 }
 
