@@ -343,6 +343,7 @@ export function compareType(oldDocument: OpenAPIV3.Document, newDocument: OpenAP
     const oldSchema = oldComponents.schemas?.[name]
     if (!oldSchema) {
       // 如果旧文档中没有找到匹配的属性，则认为是新增的属性
+      result.total++
       result.add.push(name)
       continue
     }

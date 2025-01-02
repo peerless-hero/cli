@@ -1,8 +1,8 @@
 /*
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2022-11-03 17:53:22
- * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-12-29 01:54:23
+ * @LastEditors: zhaojinfeng 121016171@qq.com
+ * @LastEditTime: 2025-01-02 18:00:51
  * @FilePath: \cli\src\api.ts
  * @Description:
  *
@@ -461,22 +461,24 @@ export interface CompareResult {
 }
 
 function eachNew(result: CompareResult, newAPI: DefineAPI) {
+  let total = 0
   if (newAPI.diff.add.length) {
-    result.total += newAPI.diff.add.length
+    total = 1
     result.add.push(`${newAPI.path} ${newAPI.diff.add.join(' ')}`)
   }
 
   for (const method in newAPI.diff.update) {
-    const update = newAPI.diff.update[method]
-    result.total += update.length
-    result.update.push([`${newAPI.path} ${method}`, update])
+    total++
+    result.update.push([`${newAPI.path} ${method}`, newAPI.diff.update[method]])
   }
+  result.total += total
 }
 
 function eachOld(result: CompareResult, oldAPI: DefineAPI, isDelete: boolean) {
   if (isDelete) {
     const methods = Object.keys(oldAPI.method).map(method => method.toUpperCase())
     result.remove.push(`${oldAPI.path} ${methods.join(' ')}`)
+    result.total++
   }
 }
 
