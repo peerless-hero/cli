@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.2.8
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.2.7...v0.2.8)
+
+### 🔥 Performance
+
+- 更新日志显示各类型变动总数 ([832e245](https://github.com/peerless-hero/cli/commit/832e245))
+
+### 🩹 Fixes
+
+- 接口变动和类型变动检测 ([5a2274d](https://github.com/peerless-hero/cli/commit/5a2274d))
+- 接口变动总数判断 ([655bb1b](https://github.com/peerless-hero/cli/commit/655bb1b))
+
+### ❤️ Contributors
+
+- Peerless_hero ([@peerless-hero](http://github.com/peerless-hero))
+
 ## v0.2.7
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.2.6...v0.2.7)
