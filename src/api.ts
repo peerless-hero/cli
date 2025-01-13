@@ -1,8 +1,8 @@
 /*
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2022-11-03 17:53:22
- * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2025-01-02 20:05:05
+ * @LastEditors: zhaojinfeng 121016171@qq.com
+ * @LastEditTime: 2025-01-13 12:13:33
  * @FilePath: \cli\src\api.ts
  * @Description:
  *
@@ -365,7 +365,7 @@ export class DefineAPI {
 
   compare(other: DefineAPI) {
     this.compareMethod(other, 'get')
-    this.compareMethod(other, 'patch')
+    this.compareMethod(other, 'post')
     this.compareMethod(other, 'put')
     this.compareMethod(other, 'patch')
     this.compareMethod(other, 'delete')
