@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.2.9
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.2.8...v0.2.9)
+
+### 🩹 Fixes
+
+- Post请求无法比较的bug ([bbde806](https://github.com/peerless-hero/cli/commit/bbde806))
+
+### 💅 Refactors
+
+- **env:** 优化环境变量获取方式 ([8dd12b5](https://github.com/peerless-hero/cli/commit/8dd12b5))
+
+### ❤️ Contributors
+
+- Zhaojinfeng <121016171@qq.com>
+
 ## v0.2.8
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.2.7...v0.2.8)
