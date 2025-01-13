@@ -1,14 +1,14 @@
 /*
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-05 02:33:40
- * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2025-01-02 20:00:11
+ * @LastEditors: zhaojinfeng 121016171@qq.com
+ * @LastEditTime: 2025-01-13 11:49:53
  * @FilePath: \cli\src\request.ts
  * @Description:
  *
  */
 import { resolve } from 'node:path'
-import { argv, cwd, env, exit } from 'node:process'
+import { argv, cwd, exit } from 'node:process'
 import consola from 'consola'
 import type { TranspileOptions } from 'typescript'
 import { copy, emptyDir, outputJSON } from 'fs-extra/esm'
@@ -29,8 +29,6 @@ import {
 } from './paths'
 import { compareType, renderType } from './type'
 import { getVersion, title, updateRequestVersion } from './version'
-
-const { OLD_OPENAPI_DATASOURCE = 'module', OLD_OPENAPI_APIFOX_PROJECT_ID } = env
 
 function buildRequest(workspace: string) {
   consola.info('构建项目...')
@@ -135,7 +133,7 @@ export async function renderRequest() {
       borderStyle: 'double-single-rounded',
     },
   })
-  const [newDocument, oldDocument] = await Promise.all([getOpenapi3(), getOpenapi3(OLD_OPENAPI_DATASOURCE, OLD_OPENAPI_APIFOX_PROJECT_ID)])
+  const [newDocument, oldDocument] = await Promise.all([getOpenapi3(), getOpenapi3('OLD_')])
 
   if (argv.includes('--changelog')) {
     const apiCompareResult = compareAPI(oldDocument, newDocument)

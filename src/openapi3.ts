@@ -1,8 +1,8 @@
 /*
  * @Author: zhaojinfeng 121016171@qq.com
  * @Date: 2022-11-01 00:15:54
- * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-12-21 01:46:02
+ * @LastEditors: zhaojinfeng 121016171@qq.com
+ * @LastEditTime: 2025-01-13 11:52:44
  * @FilePath: \cli\src\openapi3.ts
  * @Description: 获取openapi
  *
@@ -13,12 +13,12 @@ import type { OpenAPIV3 } from 'openapi-types'
 import 'dotenv/config'
 import { readJSON } from 'fs-extra/esm'
 import { getNpmGlobalFilepath } from './paths'
+import { getEnv } from './env'
 
-const { OPENAPI_HOST, PACKAGE_SCOPE = '.', PACKAGE_OPENAPI_V3_NAME = 'openapi-v3', OPENAPI_DATASOURCE = 'openapi', APIFOX_TOKEN, APIFOX_PROJECT_ID } = env
+const { PACKAGE_SCOPE = '.', PACKAGE_OPENAPI_V3_NAME = 'openapi-v3', APIFOX_TOKEN } = env
 
-async function byAPIFox(projectId?: string) {
-  if (!projectId)
-    throw new Error('缺少环境变量：APIFOX_PROJECT_ID')
+async function byAPIFox(prefix: string) {
+  const projectId = getEnv(prefix, 'APIFOX_PROJECT_ID')
   if (!APIFOX_TOKEN)
     throw new Error('缺少环境变量：APIFOX_TOKEN')
   const { data } = await axios.post<OpenAPIV3.Document>(
@@ -46,31 +46,41 @@ async function byAPIFox(projectId?: string) {
   return data
 }
 
-function byGlobalDir() {
-  const {
-    GLOBAL_OPENAPI_PATH = getNpmGlobalFilepath(PACKAGE_SCOPE, PACKAGE_OPENAPI_V3_NAME, 'OpenAPIv3.json'),
-  } = env
-  return readJSON(GLOBAL_OPENAPI_PATH, { encoding: 'utf-8' })
+function byGlobalDir(prefix: string) {
+  const GLOBAL_OPENAPI_PATH = env[`${prefix}GLOBAL_OPENAPI_PATH`]
+  if (GLOBAL_OPENAPI_PATH) {
+    // 如果存在，直接使用
+    return readJSON(GLOBAL_OPENAPI_PATH, { encoding: 'utf-8' })
+  }
+  const filePath = getNpmGlobalFilepath(PACKAGE_SCOPE, PACKAGE_OPENAPI_V3_NAME, 'OpenAPIv3.json')
+  return readJSON(filePath)
 }
 
-export default async (source = OPENAPI_DATASOURCE, projectId = APIFOX_PROJECT_ID): Promise<OpenAPIV3.Document> => {
+async function byOpenapi(prefix: string) {
+  const OPENAPI_HOST = getEnv(prefix, 'OPENAPI_HOST')
+  if (!OPENAPI_HOST)
+    throw new Error('缺少环境变量：VITE_OPENAPI_URL')
+  const { data } = await axios.get<OpenAPIV3.Document>(OPENAPI_HOST)
+  if (!data?.openapi.startsWith('3.0'))
+    throw new Error('请将OpenAPI版本设置为3.0')
+  return data
+}
+
+export default async (prefix = ''): Promise<OpenAPIV3.Document> => {
+  const source = getEnv(prefix, 'OPENAPI_DATASOURCE')
   switch (source) {
-    case 'apifox':
-      return byAPIFox(projectId)
+    case 'apifox':{
+      return byAPIFox(prefix)
+    }
     case 'module':{
       const res = await import(`${PACKAGE_SCOPE}/${PACKAGE_OPENAPI_V3_NAME}`, { with: { type: 'json' } })
       return res.default || res
     }
     case 'global_dir':{
-      return byGlobalDir()
+      return byGlobalDir(prefix)
     }
     case 'openapi':{
-      if (!OPENAPI_HOST)
-        throw new Error('缺少环境变量：VITE_OPENAPI_URL')
-      const { data } = await axios.get<OpenAPIV3.Document>(OPENAPI_HOST)
-      if (!data?.openapi.startsWith('3.0'))
-        throw new Error('请将OpenAPI版本设置为3.0')
-      return data
+      return byOpenapi(prefix)
     }
     default: {
       throw new Error('未知数据源')

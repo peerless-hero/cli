@@ -1,8 +1,8 @@
 /*
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-13 18:49:35
- * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-12-29 01:44:24
+ * @LastEditors: zhaojinfeng 121016171@qq.com
+ * @LastEditTime: 2025-01-13 11:50:15
  * @FilePath: \cli\src\changelog.ts
  * @Description:
  *
@@ -26,7 +26,7 @@ import 'dotenv/config'
 const TITLE_TEMPLATE = resolve(TEMPLATE_DIR, 'ejs/markdown/title.ejs')
 const CONTENT_TEMPLATE = resolve(TEMPLATE_DIR, 'ejs/markdown/api-changelog.ejs')
 const { PACKAGE_SCOPE } = checkApiEnv()
-const { OLD_OPENAPI_DATASOURCE = 'module', OLD_OPENAPI_APIFOX_PROJECT_ID, CHANGELOG_OUTPUT_DIR = 'temp' } = env
+const { CHANGELOG_OUTPUT_DIR = 'temp' } = env
 
 interface MarkdownOption {
   apiCompareResult: CompareResult
@@ -101,6 +101,6 @@ export async function renderChangelog() {
     consola.info('当前版本号为：', currentVersion)
     consola.info('新版本号为：', currentVersion)
   }
-  const [newDocument, oldDocument] = await Promise.all([getOpenapi3(), getOpenapi3(OLD_OPENAPI_DATASOURCE, OLD_OPENAPI_APIFOX_PROJECT_ID)])
+  const [newDocument, oldDocument] = await Promise.all([getOpenapi3(), getOpenapi3('OLD_')])
   await renderRequestChangelog({ newDocument, oldDocument, newVersion })
 }

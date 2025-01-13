@@ -1,8 +1,8 @@
 /*
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-13 00:10:10
- * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-12-10 21:52:12
+ * @LastEditors: zhaojinfeng 121016171@qq.com
+ * @LastEditTime: 2025-01-13 11:36:21
  * @FilePath: \cli\src\env.ts
  * @Description:
  *
@@ -44,4 +44,12 @@ export function checkTypeEnv() {
     exit()
   }
   return { PACKAGE_SCOPE }
+}
+
+export function getEnv(prefix: string, key: string) {
+  const envKey = prefix + key
+  const value = env[envKey]
+  if (!value)
+    throw new Error(`缺少环境变量：${envKey}`)
+  return value
 }
