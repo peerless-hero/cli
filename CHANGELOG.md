@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.2.10
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.2.9...v0.2.10)
+
+### 🩹 Fixes
+
+- 修复类型检查以确保枚举值为字符串 ([9027eab](https://github.com/peerless-hero/cli/commit/9027eab))
+
+### ❤️ Contributors
+
+- Zhaojinfeng <121016171@qq.com>
+
 ## v0.2.9
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.2.8...v0.2.9)
