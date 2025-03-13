@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.2.11
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.2.10...v0.2.11)
+
+### 🩹 Fixes
+
+- 版本信息输出 ([a8cb2e4](https://github.com/peerless-hero/cli/commit/a8cb2e4))
+
+### ❤️ Contributors
+
+- Zhaojinfeng <121016171@qq.com>
+
 ## v0.2.10
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.2.9...v0.2.10)
