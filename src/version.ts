@@ -1,8 +1,8 @@
 /*
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-10 00:25:28
- * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2024-12-29 01:46:17
+ * @LastEditors: zhaojinfeng 121016171@qq.com
+ * @LastEditTime: 2025-03-13 15:45:43
  * @FilePath: \cli\src\version.ts
  * @Description:
  *
@@ -77,6 +77,7 @@ export function getNewVersion(oldVersion: string) {
       newVersion = semver.inc('minor').format()
     }
     else {
+      consola.info('旧版本号为：', oldVersion)
       newVersion = semver.inc('patch').format()
     }
     consola.info('新版本号为：', newVersion)

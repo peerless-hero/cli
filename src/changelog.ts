@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-13 18:49:35
  * @LastEditors: zhaojinfeng 121016171@qq.com
- * @LastEditTime: 2025-01-13 11:50:15
+ * @LastEditTime: 2025-03-13 15:43:57
  * @FilePath: \cli\src\changelog.ts
  * @Description:
  *
@@ -96,11 +96,7 @@ export async function renderRequestChangelog({
 }
 
 export async function renderChangelog() {
-  const { currentVersion, newVersion } = getVersion()
-  if (currentVersion) {
-    consola.info('当前版本号为：', currentVersion)
-    consola.info('新版本号为：', currentVersion)
-  }
+  const { newVersion } = getVersion()
   const [newDocument, oldDocument] = await Promise.all([getOpenapi3(), getOpenapi3('OLD_')])
   await renderRequestChangelog({ newDocument, oldDocument, newVersion })
 }
