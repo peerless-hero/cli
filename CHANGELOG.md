@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.3.3
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.3.2...v0.3.3)
+
+### 🤖 CI
+
+- 修复可信来源配置 ([93fb5a8](https://github.com/peerless-hero/cli/commit/93fb5a8))
+
+### ❤️ Contributors
+
+- Peerless-hero <121016171@qq.com>
+
 ## v0.3.2
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.3.1...v0.3.2)
