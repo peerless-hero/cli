@@ -429,8 +429,9 @@ export async function renderAPI(document?: OpenAPIV3.Document) {
     pathList.push(`./api/${defineAPI.componentPrefix}`)
   }
 
-  const [indexTS, axiosAutoImport, unAutoImport, axiosExportJSON, unExportJSON] = await Promise.all([
-    renderFile(resolve(TEMPLATE_DIR, 'ejs/entry.ejs'), { paths: pathList }),
+  const [indexTS, indexDTS, axiosAutoImport, unAutoImport, axiosExportJSON, unExportJSON] = await Promise.all([
+    renderFile(resolve(TEMPLATE_DIR, 'ejs/entry.ejs'), { paths: pathList, isDts: false }),
+    renderFile(resolve(TEMPLATE_DIR, 'ejs/entry.ejs'), { paths: pathList, isDts: true }),
     renderFile(resolve(TEMPLATE_DIR, 'ejs/dts/unplugin-auto-import.ejs'), { importsMap: axiosImports, pkgName: axiosPackageName }),
     renderFile(resolve(TEMPLATE_DIR, 'ejs/dts/unplugin-auto-import.ejs'), { importsMap: unImports, pkgName: unPackageName }),
     renderFile(resolve(TEMPLATE_DIR, 'ejs/dts/imports-map.ejs'), { importsMap: axiosImports }),
@@ -442,6 +443,9 @@ export async function renderAPI(document?: OpenAPIV3.Document) {
     outputFile(resolve(TEMP_UN_PATH, 'auto-imports.d.ts'), unAutoImport),
     outputFile(resolve(TEMP_AXIOS_PATH, 'index.ts'), indexTS),
     outputFile(resolve(TEMP_UN_PATH, 'index.ts'), indexTS),
+    // 生成 index.d.ts，mkdist 会直接复制到 dist 目录，保留三斜线引用
+    outputFile(resolve(TEMP_AXIOS_PATH, 'index.d.ts'), indexDTS),
+    outputFile(resolve(TEMP_UN_PATH, 'index.d.ts'), indexDTS),
     outputFile(resolve(TEMP_AXIOS_PATH, 'importsMap.ts'), axiosExportJSON),
     outputFile(resolve(TEMP_UN_PATH, 'importsMap.ts'), unExportJSON),
   ])

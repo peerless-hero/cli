@@ -1,5 +1,7 @@
+<% if (isDts) { -%>
 /// <reference path="./global.d.ts" />
 
+<% } -%>
 <% paths.forEach(path => { -%>
 export * from '<%- path %>'
 <% }) -%>
