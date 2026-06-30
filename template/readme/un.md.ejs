@@ -34,14 +34,12 @@ pnpm add -D @uni-helper/uni-network
 
 ## TypeScript 配置
 
-在 `tsconfig.json` 中配置路径别名：
+在 `tsconfig.json` 的 `compilerOptions` 中添加类型引用：
 
 ```json
 {
   "compilerOptions": {
-    "paths": {
-      "<%- pkgName %>": ["<%- pkgName %>"]
-    }
+    "types": ["<%- pkgName %>"]
   }
 }
 ```
