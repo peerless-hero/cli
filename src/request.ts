@@ -12,10 +12,12 @@ import type { TranspileOptions } from 'typescript'
 import { resolve } from 'node:path'
 import { argv, cwd, exit } from 'node:process'
 import consola from 'consola'
-import { copy, emptyDir, outputJSON } from 'fs-extra/esm'
+import { renderFile } from 'ejs'
+import { copy, emptyDir, outputFile, outputJSON } from 'fs-extra/esm'
 import { build } from 'unbuild'
 import { compareAPI, renderAPI } from './api'
 import { renderRequestChangelog } from './changelog'
+import { checkApiEnv } from './env'
 import getOpenapi3 from './openapi3'
 import {
   PACKAGE_AXIOS_PATH,
@@ -93,6 +95,46 @@ function buildRequest(workspace: string) {
   })
 }
 
+async function renderRequestReadme() {
+  const {
+    PACKAGE_SCOPE,
+    PACKAGE_AXIOS_NAME = 'axios',
+    PACKAGE_UN_NAME = 'un',
+    PACKAGE_OPENAPI_V3_NAME = 'openapi-v3',
+  } = checkApiEnv()
+
+  const axiosPkgName = `${PACKAGE_SCOPE}/${PACKAGE_AXIOS_NAME}`
+  const unPkgName = `${PACKAGE_SCOPE}/${PACKAGE_UN_NAME}`
+  const openapiV3PkgName = `${PACKAGE_SCOPE}/${PACKAGE_OPENAPI_V3_NAME}`
+
+  const readmeData = {
+    pkgScope: PACKAGE_SCOPE,
+    pkgName: '',
+    axiosPkgName,
+    unPkgName,
+    openapiV3PkgName,
+    axiosUrl: `./${PACKAGE_AXIOS_NAME}`,
+    unUrl: `./${PACKAGE_UN_NAME}`,
+    openapiV3Url: `./${PACKAGE_OPENAPI_V3_NAME}`,
+  }
+
+  consola.info('生成README文档...')
+
+  const [axiosReadme, unReadme, openapiV3Readme] = await Promise.all([
+    renderFile(resolve(TEMPLATE_DIR, 'readme/axios.md.ejs'), { ...readmeData, pkgName: axiosPkgName, name: PACKAGE_AXIOS_NAME }),
+    renderFile(resolve(TEMPLATE_DIR, 'readme/un.md.ejs'), { ...readmeData, pkgName: unPkgName, name: PACKAGE_UN_NAME }),
+    renderFile(resolve(TEMPLATE_DIR, 'readme/openapi-v3.md.ejs'), { ...readmeData, pkgName: openapiV3PkgName, name: PACKAGE_OPENAPI_V3_NAME }),
+  ])
+
+  await Promise.all([
+    outputFile(resolve(PACKAGE_AXIOS_PATH, 'README.md'), axiosReadme),
+    outputFile(resolve(PACKAGE_UN_PATH, 'README.md'), unReadme),
+    outputFile(resolve(PACKAGE_OPENAPI_V3_PATH, 'README.md'), openapiV3Readme),
+  ])
+
+  consola.success('README文档生成完成！')
+}
+
 async function renderRequestFile(newDocument: OpenAPIV3.Document) {
   const { currentVersion, newVersion } = getVersion()
   consola.info('清空构建目录...')
@@ -115,8 +157,12 @@ async function renderRequestFile(newDocument: OpenAPIV3.Document) {
   ])
 
   const workspace = cwd()
+
   consola.info('启动unbuild构建...')
   await buildRequest(workspace)
+
+  // 构建完成后写入README到包根目录
+  await renderRequestReadme()
   consola.success('axios模块构建完成！', PACKAGE_AXIOS_PATH)
   consola.success('un模块构建完成！', PACKAGE_UN_PATH)
   consola.success('openapi-v3模块构建完成！', PACKAGE_OPENAPI_V3_PATH)
