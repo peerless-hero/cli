@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.3.6
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.3.5...v0.3.6)
+
+### 🚀 Enhancements
+
+- Reference ([14134f7](https://github.com/peerless-hero/cli/commit/14134f7))
+
+### ❤️ Contributors
+
+- Peerless-hero <121016171@qq.com>
+
 ## v0.3.5
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.3.4...v0.3.5)
