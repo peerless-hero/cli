@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.3.5
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.3.4...v0.3.5)
+
+### 🚀 Enhancements
+
+- SKIP_LATEST_VERSION跳过最新版本检测 ([5d08f58](https://github.com/peerless-hero/cli/commit/5d08f58))
+
+### ❤️ Contributors
+
+- Peerless-hero <121016171@qq.com>
+
 ## v0.3.4
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.3.3...v0.3.4)
