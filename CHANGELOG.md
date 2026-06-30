@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.3.2
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.3.1...v0.3.2)
+
+### 🩹 Fixes
+
+- 修复changelogithub无法写入的bug ([1931dee](https://github.com/peerless-hero/cli/commit/1931dee))
+
+### ❤️ Contributors
+
+- Peerless-hero <121016171@qq.com>
+
 ## v0.3.1
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.3.0...v0.3.1)
