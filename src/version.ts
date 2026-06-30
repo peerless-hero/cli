@@ -1,8 +1,8 @@
 /*
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-10 00:25:28
- * @LastEditors: zhaojinfeng 121016171@qq.com
- * @LastEditTime: 2025-03-13 15:45:43
+ * @LastEditors: peerless_hero peerless_hero@outlook.com
+ * @LastEditTime: 2026-07-01 00:18:12
  * @FilePath: \cli\src\version.ts
  * @Description:
  *
@@ -25,10 +25,6 @@ export const title = `${name} (v${version})`
 const npmVersionRecord: Record<string, string> = {}
 
 export function getPackageLatestVersion(pkgName?: string) {
-  if (env.SKIP_LATEST_VERSION) {
-    // 当存在SKIP_LATESTVERSION环境变量时，跳过获取最新版本号的操作，直接返回空字符串
-    return ''
-  }
   if (!pkgName)
     return ''
   if (npmVersionRecord[pkgName])
@@ -49,6 +45,7 @@ export function getPackageLatestVersion(pkgName?: string) {
 
 const {
   PACKAGE_SCOPE,
+  SKIP_LATEST_VERSION,
   PACKAGE_UN_NAME = 'un',
   PACKAGE_AXIOS_NAME = 'axios',
   PACKAGE_OPENAPI_V3_NAME = 'openapi-v3',
@@ -98,6 +95,13 @@ export function getNewVersion(oldVersion: string) {
 }
 
 export function getVersion() {
+  if (SKIP_LATEST_VERSION) {
+    consola.info('由于设置SKIP_LATEST_VERSION所以跳过最新版本号检查，使用初始版本号作为当前版本号', INITIAL_VERSION)
+    return {
+      currentVersion: INITIAL_VERSION,
+      newVersion: INITIAL_VERSION,
+    }
+  }
   // 获取当前版本号
   const currentVersion = getPackageLatestVersion(`${PACKAGE_SCOPE}/${PACKAGE_OPENAPI_V3_NAME}`) || getPackageLatestVersion(`${PACKAGE_SCOPE}/${PACKAGE_AXIOS_NAME}`) || getPackageLatestVersion(`${PACKAGE_SCOPE}/${PACKAGE_UN_NAME}`)
   // 获取新版本号
