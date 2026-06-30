@@ -64,7 +64,7 @@ export function resolveSchemaType(
 
   if ('$ref' in schema) {
     const matchArray = schema.$ref?.match(/[a-z]+/gi) || []
-    return matchArray[matchArray.length - 1] || ''
+    return matchArray.at(-1) || ''
   }
   if (schema.type === 'array')
     return `${resolveSchemaType(schema.items)}[]`
@@ -76,8 +76,8 @@ export function resolveRef(ref = 'any') {
   return ref
     .replace('#/components/schemas/', '')
     .replace('#/definitions/', '')
-    .replace(/«/g, '<')
-    .replace(/»/g, '>')
+    .replaceAll('«', '<')
+    .replaceAll('»', '>')
     .replace('<object>', '<null>')
     .replace('List<', 'Array<')
 }
