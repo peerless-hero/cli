@@ -13,10 +13,10 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
 
       - name: Set node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
           cache: yarn
           node-version: lts/*
@@ -33,10 +33,10 @@ jobs:
   typecheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
 
       - name: Set node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
           cache: yarn
           node-version: lts/*
@@ -60,10 +60,10 @@ jobs:
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
 
       - name: Set node ${{ matrix.node }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
 
