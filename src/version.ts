@@ -25,6 +25,10 @@ export const title = `${name} (v${version})`
 const npmVersionRecord: Record<string, string> = {}
 
 export function getPackageLatestVersion(pkgName?: string) {
+  if (env.SKIP_LATEST_VERSION) {
+    // 当存在SKIP_LATESTVERSION环境变量时，跳过获取最新版本号的操作，直接返回空字符串
+    return ''
+  }
   if (!pkgName)
     return ''
   if (npmVersionRecord[pkgName])
