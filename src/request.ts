@@ -1,32 +1,32 @@
 /*
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-05 02:33:40
- * @LastEditors: zhaojinfeng 121016171@qq.com
- * @LastEditTime: 2025-01-13 11:49:53
+ * @LastEditors: peerless_hero peerless_hero@outlook.com
+ * @LastEditTime: 2026-06-30 21:11:01
  * @FilePath: \cli\src\request.ts
  * @Description:
  *
  */
+import type { OpenAPIV3 } from 'openapi-types'
+import type { TranspileOptions } from 'typescript'
 import { resolve } from 'node:path'
 import { argv, cwd, exit } from 'node:process'
 import consola from 'consola'
-import type { TranspileOptions } from 'typescript'
 import { copy, emptyDir, outputJSON } from 'fs-extra/esm'
 import { build } from 'unbuild'
-import type { OpenAPIV3 } from 'openapi-types'
-import getOpenapi3 from './openapi3'
 import { compareAPI, renderAPI } from './api'
 import { renderRequestChangelog } from './changelog'
-import { publishNPM } from './publish'
+import getOpenapi3 from './openapi3'
 import {
   PACKAGE_AXIOS_PATH,
   PACKAGE_OPENAPI_V3_PATH,
   PACKAGE_UN_PATH,
-  TEMPLATE_DIR,
   TEMP_AXIOS_PATH,
   TEMP_OPENAPI_V3_PATH,
   TEMP_UN_PATH,
+  TEMPLATE_DIR,
 } from './paths'
+import { publishNPM } from './publish'
 import { compareType, renderType } from './type'
 import { getVersion, title, updateRequestVersion } from './version'
 
