@@ -1,5 +1,43 @@
 # Changelog
 
+## v0.4.0
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.3.7...v0.4.0)
+
+### 🚀 Enhancements
+
+- 增加README.md模板 ([3cbaec8](https://github.com/peerless-hero/cli/commit/3cbaec8))
+- **version:** 支持 SKIP_LATEST_VERSION 跳过检查并使用初始版本 ([98f6d78](https://github.com/peerless-hero/cli/commit/98f6d78))
+- **request:** 生成各请求包的README文档 ([0e15035](https://github.com/peerless-hero/cli/commit/0e15035))
+- **cli:** 统一命令行入口 ([bf7aa64](https://github.com/peerless-hero/cli/commit/bf7aa64))
+
+### 🩹 Fixes
+
+- 修复 ESM 中动态导入 JSON 模块问题 ([942b916](https://github.com/peerless-hero/cli/commit/942b916))
+
+### 💅 Refactors
+
+- **build:** 将构建工具从 unbuild 迁移至 tsdown ([a1d8d31](https://github.com/peerless-hero/cli/commit/a1d8d31))
+- 替换所有 execSync 为 spawnSync ([18d37a7](https://github.com/peerless-hero/cli/commit/18d37a7))
+- 移除 axios 依赖改用原生 fetch ([2ca8525](https://github.com/peerless-hero/cli/commit/2ca8525))
+
+### 📖 Documentation
+
+- **template:** 修正 TypeScript 配置为类型引用 ([e34b77a](https://github.com/peerless-hero/cli/commit/e34b77a))
+- 重写README以详细说明OpenAPI v3生成工具功能 ([c9cc800](https://github.com/peerless-hero/cli/commit/c9cc800))
+
+### 📦 Build
+
+- **deps:** 迁移构建工具至 tsdown 并升级依赖 ([b2b3198](https://github.com/peerless-hero/cli/commit/b2b3198))
+
+### 🎨 Styles
+
+- Eslint ([9e9cb25](https://github.com/peerless-hero/cli/commit/9e9cb25))
+
+### ❤️ Contributors
+
+- Peerless_hero ([@peerless-hero](https://github.com/peerless-hero))
+
 ## v0.3.7
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.3.6...v0.3.7)
