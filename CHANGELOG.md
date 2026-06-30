@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.3.7
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.3.6...v0.3.7)
+
+### 🔥 Performance
+
+- 优化对斜杠结尾的api的处理 ([0400155](https://github.com/peerless-hero/cli/commit/0400155))
+
+### 🩹 Fixes
+
+- 修复产物index.d.ts缺少 /// <reference path="./global.d.ts" /> 的问题 ([ae76d61](https://github.com/peerless-hero/cli/commit/ae76d61))
+- 个别情况下注释重叠导致构建报错的问题 ([52fc49b](https://github.com/peerless-hero/cli/commit/52fc49b))
+
+### 🏡 Chore
+
+- 移除 FUNDING.yml ([72f5d2a](https://github.com/peerless-hero/cli/commit/72f5d2a))
+
+### ❤️ Contributors
+
+- Peerless_hero ([@peerless-hero](https://github.com/peerless-hero))
+
 ## v0.3.6
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.3.5...v0.3.6)
