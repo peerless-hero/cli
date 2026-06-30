@@ -30,17 +30,17 @@ export function getPackageLatestVersion(pkgName?: string) {
   if (npmVersionRecord[pkgName])
     return npmVersionRecord[pkgName]
 
-  try {
-    const latestVersion = spawnSync('npm', ['view', pkgName, 'version', '--silent'], {
-      encoding: 'utf-8',
-      timeout: 2000,
-    })
-    return latestVersion.stdout.trim()
-  }
-  catch (err) {
+  const result = spawnSync('npm', ['view', pkgName, 'version', '--silent'], {
+    encoding: 'utf-8',
+    timeout: 2000,
+    // 明确接管 stderr，避免外部把它当致命
+    stdio: ['ignore', 'pipe', 'pipe'],
+  })
+  if (result.error || result.stderr) {
     // 找不到NPM包会发生在首次构建的时候，这里不用报错，返回空字符串即可
     return ''
   }
+  return result.stdout.trim()
 }
 
 const {
