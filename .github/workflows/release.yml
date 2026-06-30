@@ -20,8 +20,9 @@ jobs:
       - name: Set node
         uses: actions/setup-node@v6
         with:
-          node-version: 22.x
-          cache: yarn
+          node-version: 24.x
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
 
       - name: Install
         run: yarn --frozen-lockfile
@@ -34,6 +35,6 @@ jobs:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
       - name: Publish to NPM
-        run: npm publish --ignore-scripts --access public
+        run: npm publish
         env:
           NPM_CONFIG_PROVENANCE: true
