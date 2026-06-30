@@ -313,10 +313,15 @@ export class DefineAPI {
 
   init() {
     let needUpperCase = true
+    const lastIndex = this.path.length - 1
     for (let index = 1; index < this.path.length; index++) {
       const text = this.path[index]
       switch (text) {
         case '/':
+          if (index === lastIndex) {
+          // 忽略路径结尾的斜杠（如 /a/b/）
+            break
+          }
           needUpperCase = true
           this.url += text
           this.componentPrefix += '-'
@@ -347,6 +352,9 @@ export class DefineAPI {
           break
       }
     }
+    // 根路径（如 /）产生的空 componentPrefix 统一用 index 命名
+    if (!this.componentPrefix)
+      this.componentPrefix = 'index'
   }
 
   private compareMethod(other: DefineAPI, method: Method) {
@@ -421,8 +429,11 @@ export async function renderAPI(document?: OpenAPIV3.Document) {
   for (const path in openApi3.paths) {
     count++
     const defineAPI = new DefineAPI(path, openApi3.paths[path])
-    axiosImports[axiosPackageName].push(...defineAPI.exports)
-    unImports[unPackageName].push(...defineAPI.exports)
+    // 根路径 / 不参与自动导入
+    if (defineAPI.path !== '/') {
+      axiosImports[axiosPackageName].push(...defineAPI.exports)
+      unImports[unPackageName].push(...defineAPI.exports)
+    }
     renderDefineAxiosAPI(defineAPI)
     renderDefineUnAPI(defineAPI)
     renderDTSofAPI(defineAPI)
