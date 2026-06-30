@@ -8,7 +8,6 @@
  *
  */
 import { env } from 'node:process'
-import axios from 'axios'
 import consola from 'consola'
 import 'dotenv/config'
 
@@ -29,21 +28,18 @@ function delay(ms: number) {
 }
 
 async function sendWebhookWeCom(content: string) {
-  const res = await axios({
-    url: 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send',
-    method: 'post',
-    params: {
-      key: WEBHOOK_WECOM_KEY,
-    },
-    data: {
+  const url = new URL('https://qyapi.weixin.qq.com/cgi-bin/webhook/send')
+  url.searchParams.set('key', WEBHOOK_WECOM_KEY!)
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
       msgtype: 'markdown',
-      markdown: {
-        content,
-      },
-    },
-    responseType: 'text',
+      markdown: { content },
+    }),
   })
-  consola.info('企业微信群消息发送响应', res.data)
+  const data = await res.text()
+  consola.info('企业微信群消息发送响应', data)
 }
 
 /**
@@ -88,20 +84,16 @@ export async function createWebhookWeCom({ title, text }: MarkdownContent) {
  */
 export async function createWebhookDingTalk({ title, text }: MarkdownContent) {
   consola.info('发送钉钉群消息', '消息总长度：', text.length)
-  const res = await axios({
-    url: 'https://oapi.dingtalk.com/robot/send?access_token=',
-    method: 'post',
-    params: {
-      access_token: WEBHOOK_DINGTALK_KEY,
-    },
-    data: {
+  const url = new URL('https://oapi.dingtalk.com/robot/send')
+  url.searchParams.set('access_token', WEBHOOK_DINGTALK_KEY!)
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
       msgtype: 'markdown',
-      markdown: {
-        title,
-        text,
-      },
-    },
-    responseType: 'text',
+      markdown: { title, text },
+    }),
   })
-  consola.info('钉钉群消息发送响应', res.data)
+  const data = await res.text()
+  consola.info('钉钉群消息发送响应', data)
 }

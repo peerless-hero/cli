@@ -2,7 +2,7 @@
  * @Author: zhaojinfeng 121016171@qq.com
  * @Date: 2022-11-01 00:15:54
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2026-06-30 21:11:36
+ * @LastEditTime: 2026-07-01 02:47:55
  * @FilePath: \cli\src\openapi3.ts
  * @Description: 获取openapi
  *
@@ -10,7 +10,6 @@
 import type { OpenAPIV3 } from 'openapi-types'
 import { createRequire } from 'node:module'
 import { env } from 'node:process'
-import axios from 'axios'
 import { readJSON } from 'fs-extra/esm'
 import { getEnv } from './env'
 import { getNpmGlobalFilepath } from './paths'
@@ -24,27 +23,30 @@ async function byAPIFox(prefix: string) {
   const projectId = getEnv(prefix, 'APIFOX_PROJECT_ID')
   if (!APIFOX_TOKEN)
     throw new Error('缺少环境变量：APIFOX_TOKEN')
-  const { data } = await axios.post<OpenAPIV3.Document>(
-    `https://api.apifox.com/api/v1/projects/${projectId}/export-openapi`,
+  const res = await fetch(
+    `https://api.apifox.com/v1/projects/${projectId}/export-openapi?locale=zh-CN`,
     {
-      version: '3.0',
-      excludeExtension: true,
-      excludeTagsWithFolder: false,
-      type: 1,
-      apiDetailId: [],
-      checkedFolder: [],
-      excludeTags: [],
-      includeTags: [],
-      selectedEnvironments: [],
-      openApiFormat: 'json',
-    },
-    {
+      method: 'POST',
       headers: {
-        'x-apifox-version': '2024-03-28',
-        'authorization': `Bearer ${APIFOX_TOKEN}`,
+        'Content-Type': 'application/json',
+        'X-Apifox-Api-Version': '2024-03-28',
+        'Authorization': `Bearer ${APIFOX_TOKEN}`,
       },
+      body: JSON.stringify({
+        scope: {
+          type: 'ALL',
+          excludedByTags: [],
+        },
+        options: {
+          includeApifoxExtensionProperties: false,
+          addFoldersToTags: false,
+        },
+        oasVersion: '3.0',
+        exportFormat: 'JSON',
+      }),
     },
   )
+  const data = await res.json() as OpenAPIV3.Document
 
   return data
 }
@@ -63,7 +65,8 @@ async function byOpenapi(prefix: string) {
   const OPENAPI_HOST = getEnv(prefix, 'OPENAPI_HOST')
   if (!OPENAPI_HOST)
     throw new Error('缺少环境变量：VITE_OPENAPI_URL')
-  const { data } = await axios.get<OpenAPIV3.Document>(OPENAPI_HOST)
+  const res = await fetch(OPENAPI_HOST)
+  const data = await res.json() as OpenAPIV3.Document
   if (!data?.openapi.startsWith('3.0'))
     throw new Error('请将OpenAPI版本设置为3.0')
   return data
