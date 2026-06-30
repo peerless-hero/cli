@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.3.4
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.3.3...v0.3.4)
+
+### 🩹 Fixes
+
+- 修复异常退出 ([648c834](https://github.com/peerless-hero/cli/commit/648c834))
+
+### ❤️ Contributors
+
+- Peerless-hero <121016171@qq.com>
+
 ## v0.3.3
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.3.2...v0.3.3)
