@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.2.12
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.2.11...v0.2.12)
+
+### 🚀 Enhancements
+
+- 新增changelogen；node版本升级 ([517d7eb](https://github.com/peerless-hero/cli/commit/517d7eb))
+- Nvm控制node版本 ([22171a7](https://github.com/peerless-hero/cli/commit/22171a7))
+
+### 🔥 Performance
+
+- 用spawnSync替换execSync ([381f790](https://github.com/peerless-hero/cli/commit/381f790))
+
+### 🤖 CI
+
+- 升级actions/checkout和actions/setup-node ([d88969f](https://github.com/peerless-hero/cli/commit/d88969f))
+
+### ❤️ Contributors
+
+- Peerless-hero <121016171@qq.com>
+
 ## v0.2.11
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.2.10...v0.2.11)
