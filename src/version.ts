@@ -8,11 +8,11 @@
  *
  */
 import { spawnSync } from 'node:child_process'
-import { env } from 'node:process'
 import { resolve } from 'node:path'
+import { env } from 'node:process'
 import consola from 'consola'
-import { parse } from 'semver'
 import { outputJSON, readJSON } from 'fs-extra/esm'
+import { parse } from 'semver'
 import { name, version } from '../package.json'
 import { PACKAGE_AXIOS_PATH, PACKAGE_UN_PATH, TEMP_OPENAPI_V3_PATH } from './paths'
 

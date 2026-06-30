@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process'
 /*
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-09 22:25:18
@@ -8,7 +9,6 @@
  *
  */
 import { resolve } from 'node:path'
-import { execSync } from 'node:child_process'
 import { env } from 'node:process'
 
 export const TEMPLATE_DIR = resolve(import.meta.dirname || __dirname, '../template')

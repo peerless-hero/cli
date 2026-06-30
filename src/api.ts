@@ -1,20 +1,20 @@
 /*
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2022-11-03 17:53:22
- * @LastEditors: zhaojinfeng 121016171@qq.com
- * @LastEditTime: 2025-01-13 12:13:33
+ * @LastEditors: peerless_hero peerless_hero@outlook.com
+ * @LastEditTime: 2026-06-30 21:11:10
  * @FilePath: \cli\src\api.ts
  * @Description:
  *
  */
+import type { OpenAPIV3 } from 'openapi-types'
 import { resolve } from 'node:path'
 import consola from 'consola'
 import { renderFile } from 'ejs'
 import { copy, outputFile } from 'fs-extra/esm'
-import type { OpenAPIV3 } from 'openapi-types'
-import getOpenApi3 from './openapi3'
-import { TEMPLATE_DIR, TEMP_AXIOS_PATH, TEMP_UN_PATH } from './paths'
 import { checkApiEnv } from './env'
+import getOpenApi3 from './openapi3'
+import { TEMP_AXIOS_PATH, TEMP_UN_PATH, TEMPLATE_DIR } from './paths'
 import { DefineProperty, resolveSchemaType } from './type'
 
 const ACTION: Record<string, string> = {

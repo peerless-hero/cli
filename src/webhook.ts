@@ -9,8 +9,8 @@
  */
 import { env } from 'node:process'
 import axios from 'axios'
-import 'dotenv/config'
 import consola from 'consola'
+import 'dotenv/config'
 
 const { WEBHOOK_WECOM_KEY, WEBHOOK_DINGTALK_KEY } = env
 

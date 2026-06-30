@@ -1,19 +1,19 @@
 /*
  * @Author: zhaojinfeng 121016171@qq.com
  * @Date: 2022-11-01 00:15:54
- * @LastEditors: zhaojinfeng 121016171@qq.com
- * @LastEditTime: 2025-01-13 11:52:44
+ * @LastEditors: peerless_hero peerless_hero@outlook.com
+ * @LastEditTime: 2026-06-30 21:11:36
  * @FilePath: \cli\src\openapi3.ts
  * @Description: 获取openapi
  *
  */
+import type { OpenAPIV3 } from 'openapi-types'
 import { env } from 'node:process'
 import axios from 'axios'
-import type { OpenAPIV3 } from 'openapi-types'
-import 'dotenv/config'
 import { readJSON } from 'fs-extra/esm'
-import { getNpmGlobalFilepath } from './paths'
 import { getEnv } from './env'
+import { getNpmGlobalFilepath } from './paths'
+import 'dotenv/config'
 
 const { PACKAGE_SCOPE = '.', PACKAGE_OPENAPI_V3_NAME = 'openapi-v3', APIFOX_TOKEN } = env
 
@@ -66,7 +66,7 @@ async function byOpenapi(prefix: string) {
   return data
 }
 
-export default async (prefix = ''): Promise<OpenAPIV3.Document> => {
+async function openapi3(prefix = ''): Promise<OpenAPIV3.Document> {
   const source = getEnv(prefix, 'OPENAPI_DATASOURCE')
   switch (source) {
     case 'apifox':{
@@ -87,3 +87,5 @@ export default async (prefix = ''): Promise<OpenAPIV3.Document> => {
     }
   }
 }
+
+export default openapi3

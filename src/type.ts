@@ -1,12 +1,12 @@
+import type { OpenAPIV2, OpenAPIV3 } from 'openapi-types'
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import consola from 'consola'
 import { renderFile } from 'ejs'
 import { outputFile } from 'fs-extra/esm'
-import type { OpenAPIV2, OpenAPIV3 } from 'openapi-types'
-import getOpenApi3 from './openapi3'
-import { TEMPLATE_DIR, TEMP_AXIOS_PATH, TEMP_UN_PATH } from './paths'
 import { checkTypeEnv } from './env'
+import getOpenApi3 from './openapi3'
+import { TEMP_AXIOS_PATH, TEMP_UN_PATH, TEMPLATE_DIR } from './paths'
 
 const XApifox = 'x-apifox'
 
@@ -63,7 +63,7 @@ export function resolveSchemaType(
     return 'any'
 
   if ('$ref' in schema) {
-    const matchArray = schema.$ref?.match(/[a-zA-Z]+/g) || []
+    const matchArray = schema.$ref?.match(/[a-z]+/gi) || []
     return matchArray[matchArray.length - 1] || ''
   }
   if (schema.type === 'array')
