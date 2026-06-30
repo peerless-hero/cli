@@ -22,7 +22,6 @@ jobs:
         with:
           node-version: 22.x
           cache: yarn
-          registry-url: 'https://registry.npmjs.org'
 
       - name: Install
         run: yarn --frozen-lockfile
@@ -35,6 +34,6 @@ jobs:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
       - name: Publish to NPM
-        run: yarn publish --ignore-scripts --access public
+        run: npm publish --ignore-scripts --access public
         env:
           NPM_CONFIG_PROVENANCE: true
