@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.3.0
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.2.12...v0.3.0)
+
+### 🤖 CI
+
+- 更换更安全的NPM发布方式 ([59be55e](https://github.com/peerless-hero/cli/commit/59be55e))
+
+### ❤️ Contributors
+
+- Peerless-hero <121016171@qq.com>
+
 ## v0.2.12
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.2.11...v0.2.12)
