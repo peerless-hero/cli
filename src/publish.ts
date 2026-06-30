@@ -7,12 +7,12 @@
  * @Description:
  *
  */
-import { execSync } from 'node:child_process'
+import { spawnSync } from 'node:child_process'
 import consola from 'consola'
 import 'dotenv/config'
 
 export function publishNPM(path: string) {
   const command = `cd ${path} && npm publish`
   consola.start('执行命令：', command)
-  execSync(command, { encoding: 'utf-8' })
+  spawnSync(command, [], { encoding: 'utf-8', shell: true })
 }

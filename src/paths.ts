@@ -1,4 +1,3 @@
-import { execSync } from 'node:child_process'
 /*
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-09 22:25:18
@@ -8,13 +7,14 @@ import { execSync } from 'node:child_process'
  * @Description:
  *
  */
+import { spawnSync } from 'node:child_process'
 import { resolve } from 'node:path'
 import { env } from 'node:process'
 
 export const TEMPLATE_DIR = resolve(import.meta.dirname || __dirname, '../template')
 
 export function getNpmGlobalRoot() {
-  return execSync('npm root -g', { encoding: 'utf-8' }).trim()
+  return spawnSync('npm', ['root', '-g'], { encoding: 'utf-8' }).stdout.trim()
 }
 export function getNpmGlobalFilepath(...paths: string[]) {
   const npmGlobalRoot = getNpmGlobalRoot()
