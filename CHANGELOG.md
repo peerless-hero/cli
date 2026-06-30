@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.3.1
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.3.0...v0.3.1)
+
+### 🤖 CI
+
+- 删除无用参数 ([18eacd4](https://github.com/peerless-hero/cli/commit/18eacd4))
+
+### ❤️ Contributors
+
+- Peerless-hero <121016171@qq.com>
+
 ## v0.3.0
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.2.12...v0.3.0)
