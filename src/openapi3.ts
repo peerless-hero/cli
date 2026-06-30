@@ -8,12 +8,15 @@
  *
  */
 import type { OpenAPIV3 } from 'openapi-types'
+import { createRequire } from 'node:module'
 import { env } from 'node:process'
 import axios from 'axios'
 import { readJSON } from 'fs-extra/esm'
 import { getEnv } from './env'
 import { getNpmGlobalFilepath } from './paths'
 import 'dotenv/config'
+
+const _require = createRequire(import.meta.url ?? __filename)
 
 const { PACKAGE_SCOPE = '.', PACKAGE_OPENAPI_V3_NAME = 'openapi-v3', APIFOX_TOKEN } = env
 
@@ -73,7 +76,7 @@ async function openapi3(prefix = ''): Promise<OpenAPIV3.Document> {
       return byAPIFox(prefix)
     }
     case 'module':{
-      const res = await import(`${PACKAGE_SCOPE}/${PACKAGE_OPENAPI_V3_NAME}`, { with: { type: 'json' } })
+      const res = _require(`${PACKAGE_SCOPE}/${PACKAGE_OPENAPI_V3_NAME}`)
       return res.default || res
     }
     case 'global_dir':{
