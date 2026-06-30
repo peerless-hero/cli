@@ -40,12 +40,7 @@
     }
   },
   "bin": {
-    "api": "bin/api.mjs",
-    "changelog": "bin/changelog.mjs",
-    "cli": "bin/version.mjs",
-    "request": "bin/request.mjs",
-    "type": "bin/type.mjs",
-    "version": "bin/version.mjs"
+    "cli": "bin/cli.mjs"
   },
   "files": [
     "bin",
@@ -54,6 +49,7 @@
   ],
   "scripts": {
     "build": "tsdown",
+    "dev": "tsx src/commands/cli.ts",
     "dev:api": "tsx src/commands/api.ts",
     "dev:changelog": "tsx src/commands/changelog.ts",
     "dev:request": "tsx src/commands/request.ts",
@@ -66,7 +62,7 @@
     "bump:patch": "changelogen --patch --bump --release --push",
     "bump:minor": "changelogen --minor --bump --release --push",
     "bump:major": "changelogen --major --bump --release --push",
-    "start": "node bin/version.mjs",
+    "start": "node bin/cli.mjs",
     "start:api": "node bin/api.mjs",
     "start:changelog": "node bin/changelog.mjs",
     "start:request": "node bin/request.mjs",
@@ -76,10 +72,8 @@
     "prepare": "simple-git-hooks"
   },
   "dependencies": {
-    "consola": "3.2.3",
     "fs-extra": "^11.2.0",
-    "semver": "6.3.1",
-    "typescript": "^5.4.5"
+    "tsdown": "^0.22.0"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^9.1.0",
@@ -92,15 +86,17 @@
     "axios": "0.27.2",
     "bumpp": "^9.4.0",
     "changelogen": "^0.6.2",
+    "consola": "3.2.3",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
     "eslint": "^10.6.0",
     "lint-staged": "^15.2.2",
     "openapi-types": "^12.1.3",
     "rimraf": "^5.0.5",
+    "semver": "7.6.3",
     "simple-git-hooks": "^2.11.1",
-    "tsdown": "^0.22.0",
     "tsx": "^4.22.4",
+    "typescript": "^5.4.5",
     "vite": "^5.2.9"
   },
   "simple-git-hooks": {

@@ -2,6 +2,7 @@ import { defineConfig } from 'tsdown'
 
 export default defineConfig({
   entry: {
+    cli: 'src/commands/cli.ts',
     paths: 'src/paths.ts',
     api: 'src/commands/api.ts',
     changelog: 'src/commands/changelog.ts',
@@ -15,6 +16,6 @@ export default defineConfig({
   clean: true,
   platform: 'node',
   deps: {
-    neverBundle: ['openapi-types'],
+    neverBundle: ['openapi-types', 'semver'],
   },
 })
