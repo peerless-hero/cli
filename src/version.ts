@@ -7,7 +7,7 @@
  * @Description:
  *
  */
-import { execSync } from 'node:child_process'
+import { spawnSync } from 'node:child_process'
 import { env } from 'node:process'
 import { resolve } from 'node:path'
 import consola from 'consola'
@@ -31,8 +31,11 @@ export function getPackageLatestVersion(pkgName?: string) {
     return npmVersionRecord[pkgName]
 
   try {
-    const latestVersion = execSync(`npm view ${pkgName} version --silent`, { encoding: 'utf-8', timeout: 2000 })
-    return latestVersion.trim()
+    const latestVersion = spawnSync('npm', ['view', pkgName, 'version', '--silent'], {
+      encoding: 'utf-8',
+      timeout: 2000,
+    })
+    return latestVersion.stdout.trim()
   }
   catch (err) {
     // 找不到NPM包会发生在首次构建的时候，这里不用报错，返回空字符串即可
