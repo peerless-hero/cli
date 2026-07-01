@@ -36,6 +36,10 @@ vi.mock('../paths', () => ({
   TEMP_AXIOS_PATH: '/mock/temp/axios',
   TEMP_UN_PATH: '/mock/temp/un',
   TEMPLATE_DIR: '/mock/template',
+  TEMP_AXIOS_API_DIR: '/mock/temp/axios/api',
+  TEMP_UN_API_DIR: '/mock/temp/un/api',
+  TEMP_AXIOS_ENTRY: '/mock/temp/axios/index.ts',
+  TEMP_UN_ENTRY: '/mock/temp/un/index.ts',
 }))
 
 vi.mock('../type', async () => {
@@ -562,6 +566,108 @@ describe('api', () => {
 
       expect(usersDts).toHaveLength(2)
       expect(rolesDts).toHaveLength(2)
+    })
+  })
+
+  describe('renderAPI - fire-and-forget & new path constants', () => {
+    const norm = (p: string) => p.replaceAll('\\', '/')
+
+    it('should write index.ts using TEMP_AXIOS_ENTRY and TEMP_UN_ENTRY', async () => {
+      const fse = await import('fs-extra/esm')
+      const { renderAPI } = await import('../api')
+      const doc = {
+        openapi: '3.0.0',
+        info: { title: 'test', version: '1.0.0' },
+        paths: { '/api/users': { get: { summary: 'list', responses: mockResponses } } },
+      }
+      await renderAPI(doc)
+
+      const outputFileCalls = vi.mocked(fse.outputFile).mock.calls
+      const axiosEntryCalls = outputFileCalls.filter(([filepath]) =>
+        norm(filepath).endsWith('temp/axios/index.ts'),
+      )
+      const unEntryCalls = outputFileCalls.filter(([filepath]) =>
+        norm(filepath).endsWith('temp/un/index.ts'),
+      )
+
+      expect(axiosEntryCalls).toHaveLength(1)
+      expect(unEntryCalls).toHaveLength(1)
+    })
+
+    it('should resolve renderAPI without awaiting individual api file rendering (fire-and-forget)', async () => {
+      const ejs = await import('ejs')
+      const { renderAPI } = await import('../api')
+
+      // 让 api 模板的渲染处于 pending，证明 renderAPI 不会 await 它们
+      let resolveApiRender!: () => void
+      const apiRenderDeferred = new Promise<string>((resolve) => {
+        resolveApiRender = () => resolve('// deferred content')
+      })
+
+      vi.mocked(ejs.renderFile).mockImplementation((templatePath: unknown) => {
+        const normPath = norm(String(templatePath))
+        if (
+          normPath.endsWith('axios/api.ejs')
+          || normPath.endsWith('un/api.ejs')
+          || normPath.endsWith('dts/api.ejs')
+        ) {
+          return apiRenderDeferred
+        }
+        return Promise.resolve('// rendered content')
+      })
+
+      const doc = {
+        openapi: '3.0.0',
+        info: { title: 'test', version: '1.0.0' },
+        paths: { '/api/users': { get: { summary: 'list', responses: mockResponses } } },
+      }
+
+      // renderAPI 在 api 模板渲染完成前即 resolve（因为渲染未被 await）
+      await expect(renderAPI(doc)).resolves.toBeDefined()
+
+      // 释放延迟的 api 渲染，避免 unhandled rejection
+      resolveApiRender()
+      await Promise.resolve()
+
+      // 恢复默认 mock 实现，避免影响后续测试
+      vi.mocked(ejs.renderFile).mockResolvedValue('// rendered content')
+    })
+
+    it('should write api .ts files using TEMP_AXIOS_API_DIR and TEMP_UN_API_DIR', async () => {
+      const fse = await import('fs-extra/esm')
+      const { renderAPI } = await import('../api')
+      const doc = {
+        openapi: '3.0.0',
+        info: { title: 'test', version: '1.0.0' },
+        paths: { '/api/users': { get: { summary: 'list', responses: mockResponses } } },
+      }
+      await renderAPI(doc)
+
+      const outputFileCalls = vi.mocked(fse.outputFile).mock.calls
+      const axiosApiTs = outputFileCalls.filter(([filepath]) =>
+        norm(filepath).includes('temp/axios/api/users.ts'),
+      )
+      const unApiTs = outputFileCalls.filter(([filepath]) =>
+        norm(filepath).includes('temp/un/api/users.ts'),
+      )
+
+      expect(axiosApiTs).toHaveLength(1)
+      expect(unApiTs).toHaveLength(1)
+    })
+
+    it('should still complete the full render flow (consola.success called)', async () => {
+      const consola = await import('consola')
+      const { renderAPI } = await import('../api')
+      const doc = {
+        openapi: '3.0.0',
+        info: { title: 'test', version: '1.0.0' },
+        paths: { '/api/users': { get: { summary: 'list', responses: mockResponses } } },
+      }
+      await renderAPI(doc)
+
+      expect(consola.default.success).toHaveBeenCalledWith(
+        expect.stringContaining('已生成api文件'),
+      )
     })
   })
 })
