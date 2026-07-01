@@ -1,5 +1,19 @@
+/**
+ * request 模块测试
+ *
+ * 该测试文件验证请求处理主流程（renderRequest），包括：
+ * - 默认路径下调用 renderAPI 与 renderType 渲染模板
+ * - 调用 tsdown 构建 4 次（axios/un 各两次）且均使用 logLevel error
+ * - 构建入口与输出目录使用正确的路径常量
+ * - 清理 _virtual 虚拟目录
+ * - 读取临时 api 目录内容
+ *
+ * 通过 mock openapi3、api、type、publish、changelog、version、env 等模块，
+ * 以及 tsdown、fs-extra、node:fs/promises 等依赖来隔离测试。
+ */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+// 模拟 consola 日志模块
 vi.mock('consola', () => ({
   default: {
     info: vi.fn(),
@@ -11,6 +25,7 @@ vi.mock('consola', () => ({
   },
 }))
 
+// 模拟 fs-extra，提供 copy/emptyDir/outputFile/outputJSON/remove 等空操作
 vi.mock('fs-extra/esm', () => ({
   copy: vi.fn().mockResolvedValue(undefined),
   emptyDir: vi.fn().mockResolvedValue(undefined),
@@ -19,6 +34,7 @@ vi.mock('fs-extra/esm', () => ({
   remove: vi.fn().mockResolvedValue(undefined),
 }))
 
+// 模拟 ejs 模板渲染
 vi.mock('ejs', () => {
   const renderFile = vi.fn().mockResolvedValue('// rendered content')
   return {
@@ -27,42 +43,51 @@ vi.mock('ejs', () => {
   }
 })
 
+// 模拟 tsdown 构建
 vi.mock('tsdown', () => ({
   build: vi.fn().mockResolvedValue(undefined),
 }))
 
+// 模拟 node:fs/promises 的 readdir，返回固定文件列表
 vi.mock('node:fs/promises', () => ({
   readdir: vi.fn().mockResolvedValue(['index.d.ts', 'api.d.ts']),
 }))
 
+// 模拟 openapi3 默认导出
 vi.mock('../openapi3', () => ({
   default: vi.fn(),
 }))
 
+// 模拟 publish 模块
 vi.mock('../publish', () => ({
   publishNPM: vi.fn(),
 }))
 
+// 模拟 api 模块，compareAPI 返回固定对比结果，renderAPI 为空操作
 vi.mock('../api', () => ({
   compareAPI: vi.fn().mockReturnValue({ total: 2, add: ['/api/users GET'], update: [], remove: [] }),
   renderAPI: vi.fn().mockResolvedValue(undefined),
 }))
 
+// 模拟 type 模块，compareType 返回固定对比结果，renderType 为空操作
 vi.mock('../type', () => ({
   compareType: vi.fn().mockReturnValue({ total: 1, add: ['NewDto'], update: [], remove: [] }),
   renderType: vi.fn().mockResolvedValue(undefined),
 }))
 
+// 模拟 changelog 模块
 vi.mock('../changelog', () => ({
   renderRequestChangelog: vi.fn().mockResolvedValue(undefined),
 }))
 
+// 模拟 version 模块
 vi.mock('../version', () => ({
   getVersion: vi.fn().mockReturnValue({ currentVersion: '1.0.0', newVersion: '1.0.1' }),
   updateRequestVersion: vi.fn().mockResolvedValue({ old: '1.0.0', new: '1.0.1' }),
   title: 'test-cli (v0.0.0)',
 }))
 
+// 模拟 env 模块，返回有效的环境配置
 vi.mock('../env', () => ({
   checkApiEnv: vi.fn().mockReturnValue({
     PACKAGE_SCOPE: '@test',
@@ -72,6 +97,7 @@ vi.mock('../env', () => ({
   }),
 }))
 
+// 模拟的 OpenAPI 文档
 const mockOpenapiDoc = {
   openapi: '3.0.0',
   info: { title: 'test', version: '1.0.0' },
@@ -79,11 +105,14 @@ const mockOpenapiDoc = {
 }
 
 describe('request', () => {
+  // 每个用例前清空 mock 调用记录
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
+  // renderRequest：渲染请求主流程
   describe('renderRequest', () => {
+    // 默认路径下应调用 renderAPI 与 renderType 渲染模板
     it('should render request with templates (default path)', async () => {
       const openapi3 = await import('../openapi3')
       vi.mocked(openapi3.default).mockResolvedValue(mockOpenapiDoc)
@@ -98,7 +127,9 @@ describe('request', () => {
     })
   })
 
+  // buildRequest：构建配置与路径常量相关测试
   describe('buildRequest - logLevel & path constants', () => {
+    // 统一路径分隔符为正斜杠便于断言（Windows 兼容）
     const norm = (p: string) => p.replaceAll('\\', '/')
 
     beforeEach(async () => {
@@ -106,6 +137,7 @@ describe('request', () => {
       vi.mocked(openapi3.default).mockResolvedValue(mockOpenapiDoc)
     })
 
+    // 应调用 tsdown.build 4 次，且每次 logLevel 均为 error
     it('should call build 4 times all with logLevel error', async () => {
       const { renderRequest } = await import('../request')
       const tsdown = await import('tsdown')
@@ -119,6 +151,7 @@ describe('request', () => {
       }
     })
 
+    // 构建入口应使用 TEMP_AXIOS_ENTRY/TEMP_UN_ENTRY，输出目录应使用 AXIOS_DIST_DIR/UN_DIST_DIR
     it('should pass TEMP_AXIOS_ENTRY/TEMP_UN_ENTRY as entry and AXIOS_DIST_DIR/UN_DIST_DIR as outDir', async () => {
       const { renderRequest } = await import('../request')
       const tsdown = await import('tsdown')
@@ -136,6 +169,7 @@ describe('request', () => {
       expect(outDirs.filter((d: string) => d === paths.UN_DIST_DIR)).toHaveLength(2)
     })
 
+    // 应删除两个 _virtual 虚拟目录
     it('should remove _virtual dirs using AXIOS_DIST_VIRTUAL_DIR/UN_DIST_VIRTUAL_DIR', async () => {
       const { renderRequest } = await import('../request')
       const fse = await import('fs-extra/esm')
@@ -147,6 +181,7 @@ describe('request', () => {
       expect(removeCalls.every(([p]) => norm(p).includes('_virtual'))).toBe(true)
     })
 
+    // 应读取 TEMP_AXIOS_API_DIR 与 TEMP_UN_API_DIR 目录内容
     it('should readdir TEMP_AXIOS_API_DIR and TEMP_UN_API_DIR', async () => {
       const { renderRequest } = await import('../request')
       const fs = await import('node:fs/promises')
