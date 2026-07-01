@@ -8,11 +8,18 @@
  *
  */
 import { spawnSync } from 'node:child_process'
+import process from 'node:process'
 import consola from 'consola'
 import 'dotenv/config'
 
 export function publishNPM(path: string) {
-  const command = `cd ${path} && npm publish`
-  consola.start('执行命令：', command)
-  spawnSync(command, [], { encoding: 'utf-8', shell: true })
+  consola.start('执行命令：npm publish')
+  const { status, stderr } = spawnSync('npm', ['publish', '--loglevel', 'error'], {
+    cwd: path,
+    encoding: 'utf-8',
+  })
+  if (status !== 0) {
+    consola.error('发布失败：', stderr)
+    process.exit(status ?? 1)
+  }
 }
