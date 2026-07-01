@@ -250,6 +250,54 @@ describe('api', () => {
       method.resolveResultData('ResultLong')
       expect(method.responseDataType).toBe('number')
     })
+
+    // ResultString 应解析为 string
+    it('should resolve response type for ResultString', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('get', { responses: mockResponses })
+      method.resolveResultData('ResultString')
+      expect(method.responseDataType).toBe('string')
+    })
+
+    // ResultInteger 应解析为 number
+    it('should resolve response type for ResultInteger', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('get', { responses: mockResponses })
+      method.resolveResultData('ResultInteger')
+      expect(method.responseDataType).toBe('number')
+    })
+
+    // ResultObject 应设置 responseType 为 any
+    it('should resolve response type for ResultObject', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('get', { responses: mockResponses })
+      method.resolveResultData('ResultObject')
+      expect(method.responseType).toBe('any')
+    })
+
+    // ResultMap 应解析为 Record<string, any>
+    it('should resolve response type for ResultMap', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('get', { responses: mockResponses })
+      method.resolveResultData('ResultMap')
+      expect(method.responseType).toBe('Record<string, any>')
+    })
+
+    // ResultPage（精确匹配）应解析为 Row<any>
+    it('should resolve response type for ResultPage exact match', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('get', { responses: mockResponses })
+      method.resolveResultData('ResultPage')
+      expect(method.responseType).toBe('Row<any>')
+    })
+
+    // ResultList（精确匹配）应解析为 any[]
+    it('should resolve response type for ResultList exact match', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('get', { responses: mockResponses })
+      method.resolveResultData('ResultList')
+      expect(method.responseType).toBe('any[]')
+    })
   })
 
   // DefineAPIMethod.compare：方法级参数对比
@@ -277,6 +325,199 @@ describe('api', () => {
     })
   })
 
+  // DefineAPIMethod.getResponseType / compare：响应类型相关分支
+  describe('defineAPIMethod - getResponseType & response compare', () => {
+    // getResponseType 在 responseDataType 有值时返回带 data 字段的格式
+    it('should return formatted type when responseDataType is set', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('get', { responses: mockResponses })
+      method.responseDataType = 'boolean'
+      const result = method.getResponseType(method)
+      expect(result).toBe('boolean（data字段）')
+    })
+
+    // getResponseType 无 responseDataType 时返回 responseType
+    it('should return responseType when responseDataType is empty', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('get', { responses: mockResponses })
+      const result = method.getResponseType(method)
+      expect(result).toBe('any')
+    })
+
+    // compare 方法应检测响应类型变更
+    it('should detect response type changes in compare', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const oldMethod = new DefineAPIMethod('get', {
+        responses: {
+          200: { description: 'success', content: { 'application/json': { schema: { $ref: '#/components/schemas/ResultString' } } } },
+        },
+      })
+      const newMethod = new DefineAPIMethod('get', {
+        responses: {
+          200: { description: 'success', content: { 'application/json': { schema: { $ref: '#/components/schemas/ResultBoolean' } } } },
+        },
+      })
+      const diff = newMethod.compare(oldMethod)
+      expect(diff.some(d => d.includes('→'))).toBe(true)
+    })
+  })
+
+  // DefineAPIMethod.resolveRequestBody / resolveResponse：补充分支覆盖
+  describe('defineAPIMethod - request body & response branches', () => {
+    // multipart/form-data 应清除 requestQuery 并添加 FormData
+    it('should handle multipart/form-data request body', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('post', {
+        requestBody: {
+          content: { 'multipart/form-data': { schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } } } } },
+        },
+        responses: mockResponses,
+      })
+      expect(method.requestBody).toContain('FormData')
+      expect(method.requestQuery).toEqual([])
+    })
+
+    // $ref 形式的 requestBody 应解析类型
+    it('should handle $ref request body', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('post', {
+        requestBody: { $ref: '#/components/requestBodies/UserBody' },
+        responses: mockResponses,
+      })
+      expect(method.requestBody.length).toBeGreaterThan(0)
+    })
+
+    // response 中 '*/*' content type 应正常解析
+    it('should handle */* content type in response', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('get', {
+        responses: {
+          200: { description: 'success', content: { '*/*': { schema: { $ref: '#/components/schemas/ResultBoolean' } } } },
+        },
+      })
+      expect(method.responseDataType).toBe('boolean')
+    })
+
+    // response 有 content 但无 schema 时应返回 Blob
+    it('should return Blob when response content has no schema', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('get', {
+        responses: {
+          200: { description: 'binary file', content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } },
+        },
+      })
+      expect(method.responseType).toBe('Blob')
+    })
+
+    // $ref schema 且以 Result 开头时应通过 resolveResultData 解析
+    it('should resolve $ref schema starting with Result', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('get', {
+        responses: {
+          200: { description: 'success', content: { 'application/json': { schema: { $ref: '#/components/schemas/ResultBoolean' } } } },
+        },
+      })
+      expect(method.responseDataType).toBe('boolean')
+    })
+
+    // response 中 data 属性应正确解析
+    it('should resolve data property from response schema', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('get', {
+        responses: {
+          200: {
+            description: 'success',
+            content: { 'application/json': { schema: { type: 'object', properties: { data: { type: 'string' } } } } },
+          },
+        },
+      })
+      expect(method.responseDataType).toBe('string')
+    })
+
+    // response 为 $ref 时应解析类型
+    it('should resolve $ref response object', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('get', {
+        responses: {
+          200: { $ref: '#/components/responses/UserResponse' },
+        },
+      })
+      expect(method.responseType).toBe('UserResponse')
+    })
+
+    // $ref schema 且不以 Result 开头时应直接使用类型名
+    it('should resolve $ref schema not starting with Result', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('get', {
+        responses: {
+          200: { description: 'success', content: { 'application/json': { schema: { $ref: '#/components/schemas/UserDto' } } } },
+        },
+      })
+      expect(method.responseDataType).toBe('')
+    })
+
+    // response 包含 rows 属性时解析为 Row<type>
+    it('should resolve rows property as Row<type>', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('get', {
+        responses: {
+          200: {
+            description: 'paginated',
+            content: { 'application/json': { schema: { type: 'object', properties: { rows: { type: 'array', items: { $ref: '#/components/schemas/UserDto' } } } } } },
+          },
+        },
+      })
+      expect(method.responseType).toBe('Row<UserDto>')
+    })
+
+    // compareRequestBody：新有旧无应添加请求体
+    it('should detect added request body in compareRequestBody', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const oldMethod = new DefineAPIMethod('get', { responses: mockResponses })
+      const newMethod = new DefineAPIMethod('post', {
+        requestBody: {
+          content: { 'application/json': { schema: { type: 'object', properties: { name: { type: 'string' } } } } },
+        },
+        responses: mockResponses,
+      })
+      const diff = newMethod.compare(oldMethod)
+      expect(diff.some(d => d.includes('请求体'))).toBe(true)
+    })
+
+    // compareRequestBody：旧有新无应标记删除
+    it('should detect deleted request body in compareRequestBody', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const oldMethod = new DefineAPIMethod('post', {
+        requestBody: {
+          content: { 'application/json': { schema: { type: 'object', properties: { name: { type: 'string' } } } } },
+        },
+        responses: mockResponses,
+      })
+      const newMethod = new DefineAPIMethod('get', { responses: mockResponses })
+      const diff = newMethod.compare(oldMethod)
+      expect(diff.some(d => d.includes('已被删除'))).toBe(true)
+    })
+
+    // compareRequestBody：新旧都有但内容不同应标记变更
+    it('should detect changed request body in compareRequestBody', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const oldMethod = new DefineAPIMethod('post', {
+        requestBody: {
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/UserBody' } } },
+        },
+        responses: mockResponses,
+      })
+      const newMethod = new DefineAPIMethod('post', {
+        requestBody: {
+          content: { 'application/json': { schema: { type: 'string' } } },
+        },
+        responses: mockResponses,
+      })
+      const diff = newMethod.compare(oldMethod)
+      expect(diff.some(d => d.includes('→'))).toBe(true)
+    })
+  })
+
   // DefineAPI：接口集合定义
   describe('defineAPI', () => {
     // 应去除路径中的 /api 前缀
@@ -299,6 +540,15 @@ describe('api', () => {
       const api = new DefineAPI('/api/')
       expect(api.name).toBe('')
       expect(api.componentPrefix).toBe('index')
+    })
+
+    // 路径结尾斜杠应被忽略（如 /api/users/）
+    it('should ignore trailing slash at end of path', async () => {
+      const { DefineAPI } = await import('../api')
+      const api = new DefineAPI('/api/users/')
+      expect(api.path).toBe('/users/')
+      expect(api.name).toBe('Users')
+      expect(api.componentPrefix).toBe('users')
     })
 
     // 路径含 {id} 时名称应包含 By，url 应含模板字符串
@@ -778,6 +1028,45 @@ describe('api', () => {
       expect(consola.default.success).toHaveBeenCalledWith(
         expect.stringContaining('已生成api文件'),
       )
+    })
+  })
+
+  // renderDefineQuery：渲染 query 类型文件
+  describe('renderDefineQuery', () => {
+    // 有 GET query 参数时应调用 ejs 和 outputFile
+    it('should render query type file when GET method has query params', async () => {
+      const ejs = await import('ejs')
+      vi.mocked(ejs.renderFile).mockClear()
+
+      const { DefineAPI, renderDefineQuery } = await import('../api')
+      const api = new DefineAPI('/api/users', {
+        get: {
+          parameters: [{ name: 'page', in: 'query', schema: { type: 'integer' } }],
+          responses: mockResponses,
+        },
+      })
+      await renderDefineQuery(api)
+
+      expect(ejs.renderFile).toHaveBeenCalled()
+    })
+
+    // GET 无 query 参数时应不调用 ejs
+    it('should skip rendering when GET method has no query params', async () => {
+      const ejs = await import('ejs')
+      vi.mocked(ejs.renderFile).mockClear()
+
+      const { DefineAPI, renderDefineQuery } = await import('../api')
+      const api = new DefineAPI('/api/users', {
+        get: { summary: 'list', responses: mockResponses },
+      })
+      await renderDefineQuery(api)
+
+      // 没有 query 参数，不应渲染 api-query 模板
+      const norm = (p: string) => p.replaceAll('\\', '/')
+      const queryCalls = vi.mocked(ejs.renderFile).mock.calls.filter(
+        ([p]) => norm(String(p)).endsWith('api-query.ejs'),
+      )
+      expect(queryCalls).toHaveLength(0)
     })
   })
 })

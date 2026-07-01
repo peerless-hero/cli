@@ -110,6 +110,25 @@ describe('openapi3', () => {
       expect(mockRequire).toHaveBeenCalledWith('@test/openapi-v3')
     })
 
+    // 数据源为 module 且模块无 default 导出时，应直接返回模块本身
+    it('should return the module directly when it has no default export', async () => {
+      const getEnv = await import('../env')
+      vi.mocked(getEnv.getEnv).mockReturnValue('module')
+
+      const mockRequire = vi.fn().mockReturnValue({
+        openapi: '3.0.0',
+        info: { title: 'test', version: '1.0.0' },
+        paths: {},
+      })
+      mockCreateRequire.mockReturnValue(mockRequire)
+
+      const openapi3 = (await import('../openapi3')).default
+      const result = await openapi3()
+
+      expect(result.openapi).toBe('3.0.0')
+      expect((result as any).default).toBeUndefined()
+    })
+
     // 数据源为 global_dir 时应从 npm 全局目录读取 JSON 文件
     it('should read from global directory when source is global_dir', async () => {
       const getEnv = await import('../env')
