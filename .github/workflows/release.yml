@@ -20,15 +20,21 @@ jobs:
       - name: Set node
         uses: actions/setup-node@v6
         with:
-          node-version: 24.x
+          node-version: lts/*
           registry-url: https://registry.npmjs.org
           package-manager-cache: false
 
+      - name: Setup
+        run: npm i -g @antfu/ni
+
       - name: Install
-        run: yarn --frozen-lockfile
+        run: nci
+
+      - name: Test
+        run: nr test:run
 
       - name: Build
-        run: yarn build
+        run: nr build
 
       - run: npx changelogithub
         env:
