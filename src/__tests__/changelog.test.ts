@@ -14,15 +14,19 @@ vi.mock('fs-extra/esm', () => ({
   outputJSON: vi.fn().mockResolvedValue(undefined),
 }))
 
-vi.mock('ejs', () => ({
-  renderFile: vi.fn().mockImplementation((_template, data) => {
+vi.mock('ejs', () => {
+  const renderFile = vi.fn().mockImplementation((_template, data) => {
     if (data.changelog && !data.changelog.add.length && !data.changelog.update.length && !data.changelog.remove.length) {
       return Promise.resolve('')
     }
     const text = JSON.stringify(data)
     return Promise.resolve(text)
-  }),
-}))
+  })
+  return {
+    default: { renderFile },
+    renderFile,
+  }
+})
 
 vi.mock('../openapi3', () => ({
   default: vi.fn(),

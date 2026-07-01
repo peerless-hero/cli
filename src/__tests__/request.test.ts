@@ -19,9 +19,13 @@ vi.mock('fs-extra/esm', () => ({
   remove: vi.fn().mockResolvedValue(undefined),
 }))
 
-vi.mock('ejs', () => ({
-  renderFile: vi.fn().mockResolvedValue('// rendered content'),
-}))
+vi.mock('ejs', () => {
+  const renderFile = vi.fn().mockResolvedValue('// rendered content')
+  return {
+    default: { renderFile },
+    renderFile,
+  }
+})
 
 vi.mock('tsdown', () => ({
   build: vi.fn().mockResolvedValue(undefined),

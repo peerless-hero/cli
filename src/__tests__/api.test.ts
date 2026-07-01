@@ -13,9 +13,13 @@ vi.mock('fs-extra/esm', () => ({
   copy: vi.fn().mockResolvedValue(undefined),
 }))
 
-vi.mock('ejs', () => ({
-  renderFile: vi.fn().mockResolvedValue('// rendered content'),
-}))
+vi.mock('ejs', () => {
+  const renderFile = vi.fn().mockResolvedValue('// rendered content')
+  return {
+    default: { renderFile },
+    renderFile,
+  }
+})
 
 vi.mock('../env', () => ({
   checkApiEnv: vi.fn().mockReturnValue({

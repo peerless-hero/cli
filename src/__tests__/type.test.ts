@@ -16,9 +16,13 @@ vi.mock('node:fs/promises', () => ({
   readFile: vi.fn().mockResolvedValue('// extra config'),
 }))
 
-vi.mock('ejs', () => ({
-  renderFile: vi.fn().mockResolvedValue('// rendered type content'),
-}))
+vi.mock('ejs', () => {
+  const renderFile = vi.fn().mockResolvedValue('// rendered type content')
+  return {
+    default: { renderFile },
+    renderFile,
+  }
+})
 
 vi.mock('../openapi3', () => ({
   default: vi.fn(),
