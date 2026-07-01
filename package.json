@@ -68,6 +68,8 @@
     "start:request": "node bin/request.mjs",
     "start:type": "node bin/type.mjs",
     "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "prepare": "simple-git-hooks"
   },
