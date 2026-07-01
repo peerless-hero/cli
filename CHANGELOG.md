@@ -1,5 +1,52 @@
 # Changelog
 
+## v0.5.0
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.4.0...v0.5.0)
+
+### 🚀 Enhancements
+
+- **api:** 合并相同前缀路径为单一文件 ([f325503](https://github.com/peerless-hero/cli/commit/f325503))
+
+### 🩹 Fixes
+
+- **publish:** 修复npm发布命令及错误处理 ([172fb51](https://github.com/peerless-hero/cli/commit/172fb51))
+- **test:** 修复 ejs 模块的默认导出模拟 ([96aa10c](https://github.com/peerless-hero/cli/commit/96aa10c))
+
+### 💅 Refactors
+
+- 使用 at() 和 replaceAll 替换旧语法 ([5f18834](https://github.com/peerless-hero/cli/commit/5f18834))
+- **paths:** 提取路径常量并统一构建输出目录 ([b436b65](https://github.com/peerless-hero/cli/commit/b436b65))
+- 使用 ejs 默认导入替代具名导入 ([ebd833e](https://github.com/peerless-hero/cli/commit/ebd833e))
+
+### 📖 Documentation
+
+- **test:** 添加测试文件注释与用例说明 ([debfef1](https://github.com/peerless-hero/cli/commit/debfef1))
+
+### 📦 Build
+
+- 从 neverBundle 中移除 semver ([177c7c4](https://github.com/peerless-hero/cli/commit/177c7c4))
+- **deps:** 升级依赖并调整依赖分类 ([f9a28dd](https://github.com/peerless-hero/cli/commit/f9a28dd))
+
+### 🏡 Chore
+
+- **vitest:** 移除 setupFiles 配置 ([cd1da05](https://github.com/peerless-hero/cli/commit/cd1da05))
+- **test:** 添加单次运行和覆盖率脚本 ([c722f39](https://github.com/peerless-hero/cli/commit/c722f39))
+
+### ✅ Tests
+
+- 添加 vitest 测试并更新依赖 ([2692124](https://github.com/peerless-hero/cli/commit/2692124))
+- **api:** 补充路径合并及重复写入测试 ([2d10bf7](https://github.com/peerless-hero/cli/commit/2d10bf7))
+- 补充路径常量及渲染流程测试 ([5818a1e](https://github.com/peerless-hero/cli/commit/5818a1e))
+
+### 🤖 CI
+
+- 更新工作流配置并添加测试步骤 ([29d4cc7](https://github.com/peerless-hero/cli/commit/29d4cc7))
+
+### ❤️ Contributors
+
+- Peerless_hero ([@peerless-hero](https://github.com/peerless-hero))
+
 ## v0.4.0
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.3.7...v0.4.0)

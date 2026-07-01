@@ -1,7 +1,7 @@
 {
   "name": "@peerless_hero/cli",
   "type": "module",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "packageManager": "yarn@1.22.22",
   "author": "peerless_hero <peerless_hero@outlook.com>",
   "license": "MIT",
