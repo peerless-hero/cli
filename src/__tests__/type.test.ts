@@ -82,7 +82,7 @@ describe('type', () => {
 
     it('should handle array types via resolveEnumType', async () => {
       const { transformType } = await import('../type')
-      const result = transformType(['a', 'b', 1] as any)
+      const result = transformType(['a', 'b', '1'])
       expect(result).toContain('\'a\'')
       expect(result).toContain('\'b\'')
       expect(result).toContain('1')

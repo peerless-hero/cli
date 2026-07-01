@@ -8,6 +8,8 @@ vi.mock('node:module', () => ({
   createRequire: mockCreateRequire,
 }))
 
+vi.mock('dotenv/config', () => ({}))
+
 vi.mock('fs-extra/esm', () => ({
   readJSON: vi.fn(),
 }))
@@ -29,6 +31,7 @@ describe('openapi3', () => {
     process.env.APIFOX_TOKEN = ''
     process.env.OPENAPI_DATASOURCE = ''
     process.env.OPENAPI_HOST = ''
+    process.env.GLOBAL_OPENAPI_PATH = ''
   })
 
   describe('default export (openapi3)', () => {

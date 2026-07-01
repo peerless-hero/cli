@@ -23,6 +23,9 @@ vi.mock('../env', () => ({
     PACKAGE_UN_NAME: 'un',
     PACKAGE_AXIOS_NAME: 'axios',
   }),
+  checkTypeEnv: vi.fn().mockReturnValue({
+    PACKAGE_SCOPE: '@test',
+  }),
 }))
 
 vi.mock('../openapi3', () => ({
@@ -39,7 +42,7 @@ vi.mock('../type', async () => {
   const actual = await vi.importActual('../type')
   return {
     ...actual,
-    resolveSchemaType: vi.fn((schema: any) => {
+    resolveSchemaType: vi.fn((schema) => {
       if (!schema)
         return 'any'
       if ('$ref' in schema) {
@@ -322,7 +325,10 @@ describe('api', () => {
       }
       const newDoc = { openapi: '3.0.0', info: { title: 'test', version: '1.0.0' }, paths: {} }
       const result = compareAPI(oldDoc, newDoc)
-      expect(result.remove.length).toBeGreaterThanOrEqual(0)
+      expect(result.remove).toHaveLength(1)
+      expect(result.remove[0]).toContain('/old')
+      expect(result.remove[0]).toContain('GET')
+      expect(result.total).toBe(1)
     })
   })
 
@@ -339,6 +345,223 @@ describe('api', () => {
       await renderAPI(doc)
       expect(ejs.renderFile).toHaveBeenCalled()
       expect(fse.outputFile).toHaveBeenCalled()
+    })
+
+    it('should call consola.success with unique group count', async () => {
+      const consola = await import('consola')
+      const { renderAPI } = await import('../api')
+      const doc = {
+        openapi: '3.0.0',
+        info: { title: 'test', version: '1.0.0' },
+        paths: {
+          '/api/users': { get: { summary: 'list', responses: mockResponses } },
+          '/api/roles': { get: { summary: 'list', responses: mockResponses } },
+        },
+      }
+      await renderAPI(doc)
+      expect(consola.default.success).toHaveBeenCalledWith(
+        expect.stringContaining('2'),
+      )
+    })
+  })
+
+  describe('renderAPI - path merging', () => {
+    // Windows 下 resolve 会使用反斜杠，统一转为正斜杠便于断言
+    const norm = (p: string) => p.replaceAll('\\', '/')
+
+    it('should merge paths with same componentPrefix into one DefineAPI', async () => {
+      const ejs = await import('ejs')
+      const { renderAPI } = await import('../api')
+      const doc = {
+        openapi: '3.0.0',
+        info: { title: 'test', version: '1.0.0' },
+        paths: {
+          '/api/system/user': { get: { summary: 'get user', responses: mockResponses } },
+          '/api/system/user/': { post: { summary: 'add user', responses: mockResponses } },
+        },
+      }
+      await renderAPI(doc)
+
+      const renderFileCalls = vi.mocked(ejs.renderFile).mock.calls
+      const dtsCalls = renderFileCalls.filter(([templatePath]) =>
+        norm(templatePath).endsWith('dts/api.ejs'),
+      )
+
+      // 只调用一次 dts/api.ejs（合并后），而非两次
+      expect(dtsCalls).toHaveLength(1)
+
+      // 合并后的 DefineAPI 应同时包含 get 和 post 方法
+      const mergedAPI = dtsCalls[0]?.[1]
+      if (mergedAPI) {
+        expect(mergedAPI.method.get).toBeDefined()
+        expect(mergedAPI.method.post).toBeDefined()
+      }
+      else {
+        expect(mergedAPI).toBeDefined()
+      }
+    })
+
+    it('should not write duplicate .d.ts files for paths with trailing slash', async () => {
+      const fse = await import('fs-extra/esm')
+      const { renderAPI } = await import('../api')
+      const doc = {
+        openapi: '3.0.0',
+        info: { title: 'test', version: '1.0.0' },
+        paths: {
+          '/api/system/user': { get: { summary: 'get user', responses: mockResponses } },
+          '/api/system/user/': { put: { summary: 'update user', responses: mockResponses } },
+        },
+      }
+      await renderAPI(doc)
+
+      const outputFileCalls = vi.mocked(fse.outputFile).mock.calls
+      const axiosDtsCalls = outputFileCalls.filter(([filepath]) =>
+        norm(filepath).includes('axios/api/system-user.d.ts'),
+      )
+      const unDtsCalls = outputFileCalls.filter(([filepath]) =>
+        norm(filepath).includes('un/api/system-user.d.ts'),
+      )
+
+      // 每个包只写入一次，而非两次（避免并发覆盖导致文件损坏）
+      expect(axiosDtsCalls).toHaveLength(1)
+      expect(unDtsCalls).toHaveLength(1)
+    })
+
+    it('should not write duplicate .ts files for paths with trailing slash', async () => {
+      const fse = await import('fs-extra/esm')
+      const { renderAPI } = await import('../api')
+      const doc = {
+        openapi: '3.0.0',
+        info: { title: 'test', version: '1.0.0' },
+        paths: {
+          '/api/system/user': { get: { summary: 'get user', responses: mockResponses } },
+          '/api/system/user/': { post: { summary: 'add user', responses: mockResponses } },
+        },
+      }
+      await renderAPI(doc)
+
+      const outputFileCalls = vi.mocked(fse.outputFile).mock.calls
+      const axiosTsCalls = outputFileCalls.filter(([filepath]) =>
+        norm(filepath).includes('axios/api/system-user.ts'),
+      )
+      const unTsCalls = outputFileCalls.filter(([filepath]) =>
+        norm(filepath).includes('un/api/system-user.ts'),
+      )
+
+      expect(axiosTsCalls).toHaveLength(1)
+      expect(unTsCalls).toHaveLength(1)
+    })
+
+    it('should count unique prefixes instead of total paths', async () => {
+      const consola = await import('consola')
+      const { renderAPI } = await import('../api')
+      const doc = {
+        openapi: '3.0.0',
+        info: { title: 'test', version: '1.0.0' },
+        paths: {
+          '/api/system/user': { get: { summary: 'get user', responses: mockResponses } },
+          '/api/system/user/': { post: { summary: 'add user', responses: mockResponses } },
+          '/api/system/role': { get: { summary: 'get role', responses: mockResponses } },
+        },
+      }
+      await renderAPI(doc)
+
+      // 3 条路径但只有 2 个唯一前缀（system-user、system-role）
+      expect(consola.default.success).toHaveBeenCalledWith(
+        expect.stringContaining('2'),
+      )
+    })
+
+    it('should merge all HTTP methods from paths with same componentPrefix', async () => {
+      const ejs = await import('ejs')
+      const { renderAPI } = await import('../api')
+      const doc = {
+        openapi: '3.0.0',
+        info: { title: 'test', version: '1.0.0' },
+        paths: {
+          '/api/system/user': {
+            get: { summary: 'get', responses: mockResponses },
+            post: { summary: 'add', responses: mockResponses },
+          },
+          '/api/system/user/': {
+            put: { summary: 'update', responses: mockResponses },
+            delete: { summary: 'remove', responses: mockResponses },
+          },
+        },
+      }
+      await renderAPI(doc)
+
+      const renderFileCalls = vi.mocked(ejs.renderFile).mock.calls
+      const dtsCalls = renderFileCalls.filter(([templatePath]) =>
+        norm(templatePath).endsWith('dts/api.ejs'),
+      )
+
+      expect(dtsCalls).toHaveLength(1)
+      const mergedAPI = dtsCalls[0][1]
+      if (mergedAPI) {
+        expect(mergedAPI.method.get).toBeDefined()
+        expect(mergedAPI.method.post).toBeDefined()
+        expect(mergedAPI.method.put).toBeDefined()
+        expect(mergedAPI.method.delete).toBeDefined()
+      }
+      else {
+        expect(mergedAPI).toBeDefined()
+      }
+    })
+
+    it('should let later path override same HTTP method in merged group', async () => {
+      const ejs = await import('ejs')
+      const { renderAPI } = await import('../api')
+      const doc = {
+        openapi: '3.0.0',
+        info: { title: 'test', version: '1.0.0' },
+        paths: {
+          '/api/system/user': { get: { summary: 'first get', responses: mockResponses } },
+          '/api/system/user/': { get: { summary: 'second get', responses: mockResponses } },
+        },
+      }
+      await renderAPI(doc)
+
+      const renderFileCalls = vi.mocked(ejs.renderFile).mock.calls
+      const dtsCalls = renderFileCalls.filter(([templatePath]) =>
+        norm(templatePath).endsWith('dts/api.ejs'),
+      )
+
+      expect(dtsCalls).toHaveLength(1)
+      const mergedAPI = dtsCalls[0][1]
+      if (mergedAPI) {
+      // 后面的覆盖前面的同名方法
+        expect(mergedAPI.method.get?.notes).toContain('second get')
+        expect(mergedAPI.method.get?.notes).not.toContain('first get')
+      }
+      else {
+        expect(mergedAPI).toBeDefined()
+      }
+    })
+
+    it('should handle paths without trailing slash normally', async () => {
+      const fse = await import('fs-extra/esm')
+      const { renderAPI } = await import('../api')
+      const doc = {
+        openapi: '3.0.0',
+        info: { title: 'test', version: '1.0.0' },
+        paths: {
+          '/api/users': { get: { summary: 'list', responses: mockResponses } },
+          '/api/roles': { get: { summary: 'list', responses: mockResponses } },
+        },
+      }
+      await renderAPI(doc)
+
+      const outputFileCalls = vi.mocked(fse.outputFile).mock.calls
+      const usersDts = outputFileCalls.filter(([filepath]) =>
+        norm(filepath).includes('api/users.d.ts'),
+      )
+      const rolesDts = outputFileCalls.filter(([filepath]) =>
+        norm(filepath).includes('api/roles.d.ts'),
+      )
+
+      expect(usersDts).toHaveLength(2)
+      expect(rolesDts).toHaveLength(2)
     })
   })
 })

@@ -7,6 +7,10 @@ vi.mock('consola', () => ({
   },
 }))
 
+function mockProcessExit() {
+  return vi.spyOn(process, 'exit').mockImplementation(() => undefined as never)
+}
+
 describe('env', () => {
   beforeEach(() => {
     vi.resetModules()
@@ -15,7 +19,7 @@ describe('env', () => {
 
   describe('checkApiEnv', () => {
     it('should exit when PACKAGE_SCOPE does not start with @', async () => {
-      const mockExit = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never)
+      const mockExit = mockProcessExit()
       process.env.PACKAGE_SCOPE = 'invalid-scope'
       process.env.PACKAGE_UN_NAME = 'un'
       process.env.PACKAGE_AXIOS_NAME = 'axios'
@@ -32,7 +36,7 @@ describe('env', () => {
     })
 
     it('should exit when package names overlap', async () => {
-      const mockExit = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never)
+      const mockExit = mockProcessExit()
       process.env.PACKAGE_SCOPE = '@test'
       process.env.PACKAGE_UN_NAME = 'axios'
       process.env.PACKAGE_AXIOS_NAME = 'axios'
@@ -85,7 +89,7 @@ describe('env', () => {
 
   describe('checkTypeEnv', () => {
     it('should exit when PACKAGE_SCOPE is not set', async () => {
-      const mockExit = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never)
+      const mockExit = mockProcessExit()
       process.env.PACKAGE_SCOPE = ''
 
       const { checkTypeEnv } = await import('../env')
