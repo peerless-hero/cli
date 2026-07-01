@@ -14,7 +14,7 @@ import { renderFile } from 'ejs'
 import { copy, outputFile } from 'fs-extra/esm'
 import { checkApiEnv } from './env'
 import getOpenApi3 from './openapi3'
-import { TEMP_AXIOS_PATH, TEMP_UN_PATH, TEMPLATE_DIR } from './paths'
+import { TEMP_AXIOS_API_DIR, TEMP_AXIOS_ENTRY, TEMP_AXIOS_PATH, TEMP_UN_API_DIR, TEMP_UN_ENTRY, TEMP_UN_PATH, TEMPLATE_DIR } from './paths'
 import { DefineProperty, resolveSchemaType } from './type'
 
 const ACTION: Record<string, string> = {
@@ -382,19 +382,19 @@ export class DefineAPI {
 
 export async function renderDefineAxiosAPI(defineAPI: DefineAPI) {
   const text = await renderFile(resolve(TEMPLATE_DIR, 'ejs/axios/api.ejs'), defineAPI)
-  return outputFile(resolve(TEMP_AXIOS_PATH, `api/${defineAPI.componentPrefix}.ts`), text)
+  return outputFile(resolve(TEMP_AXIOS_API_DIR, `${defineAPI.componentPrefix}.ts`), text)
 }
 
 export async function renderDefineUnAPI(defineAPI: DefineAPI) {
   const text = await renderFile(resolve(TEMPLATE_DIR, 'ejs/un/api.ejs'), defineAPI)
-  return outputFile(resolve(TEMP_UN_PATH, `api/${defineAPI.componentPrefix}.ts`), text)
+  return outputFile(resolve(TEMP_UN_API_DIR, `${defineAPI.componentPrefix}.ts`), text)
 }
 
 export async function renderDTSofAPI(defineAPI: DefineAPI) {
   const text = await renderFile(resolve(TEMPLATE_DIR, 'ejs/dts/api.ejs'), defineAPI)
   return Promise.all([
-    outputFile(resolve(TEMP_AXIOS_PATH, `api/${defineAPI.componentPrefix}.d.ts`), text),
-    outputFile(resolve(TEMP_UN_PATH, `api/${defineAPI.componentPrefix}.d.ts`), text),
+    outputFile(resolve(TEMP_AXIOS_API_DIR, `${defineAPI.componentPrefix}.d.ts`), text),
+    outputFile(resolve(TEMP_UN_API_DIR, `${defineAPI.componentPrefix}.d.ts`), text),
   ])
 }
 
@@ -471,8 +471,8 @@ export async function renderAPI(document?: OpenAPIV3.Document) {
   await Promise.all([
     outputFile(resolve(TEMP_AXIOS_PATH, 'auto-imports.d.ts'), axiosAutoImport),
     outputFile(resolve(TEMP_UN_PATH, 'auto-imports.d.ts'), unAutoImport),
-    outputFile(resolve(TEMP_AXIOS_PATH, 'index.ts'), indexTS),
-    outputFile(resolve(TEMP_UN_PATH, 'index.ts'), indexTS),
+    outputFile(TEMP_AXIOS_ENTRY, indexTS),
+    outputFile(TEMP_UN_ENTRY, indexTS),
     // 生成 index.d.ts，mkdist 会直接复制到 dist 目录，保留三斜线引用
     outputFile(resolve(TEMP_AXIOS_PATH, 'index.d.ts'), indexDTS),
     outputFile(resolve(TEMP_UN_PATH, 'index.d.ts'), indexDTS),

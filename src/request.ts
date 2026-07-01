@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-05 02:33:40
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2026-06-30 21:11:01
+ * @LastEditTime: 2026-07-01 21:28:08
  * @FilePath: \cli\src\request.ts
  * @Description:
  *
@@ -20,13 +20,23 @@ import { renderRequestChangelog } from './changelog'
 import { checkApiEnv } from './env'
 import getOpenapi3 from './openapi3'
 import {
+  AXIOS_DIST_API_DIR,
+  AXIOS_DIST_DIR,
+  AXIOS_DIST_VIRTUAL_DIR,
   PACKAGE_AXIOS_PATH,
   PACKAGE_OPENAPI_V3_PATH,
   PACKAGE_UN_PATH,
+  TEMP_AXIOS_API_DIR,
+  TEMP_AXIOS_ENTRY,
   TEMP_AXIOS_PATH,
   TEMP_OPENAPI_V3_PATH,
+  TEMP_UN_API_DIR,
+  TEMP_UN_ENTRY,
   TEMP_UN_PATH,
   TEMPLATE_DIR,
+  UN_DIST_API_DIR,
+  UN_DIST_DIR,
+  UN_DIST_VIRTUAL_DIR,
 } from './paths'
 import { publishNPM } from './publish'
 import { compareType, renderType } from './type'
@@ -39,9 +49,9 @@ async function buildRequest() {
   await Promise.all([
     // axios ESM
     build({
-      entry: [resolve(TEMP_AXIOS_PATH, 'index.ts')],
+      entry: [TEMP_AXIOS_ENTRY],
       format: 'esm',
-      outDir: resolve(PACKAGE_AXIOS_PATH, 'dist'),
+      outDir: AXIOS_DIST_DIR,
       unbundle: true,
       dts: false,
       clean: false,
@@ -49,12 +59,13 @@ async function buildRequest() {
       root: TEMP_AXIOS_PATH,
       deps: { neverBundle: ['axios', 'axios-extensions'] },
       outExtensions: () => ({ js: '.mjs' }),
+      logLevel: 'error',
     }),
     // axios CJS
     build({
-      entry: [resolve(TEMP_AXIOS_PATH, 'index.ts')],
+      entry: [TEMP_AXIOS_ENTRY],
       format: 'cjs',
-      outDir: resolve(PACKAGE_AXIOS_PATH, 'dist'),
+      outDir: AXIOS_DIST_DIR,
       unbundle: true,
       dts: false,
       clean: false,
@@ -62,12 +73,13 @@ async function buildRequest() {
       root: TEMP_AXIOS_PATH,
       deps: { neverBundle: ['axios', 'axios-extensions'] },
       outExtensions: () => ({ js: '.cjs' }),
+      logLevel: 'error',
     }),
     // un ESM
     build({
-      entry: [resolve(TEMP_UN_PATH, 'index.ts')],
+      entry: [TEMP_UN_ENTRY],
       format: 'esm',
-      outDir: resolve(PACKAGE_UN_PATH, 'dist'),
+      outDir: UN_DIST_DIR,
       unbundle: true,
       dts: false,
       clean: false,
@@ -75,12 +87,13 @@ async function buildRequest() {
       root: TEMP_UN_PATH,
       deps: { neverBundle: ['@uni-helper/uni-network'] },
       outExtensions: () => ({ js: '.mjs' }),
+      logLevel: 'error',
     }),
     // un CJS
     build({
-      entry: [resolve(TEMP_UN_PATH, 'index.ts')],
+      entry: [TEMP_UN_ENTRY],
       format: 'cjs',
-      outDir: resolve(PACKAGE_UN_PATH, 'dist'),
+      outDir: UN_DIST_DIR,
       unbundle: true,
       dts: false,
       clean: false,
@@ -88,6 +101,7 @@ async function buildRequest() {
       root: TEMP_UN_PATH,
       deps: { neverBundle: ['@uni-helper/uni-network'] },
       outExtensions: () => ({ js: '.cjs' }),
+      logLevel: 'error',
     }),
     // openapi-v3: 无 .ts 源文件，直接复制
     copy(TEMP_OPENAPI_V3_PATH, PACKAGE_OPENAPI_V3_PATH, { overwrite: true }),
@@ -95,48 +109,44 @@ async function buildRequest() {
 
   // 清理 unbundle 模式下生成的运行时辅助文件
   await Promise.all([
-    remove(resolve(PACKAGE_AXIOS_PATH, 'dist', '_virtual')),
-    remove(resolve(PACKAGE_UN_PATH, 'dist', '_virtual')),
+    remove(AXIOS_DIST_VIRTUAL_DIR),
+    remove(UN_DIST_VIRTUAL_DIR),
   ])
 
   // 复制声明文件（所有 .d.ts 由 renderAPI/renderType 预生成）
   // 先将 api/.d.ts 逐个复制（copy 目录时 filter 会拒绝目录本身）
-  const axiosApiDir = resolve(TEMP_AXIOS_PATH, 'api')
-  const unApiDir = resolve(TEMP_UN_PATH, 'api')
   const [axiosApiFiles, unApiFiles] = await Promise.all([
-    readdir(axiosApiDir),
-    readdir(unApiDir),
+    readdir(TEMP_AXIOS_API_DIR),
+    readdir(TEMP_UN_API_DIR),
   ])
   // mkdist 原通过 declaration:true 从 .ts 自动生成 .d.ts，现手动生成缺失部分
-  const axiosOutDir = resolve(PACKAGE_AXIOS_PATH, 'dist')
-  const unOutDir = resolve(PACKAGE_UN_PATH, 'dist')
   const copyDtsTasks: Promise<void>[] = [
     // axios dts（预生成）
-    copy(resolve(TEMP_AXIOS_PATH, 'index.d.ts'), resolve(axiosOutDir, 'index.d.ts')),
-    copy(resolve(TEMP_AXIOS_PATH, 'global.d.ts'), resolve(axiosOutDir, 'global.d.ts')),
-    copy(resolve(TEMP_AXIOS_PATH, 'auto-imports.d.ts'), resolve(axiosOutDir, 'auto-imports.d.ts')),
+    copy(resolve(TEMP_AXIOS_PATH, 'index.d.ts'), resolve(AXIOS_DIST_DIR, 'index.d.ts')),
+    copy(resolve(TEMP_AXIOS_PATH, 'global.d.ts'), resolve(AXIOS_DIST_DIR, 'global.d.ts')),
+    copy(resolve(TEMP_AXIOS_PATH, 'auto-imports.d.ts'), resolve(AXIOS_DIST_DIR, 'auto-imports.d.ts')),
     // 手动生成 axios/request.d.ts（index.d.ts 有 export * from './request'）
-    outputFile(resolve(axiosOutDir, 'request.d.ts'), `export declare const service: import('axios').AxiosInstance`),
+    outputFile(resolve(AXIOS_DIST_DIR, 'request.d.ts'), `export declare const service: import('axios').AxiosInstance`),
     // 手动生成 axios/importsMap.d.ts（index.d.ts 有 export * from './importsMap'）
-    outputFile(resolve(axiosOutDir, 'importsMap.d.ts'), `export declare const importsMap: Record<string, string[]>`),
+    outputFile(resolve(AXIOS_DIST_DIR, 'importsMap.d.ts'), `export declare const importsMap: Record<string, string[]>`),
     // un dts（预生成）
-    copy(resolve(TEMP_UN_PATH, 'index.d.ts'), resolve(unOutDir, 'index.d.ts')),
-    copy(resolve(TEMP_UN_PATH, 'global.d.ts'), resolve(unOutDir, 'global.d.ts')),
-    copy(resolve(TEMP_UN_PATH, 'auto-imports.d.ts'), resolve(unOutDir, 'auto-imports.d.ts')),
+    copy(resolve(TEMP_UN_PATH, 'index.d.ts'), resolve(UN_DIST_DIR, 'index.d.ts')),
+    copy(resolve(TEMP_UN_PATH, 'global.d.ts'), resolve(UN_DIST_DIR, 'global.d.ts')),
+    copy(resolve(TEMP_UN_PATH, 'auto-imports.d.ts'), resolve(UN_DIST_DIR, 'auto-imports.d.ts')),
     // 手动生成 un/request.d.ts
-    outputFile(resolve(unOutDir, 'request.d.ts'), `export declare const service: import('@uni-helper/uni-network').UnInstance`),
+    outputFile(resolve(UN_DIST_DIR, 'request.d.ts'), `export declare const service: import('@uni-helper/uni-network').UnInstance`),
     // 手动生成 un/importsMap.d.ts
-    outputFile(resolve(unOutDir, 'importsMap.d.ts'), `export declare const importsMap: Record<string, string[]>`),
+    outputFile(resolve(UN_DIST_DIR, 'importsMap.d.ts'), `export declare const importsMap: Record<string, string[]>`),
   ]
   // 复制 api/*.d.ts
   for (const file of axiosApiFiles) {
     if (file.endsWith('.d.ts')) {
-      copyDtsTasks.push(copy(resolve(axiosApiDir, file), resolve(PACKAGE_AXIOS_PATH, 'dist', 'api', file)))
+      copyDtsTasks.push(copy(resolve(TEMP_AXIOS_API_DIR, file), resolve(AXIOS_DIST_API_DIR, file)))
     }
   }
   for (const file of unApiFiles) {
     if (file.endsWith('.d.ts')) {
-      copyDtsTasks.push(copy(resolve(unApiDir, file), resolve(PACKAGE_UN_PATH, 'dist', 'api', file)))
+      copyDtsTasks.push(copy(resolve(TEMP_UN_API_DIR, file), resolve(UN_DIST_API_DIR, file)))
     }
   }
   await Promise.all(copyDtsTasks)
