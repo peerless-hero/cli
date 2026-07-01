@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2022-11-03 17:53:22
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2026-06-30 21:11:10
+ * @LastEditTime: 2026-07-01 21:16:30
  * @FilePath: \cli\src\api.ts
  * @Description:
  *
@@ -424,11 +424,30 @@ export async function renderAPI(document?: OpenAPIV3.Document) {
   const unImports: Record<string, string[]> = {
     [unPackageName]: [],
   }
+  // 先按 componentPrefix 分组，将相同前缀的路径（如 /user 和 /user/）合并为一个文件
+  const pathGroups = new Map<string, { path: string, pathItem: OpenAPIV3.PathItemObject }[]>()
+  for (const path in openApi3.paths) {
+    const tempAPI = new DefineAPI(path)
+    const key = tempAPI.componentPrefix
+    if (!pathGroups.has(key))
+      pathGroups.set(key, [])
+    pathGroups.get(key)!.push({ path, pathItem: openApi3.paths[path] as OpenAPIV3.PathItemObject })
+  }
+
   let count = 0
   const pathList = ['./importsMap', './request']
-  for (const path in openApi3.paths) {
+  const methods = ['get', 'post', 'put', 'delete', 'patch'] as const
+  for (const [prefix, group] of pathGroups) {
     count++
-    const defineAPI = new DefineAPI(path, openApi3.paths[path])
+    // 合并同组内所有路径的 HTTP 方法，后面的覆盖前面的同名方法
+    const mergedPathItem: OpenAPIV3.PathItemObject = {}
+    for (const { pathItem } of group) {
+      for (const method of methods) {
+        if (pathItem[method])
+          mergedPathItem[method] = pathItem[method]
+      }
+    }
+    const defineAPI = new DefineAPI(group[0].path, mergedPathItem)
     // 根路径 / 不参与自动导入
     if (defineAPI.path !== '/') {
       axiosImports[axiosPackageName].push(...defineAPI.exports)
@@ -437,7 +456,7 @@ export async function renderAPI(document?: OpenAPIV3.Document) {
     renderDefineAxiosAPI(defineAPI)
     renderDefineUnAPI(defineAPI)
     renderDTSofAPI(defineAPI)
-    pathList.push(`./api/${defineAPI.componentPrefix}`)
+    pathList.push(`./api/${prefix}`)
   }
 
   const [indexTS, indexDTS, axiosAutoImport, unAutoImport, axiosExportJSON, unExportJSON] = await Promise.all([
