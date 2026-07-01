@@ -391,6 +391,36 @@ describe('type', () => {
       expect(result.total).toBe(1)
       expect(result.remove).toContain('OldDto')
     })
+
+    // 应检测 schema 属性变更（覆盖 update 分支）
+    it('should detect schema property changes', async () => {
+      const { compareType } = await import('../type')
+      const result = compareType(
+        {
+          openapi: '3.0.0',
+          info: { title: 'test', version: '1.0.0' },
+          paths: {},
+          components: {
+            schemas: {
+              UserDto: { type: 'object', properties: { name: { type: 'string', description: '旧名称' }, age: { type: 'integer' } }, required: ['name'] },
+            },
+          },
+        },
+        {
+          openapi: '3.0.0',
+          info: { title: 'test', version: '1.0.0' },
+          paths: {},
+          components: {
+            schemas: {
+              UserDto: { type: 'object', properties: { name: { type: 'string', description: '新名称' }, email: { type: 'string' } }, required: ['name', 'email'] },
+            },
+          },
+        },
+      )
+      expect(result.total).toBe(1)
+      expect(result.update.length).toBe(1)
+      expect(result.update[0][0]).toBe('UserDto')
+    })
   })
 
   // renderType：渲染类型文件

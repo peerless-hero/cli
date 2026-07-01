@@ -157,6 +157,15 @@ describe('version', () => {
       expect(() => getNewVersion('not-a-version')).toThrow('无法根据当前版本号自动生成新版本号')
     })
 
+    // 相同版本号再次调用应命中缓存
+    it('should return cached result for repeated oldVersion', async () => {
+      const { getNewVersion } = await import('../version')
+      const result1 = getNewVersion('1.0.0')
+      expect(result1).toBe('1.0.1')
+      const result2 = getNewVersion('1.0.0')
+      expect(result2).toBe('1.0.1')
+    })
+
     // MAX_PATCH_VERSION 为非正数时应回退为默认上限 99
     it('should use max 99 when MAX_PATCH_VERSION is non-positive', async () => {
       process.env.MAX_PATCH_VERSION = '-1'
@@ -212,6 +221,26 @@ describe('version', () => {
 
       expect(result).toEqual({ old: '1.0.0', new: '1.0.1' })
       expect(fse.outputJSON).toHaveBeenCalledTimes(3)
+    })
+  })
+
+  // outputVersion：输出版本号信息
+  describe('outputVersion', () => {
+    it('should call consola.box with version info', async () => {
+      const childProcess = await import('node:child_process')
+      vi.mocked(childProcess.spawnSync).mockReturnValue({
+        stdout: '0.5.0\n',
+        stderr: '',
+        status: 0,
+        pid: 1,
+        output: [],
+        signal: null,
+      })
+
+      const consola = await import('consola')
+      const { outputVersion } = await import('../version')
+      await outputVersion()
+      expect(consola.default.box).toHaveBeenCalled()
     })
   })
 })

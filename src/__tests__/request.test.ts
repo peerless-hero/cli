@@ -97,6 +97,16 @@ vi.mock('../env', () => ({
   }),
 }))
 
+// 模拟 node:process（仅覆盖 exit，argv 保持与 process.argv 同一引用）
+vi.mock('node:process', async (importOriginal) => {
+  const actual: any = await importOriginal()
+  return {
+    argv: actual.argv,
+    env: actual.env,
+    exit: vi.fn(),
+  }
+})
+
 // 模拟的 OpenAPI 文档
 const mockOpenapiDoc = {
   openapi: '3.0.0',
@@ -193,6 +203,74 @@ describe('request', () => {
       expect(readdirCalls).toHaveLength(2)
       expect(readdirCalls.some(([p]) => norm(String(p)) === norm(paths.TEMP_AXIOS_API_DIR))).toBe(true)
       expect(readdirCalls.some(([p]) => norm(String(p)) === norm(paths.TEMP_UN_API_DIR))).toBe(true)
+    })
+  })
+
+  // renderRequest - changelog/publish 分支
+  describe('renderRequest - changelog & publish branches', () => {
+    beforeEach(async () => {
+      const openapi3 = await import('../openapi3')
+      vi.mocked(openapi3.default).mockResolvedValue(mockOpenapiDoc)
+    })
+
+    // --changelog 分支：应调用 compareAPI、compareType 和 renderRequestChangelog
+    it('should call compareAPI and compareType when --changelog flag is present', async () => {
+      const originalLength = process.argv.length
+      process.argv.push('--changelog')
+      try {
+        const { renderRequest } = await import('../request')
+        await renderRequest()
+
+        const api = await import('../api')
+        expect(api.compareAPI).toHaveBeenCalled()
+
+        const type = await import('../type')
+        expect(type.compareType).toHaveBeenCalled()
+
+        const changelog = await import('../changelog')
+        expect(changelog.renderRequestChangelog).toHaveBeenCalled()
+      }
+      finally {
+        process.argv.length = originalLength
+      }
+    })
+
+    // --changelog 且无变更时，应调用 exit
+    it('should exit when --changelog finds no changes', async () => {
+      const originalLength = process.argv.length
+      process.argv.push('--changelog')
+      try {
+        const api = await import('../api')
+        vi.mocked(api.compareAPI).mockReturnValue({ total: 0, add: [], update: [], remove: [] })
+
+        const type = await import('../type')
+        vi.mocked(type.compareType).mockReturnValue({ total: 0, add: [], update: [], remove: [] })
+
+        const { renderRequest } = await import('../request')
+        await renderRequest()
+
+        const proc = await import('node:process')
+        expect(proc.exit).toHaveBeenCalled()
+      }
+      finally {
+        process.argv.length = originalLength
+      }
+    })
+
+    // --publish 分支：应调用 publishNPM 三次
+    it('should call publishNPM when --publish flag is present', async () => {
+      const originalLength = process.argv.length
+      process.argv.push('--publish')
+      try {
+        const { renderRequest } = await import('../request')
+        await renderRequest()
+
+        const publish = await import('../publish')
+        expect(publish.publishNPM).toHaveBeenCalledTimes(3)
+      }
+      finally {
+        process.argv.length = originalLength
+      }
     })
   })
 })

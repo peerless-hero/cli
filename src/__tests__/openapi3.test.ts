@@ -185,5 +185,35 @@ describe('openapi3', () => {
       const openapi3 = (await import('../openapi3')).default
       await expect(openapi3()).rejects.toThrow('APIFOX_TOKEN')
     })
+
+    // GLOBAL_OPENAPI_PATH 设置时应使用自定义路径
+    it('should use GLOBAL_OPENAPI_PATH when set for global_dir source', async () => {
+      process.env.GLOBAL_OPENAPI_PATH = '/custom/path/openapi.json'
+      const getEnv = await import('../env')
+      vi.mocked(getEnv.getEnv).mockReturnValue('global_dir')
+
+      const fse = await import('fs-extra/esm')
+      vi.mocked(fse.readJSON).mockResolvedValue({ openapi: '3.0.0', info: { title: 'test', version: '1.0.0' }, paths: {} })
+
+      const openapi3 = (await import('../openapi3')).default
+      const result = await openapi3()
+
+      expect(result.openapi).toBe('3.0.0')
+      expect(fse.readJSON).toHaveBeenCalledWith('/custom/path/openapi.json', { encoding: 'utf-8' })
+      delete process.env.GLOBAL_OPENAPI_PATH
+    })
+
+    // openapi 数据源缺少 OPENAPI_HOST 时应抛出错误
+    it('should throw error when OPENAPI_HOST is missing for openapi source', async () => {
+      const getEnv = await import('../env')
+      vi.mocked(getEnv.getEnv).mockImplementation((_prefix, key) => {
+        if (key === 'OPENAPI_DATASOURCE')
+          return 'openapi'
+        return ''
+      })
+
+      const openapi3 = (await import('../openapi3')).default
+      await expect(openapi3()).rejects.toThrow('VITE_OPENAPI_URL')
+    })
   })
 })

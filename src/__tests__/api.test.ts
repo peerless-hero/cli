@@ -9,6 +9,7 @@
  *
  * 通过 mock consola、fs-extra、ejs、env、openapi3、paths、type 等依赖来隔离测试。
  */
+import type { OpenAPIV3 } from 'openapi-types'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // 模拟 consola 日志模块
@@ -81,7 +82,7 @@ vi.mock('../type', async () => {
 })
 
 // 模拟的响应对象
-const mockResponses = { 200: { description: 'success' } }
+const mockResponses: OpenAPIV3.ResponsesObject = { 200: { description: 'success' } }
 
 describe('api', () => {
   // 每个用例前清空 mock 调用记录
@@ -241,6 +242,14 @@ describe('api', () => {
       method.resolveResultData('ResultUserDto')
       expect(method.responseDataType).toBe('UserDto')
     })
+
+    // ResultLong 应解析为 number
+    it('should resolve response type for ResultLong', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('get', { responses: mockResponses })
+      method.resolveResultData('ResultLong')
+      expect(method.responseDataType).toBe('number')
+    })
   })
 
   // DefineAPIMethod.compare：方法级参数对比
@@ -390,6 +399,34 @@ describe('api', () => {
       expect(result.remove[0]).toContain('/old')
       expect(result.remove[0]).toContain('GET')
       expect(result.total).toBe(1)
+    })
+
+    // 应检测 eachNew 函数（新增的方法通过比较参数注释差异识别更新）
+    it('should detect added endpoints and updated methods via eachNew', async () => {
+      const { compareAPI } = await import('../api')
+      const oldDoc: OpenAPIV3.Document = {
+        openapi: '3.0.0',
+        info: { title: 'test', version: '1.0.0' },
+        paths: {
+          '/api/users': { get: { parameters: [{ name: 'page', in: 'query', schema: { type: 'integer' } }], responses: mockResponses } },
+        },
+      }
+      const newDoc: OpenAPIV3.Document = {
+        openapi: '3.0.0',
+        info: { title: 'test', version: '1.0.0' },
+        paths: {
+          '/api/users': {
+            get: { parameters: [{ name: 'page', in: 'query', schema: { type: 'integer', description: '页码' } }], responses: mockResponses },
+            post: { summary: 'add', responses: mockResponses },
+          },
+        },
+      }
+      const result = compareAPI(oldDoc, newDoc)
+      // POST 新增（add）+ GET query 描述变更（update）
+      expect(result.total).toBe(2)
+      expect(result.add).toHaveLength(1)
+      expect(result.add[0]).toContain('POST')
+      expect(result.update).toHaveLength(1)
     })
   })
 
