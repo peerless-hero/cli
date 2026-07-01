@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-10 00:25:28
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2026-07-01 00:18:12
+ * @LastEditTime: 2026-07-02 01:26:39
  * @FilePath: \cli\src\version.ts
  * @Description:
  *
@@ -87,7 +87,7 @@ export function getNewVersion(oldVersion: string) {
     consola.info('新版本号为：', newVersion)
   }
   else {
-    consola.info('无法从NPM获取当前版本号，故使用初始版本号作为当前版本号', INITIAL_VERSION)
+    consola.warn('无法从NPM获取当前版本号，故使用初始版本号作为当前版本号', INITIAL_VERSION)
     newVersion = INITIAL_VERSION
   }
   newVersionRecord[name] = newVersion
@@ -96,7 +96,7 @@ export function getNewVersion(oldVersion: string) {
 
 export function getVersion() {
   if (SKIP_LATEST_VERSION) {
-    consola.info('由于设置SKIP_LATEST_VERSION所以跳过最新版本号检查，使用初始版本号作为当前版本号', INITIAL_VERSION)
+    consola.warn('由于设置SKIP_LATEST_VERSION所以跳过最新版本号检查，使用初始版本号作为当前版本号', INITIAL_VERSION)
     return {
       currentVersion: INITIAL_VERSION,
       newVersion: INITIAL_VERSION,
