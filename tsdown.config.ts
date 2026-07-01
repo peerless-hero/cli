@@ -16,6 +16,7 @@ export default defineConfig({
   clean: true,
   platform: 'node',
   deps: {
-    neverBundle: ['openapi-types', 'semver'],
+    // 不打包类型文件
+    neverBundle: ['openapi-types'],
   },
 })
