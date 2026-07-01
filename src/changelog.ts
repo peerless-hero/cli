@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2024-05-13 18:49:35
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2026-06-30 21:11:26
+ * @LastEditTime: 2026-07-01 22:02:08
  * @FilePath: \cli\src\changelog.ts
  * @Description:
  *
@@ -12,7 +12,7 @@ import type { CompareResult } from './api'
 import { resolve } from 'node:path'
 import { argv, env } from 'node:process'
 import consola from 'consola'
-import { renderFile } from 'ejs'
+import ejs from 'ejs'
 import { outputFile, outputJSON } from 'fs-extra/esm'
 import { compareAPI } from './api'
 import { checkApiEnv } from './env'
@@ -36,9 +36,9 @@ interface MarkdownOption {
 }
 export async function generateMarkdown({ apiCompareResult, typeCompareResult, infoTitle = PACKAGE_SCOPE, newVersion }: MarkdownOption) {
   const [title, content1, content2] = await Promise.all([
-    renderFile(TITLE_TEMPLATE, { h1: `${infoTitle} ${newVersion}` }),
-    renderFile(CONTENT_TEMPLATE, { changelog: apiCompareResult, type: '接口' }),
-    renderFile(CONTENT_TEMPLATE, { changelog: typeCompareResult, type: '模型' }),
+    ejs.renderFile(TITLE_TEMPLATE, { h1: `${infoTitle} ${newVersion}` }),
+    ejs.renderFile(CONTENT_TEMPLATE, { changelog: apiCompareResult, type: '接口' }),
+    ejs.renderFile(CONTENT_TEMPLATE, { changelog: typeCompareResult, type: '模型' }),
   ])
 
   let text = content1 + content2

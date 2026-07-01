@@ -12,7 +12,7 @@ import { readdir } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { argv, exit } from 'node:process'
 import consola from 'consola'
-import { renderFile } from 'ejs'
+import ejs from 'ejs'
 import { copy, emptyDir, outputFile, outputJSON, remove } from 'fs-extra/esm'
 import { build } from 'tsdown'
 import { compareAPI, renderAPI } from './api'
@@ -178,9 +178,9 @@ async function renderRequestReadme() {
   consola.info('生成README文档...')
 
   const [axiosReadme, unReadme, openapiV3Readme] = await Promise.all([
-    renderFile(resolve(TEMPLATE_DIR, 'readme/axios.md.ejs'), { ...readmeData, pkgName: axiosPkgName, name: PACKAGE_AXIOS_NAME }),
-    renderFile(resolve(TEMPLATE_DIR, 'readme/un.md.ejs'), { ...readmeData, pkgName: unPkgName, name: PACKAGE_UN_NAME }),
-    renderFile(resolve(TEMPLATE_DIR, 'readme/openapi-v3.md.ejs'), { ...readmeData, pkgName: openapiV3PkgName, name: PACKAGE_OPENAPI_V3_NAME }),
+    ejs.renderFile(resolve(TEMPLATE_DIR, 'readme/axios.md.ejs'), { ...readmeData, pkgName: axiosPkgName, name: PACKAGE_AXIOS_NAME }),
+    ejs.renderFile(resolve(TEMPLATE_DIR, 'readme/un.md.ejs'), { ...readmeData, pkgName: unPkgName, name: PACKAGE_UN_NAME }),
+    ejs.renderFile(resolve(TEMPLATE_DIR, 'readme/openapi-v3.md.ejs'), { ...readmeData, pkgName: openapiV3PkgName, name: PACKAGE_OPENAPI_V3_NAME }),
   ])
 
   await Promise.all([

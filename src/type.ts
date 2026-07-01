@@ -2,7 +2,7 @@ import type { OpenAPIV2, OpenAPIV3 } from 'openapi-types'
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import consola from 'consola'
-import { renderFile } from 'ejs'
+import ejs from 'ejs'
 import { outputFile } from 'fs-extra/esm'
 import { checkTypeEnv } from './env'
 import getOpenApi3 from './openapi3'
@@ -305,7 +305,7 @@ export async function renderType(document?: OpenAPIV3.Document) {
     properties.push(new DefineProperty(name, schema))
   }
   const [globalType, axiosType, unType] = await Promise.all([
-    renderFile(resolve(TEMPLATE_DIR, 'ejs/dts/global.ejs'), { properties }),
+    ejs.renderFile(resolve(TEMPLATE_DIR, 'ejs/dts/global.ejs'), { properties }),
     readFile(resolve(TEMPLATE_DIR, 'ejs/axios/extra-request-config.ejs'), { encoding: 'utf-8' }),
     readFile(resolve(TEMPLATE_DIR, 'ejs/un/extra-request-config.ejs'), { encoding: 'utf-8' }),
   ])
