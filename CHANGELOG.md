@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.6.3
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.6.2...v0.6.3)
+
+### 🩹 Fixes
+
+- **api:** 修复 ResultPage 类型在 $ref 场景下的解析 ([1bcdc63](https://github.com/peerless-hero/cli/commit/1bcdc63))
+
+### ❤️ Contributors
+
+- Peerless_hero ([@peerless-hero](https://github.com/peerless-hero))
+
 ## v0.6.2
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.6.1...v0.6.2)
