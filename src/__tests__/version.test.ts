@@ -208,6 +208,61 @@ describe('version', () => {
       expect(result.currentVersion).toBe('2.0.0')
       expect(result.newVersion).toBe('2.0.1')
     })
+
+    // openapi-v3 包不存在时应回退到 axios 包查询版本号
+    it('should fallback to axios package when openapi-v3 not found', async () => {
+      process.env.SKIP_LATEST_VERSION = ''
+      const childProcess = await import('node:child_process')
+      vi.mocked(childProcess.spawnSync).mockImplementation(((_cmd: string, args?: readonly string[]) => {
+        const pkgName = args?.[1] ?? ''
+        if (pkgName === '@test/openapi-v3')
+          return { stdout: '', stderr: 'not found', status: 1, pid: 0, output: [] as string[], signal: null }
+        return { stdout: '1.5.0\n', stderr: '', status: 0, pid: 1, output: [] as string[], signal: null }
+      }) as any)
+
+      const { getVersion } = await import('../version')
+      const result = getVersion()
+
+      expect(result.currentVersion).toBe('1.5.0')
+    })
+
+    // openapi-v3 和 axios 均不存在时应回退到 un 包查询版本号
+    it('should fallback to un package when openapi-v3 and axios not found', async () => {
+      process.env.SKIP_LATEST_VERSION = ''
+      const childProcess = await import('node:child_process')
+      vi.mocked(childProcess.spawnSync).mockImplementation(((_cmd: string, args?: readonly string[]) => {
+        const pkgName = args?.[1] ?? ''
+        if (pkgName === '@test/un')
+          return { stdout: '3.0.0\n', stderr: '', status: 0, pid: 1, output: [] as string[], signal: null }
+        return { stdout: '', stderr: 'not found', status: 1, pid: 0, output: [] as string[], signal: null }
+      }) as any)
+
+      const { getVersion } = await import('../version')
+      const result = getVersion()
+
+      expect(result.currentVersion).toBe('3.0.0')
+    })
+
+    // 三个包都不存在时应使用初始版本号
+    it('should use initial version when all packages not found', async () => {
+      process.env.SKIP_LATEST_VERSION = ''
+      process.env.INITIAL_VERSION = '0.0.0'
+      const childProcess = await import('node:child_process')
+      vi.mocked(childProcess.spawnSync).mockReturnValue({
+        stdout: '',
+        stderr: 'not found',
+        status: 1,
+        pid: 0,
+        output: [],
+        signal: null,
+      })
+
+      const { getVersion } = await import('../version')
+      const result = getVersion()
+
+      expect(result.currentVersion).toBe('')
+      expect(result.newVersion).toBe('0.0.0')
+    })
   })
 
   // updateRequestVersion：更新各 package.json 的版本号
@@ -241,6 +296,27 @@ describe('version', () => {
       const { outputVersion } = await import('../version')
       await outputVersion()
       expect(consola.default.box).toHaveBeenCalled()
+    })
+
+    // 包不存在时应显示 unknown 作为最新版本号
+    it('should show unknown when package is not found', async () => {
+      const childProcess = await import('node:child_process')
+      vi.mocked(childProcess.spawnSync).mockReturnValue({
+        stdout: '',
+        stderr: 'not found',
+        status: 1,
+        pid: 0,
+        output: [],
+        signal: null,
+      })
+
+      const consola = await import('consola')
+      const { outputVersion } = await import('../version')
+      await outputVersion()
+
+      expect(consola.default.box).toHaveBeenCalled()
+      const boxArg = vi.mocked(consola.default.box).mock.calls[0][0] as { message: string }
+      expect(boxArg.message).toContain('unknown')
     })
   })
 })

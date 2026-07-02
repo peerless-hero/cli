@@ -22,6 +22,8 @@ describe('paths', () => {
   // 每个用例前重置模块缓存，确保路径常量重新计算
   beforeEach(() => {
     vi.resetModules()
+    // paths.ts 现在通过 checkApiEnv() 获取包名，需要设置有效的 PACKAGE_SCOPE
+    process.env.PACKAGE_SCOPE = '@test'
   })
 
   // TEMPLATE_DIR：模板目录常量

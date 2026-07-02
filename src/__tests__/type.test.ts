@@ -13,6 +13,7 @@
  *
  * 通过 mock consola、fs-extra、ejs、openapi3、paths 等依赖来隔离测试。
  */
+import type { OpenAPIV3 } from 'openapi-types'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // 模拟 consola 日志模块
@@ -126,6 +127,14 @@ describe('type', () => {
       expect(result).toContain('\'\'')
       expect(result).toContain('|')
     })
+
+    // 数组包含非字符串项时应直接拼接数值
+    it('should handle non-string items in array', async () => {
+      const { transformType } = await import('../type')
+      const result = transformType(['a', 1])
+      expect(result).toContain('\'a\'')
+      expect(result).toContain('1')
+    })
   })
 
   // resolveSchemaType：根据 schema 解析类型
@@ -140,6 +149,12 @@ describe('type', () => {
     it('should extract type name from $ref', async () => {
       const { resolveSchemaType } = await import('../type')
       expect(resolveSchemaType({ $ref: '#/components/schemas/UserDto' })).toBe('UserDto')
+    })
+
+    // $ref 无字母时应返回空字符串
+    it('should return empty string when $ref has no letters', async () => {
+      const { resolveSchemaType } = await import('../type')
+      expect(resolveSchemaType({ $ref: '#/123/456' })).toBe('')
     })
 
     // 应处理数组类型，追加 []
@@ -252,6 +267,14 @@ describe('type', () => {
       expect(prop.notes).toContain('用户的登录名')
     })
 
+    // title 与 description 相同时不应重复添加
+    it('should not duplicate description when it equals title', async () => {
+      const { DefineProperty } = await import('../type')
+      const prop = new DefineProperty('name', { type: 'string', title: '用户名', description: '用户名' })
+      expect(prop.title).toBe('用户名')
+      expect(prop.notes.filter(n => n === '用户名')).toHaveLength(1)
+    })
+
     // 应生成包含 maxLength/minLength 的注释
     it('should set notes regarding maxLength and minLength', async () => {
       const { DefineProperty } = await import('../type')
@@ -326,6 +349,14 @@ describe('type', () => {
       expect(prop.dict).toBe('')
     })
 
+    // setDict 描述无方括号且不以"字典："开头时不应设置 dict
+    it('should not set dict when description has no brackets', async () => {
+      const { DefineProperty } = await import('../type')
+      const prop = new DefineProperty('test', { type: 'string' })
+      prop.setDict('普通描述没有方括号')
+      expect(prop.dict).toBe('')
+    })
+
     // 属性含有 pattern 时应添加 @pattern 注释
     it('should add @pattern note when property has pattern', async () => {
       const { DefineProperty } = await import('../type')
@@ -364,6 +395,14 @@ describe('type', () => {
       const prop = new DefineProperty('unknown', { type: 'number' }, true)
       expect(prop.type).toBe('number')
       expect(prop.defaultValue).toBe('undefined as unknown as number')
+    })
+
+    // 无 type 字段时 default 分支应使用 any 且 required 为 false
+    it('should use any type when schema has no type field', async () => {
+      const { DefineProperty } = await import('../type')
+      const prop = new DefineProperty('test', { description: 'no type' })
+      expect(prop.type).toBe('any')
+      expect(prop.defaultValue).toBe('undefined')
     })
   })
 
@@ -416,6 +455,29 @@ describe('type', () => {
       })
       newProp.compare(oldProp)
       expect(newProp.diff.update.some(u => u.includes('email') && u.includes('必填'))).toBe(true)
+    })
+
+    // 应检测从必填变为非必填的属性
+    it('should detect required to non-required changes', async () => {
+      const { DefineProperty } = await import('../type')
+      const newProp = new DefineProperty('user', {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          email: { type: 'string' },
+        },
+        required: [],
+      })
+      const oldProp = new DefineProperty('user', {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          email: { type: 'string' },
+        },
+        required: ['email'],
+      })
+      newProp.compare(oldProp)
+      expect(newProp.diff.update.some(u => u.includes('email') && u.includes('必填→非必填'))).toBe(true)
     })
   })
 
@@ -491,6 +553,24 @@ describe('type', () => {
       expect(result.total).toBe(1)
       expect(result.update.length).toBe(1)
       expect(result.update[0][0]).toBe('UserDto')
+    })
+
+    // 相同 schema 无变更时不应添加到 update
+    it('should not add to update when schema is identical', async () => {
+      const { compareType } = await import('../type')
+      const doc = {
+        openapi: '3.0.0',
+        info: { title: 'test', version: '1.0.0' },
+        paths: {},
+        components: {
+          schemas: {
+            UserDto: { type: 'object', properties: { name: { type: 'string' } } },
+          },
+        },
+      }
+      const result = compareType(doc as OpenAPIV3.Document, doc as OpenAPIV3.Document)
+      expect(result.total).toBe(0)
+      expect(result.update).toHaveLength(0)
     })
   })
 
@@ -568,6 +648,25 @@ describe('type', () => {
         paths: {},
       })
 
+      expect(ejs.renderFile).toHaveBeenCalled()
+    })
+
+    // 未传入 document 时应通过 getOpenApi3 获取文档
+    it('should use getOpenApi3 when document is not provided', async () => {
+      const getOpenApi3 = (await import('../openapi3')).default
+      vi.mocked(getOpenApi3).mockResolvedValue({
+        openapi: '3.0.0',
+        info: { title: 'test', version: '1.0.0' },
+        paths: {},
+        components: { schemas: { UserDto: { type: 'object', properties: { name: { type: 'string' } } } } },
+      })
+      const ejs = await import('ejs')
+      vi.mocked(ejs.renderFile).mockClear()
+
+      const { renderType } = await import('../type')
+      await renderType()
+
+      expect(getOpenApi3).toHaveBeenCalled()
       expect(ejs.renderFile).toHaveBeenCalled()
     })
   })

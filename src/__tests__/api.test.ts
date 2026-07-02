@@ -214,6 +214,24 @@ describe('api', () => {
       expect(method.notes).toContain('@param id 用户ID')
     })
 
+    // path 参数无 description 时不应添加 @param 注释
+    it('should not add @param note when path parameter has no description', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('get', {
+        parameters: [{ name: 'id', in: 'path', schema: { type: 'integer' }, required: true }],
+        responses: mockResponses,
+      })
+      expect(method.requestPath).toHaveLength(1)
+      expect(method.notes.some(n => n.startsWith('@param id'))).toBe(false)
+    })
+
+    // 未在 ACTION 映射中的方法应直接使用方法名作为 action
+    it('should use method name as action when not in ACTION map', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('head', { responses: mockResponses })
+      expect(method.action).toBe('head')
+    })
+
     // 应处理 $ref 形式的参数引用
     it('should handle $ref parameters', async () => {
       const { DefineAPIMethod } = await import('../api')
@@ -800,6 +818,25 @@ describe('api', () => {
       newAPI.compare(oldAPI)
       expect(Object.keys(newAPI.diff.update).length).toBeGreaterThanOrEqual(1)
     })
+
+    // 方法在新旧文档中都存在且无差异时不应添加到 update
+    it('should not add to update when method has no diff', async () => {
+      const { DefineAPI } = await import('../api')
+      const oldAPI = new DefineAPI('/api/users', {
+        get: {
+          parameters: [{ name: 'page', in: 'query', schema: { type: 'integer' } }],
+          responses: mockResponses,
+        },
+      })
+      const newAPI = new DefineAPI('/api/users', {
+        get: {
+          parameters: [{ name: 'page', in: 'query', schema: { type: 'integer' } }],
+          responses: mockResponses,
+        },
+      })
+      newAPI.compare(oldAPI)
+      expect(Object.keys(newAPI.diff.update)).toHaveLength(0)
+    })
   })
 
   // compareAPI：文档级接口对比
@@ -855,6 +892,28 @@ describe('api', () => {
       expect(result.add[0]).toContain('POST')
       expect(result.update).toHaveLength(1)
     })
+
+    // API 仅存在更新（无新增方法）时应正确处理 eachNew 的 false 分支
+    it('should handle API with only updates and no additions', async () => {
+      const { compareAPI } = await import('../api')
+      const oldDoc: OpenAPIV3.Document = {
+        openapi: '3.0.0',
+        info: { title: 'test', version: '1.0.0' },
+        paths: {
+          '/api/users': { get: { parameters: [{ name: 'page', in: 'query', schema: { type: 'integer' } }], responses: mockResponses } },
+        },
+      }
+      const newDoc: OpenAPIV3.Document = {
+        openapi: '3.0.0',
+        info: { title: 'test', version: '1.0.0' },
+        paths: {
+          '/api/users': { get: { parameters: [{ name: 'page', in: 'query', schema: { type: 'integer', description: '页码' } }], responses: mockResponses } },
+        },
+      }
+      const result = compareAPI(oldDoc, newDoc)
+      expect(result.add).toHaveLength(0)
+      expect(result.update.length).toBeGreaterThanOrEqual(1)
+    })
   })
 
   // renderAPI：使用模板渲染 API 文件
@@ -891,9 +950,38 @@ describe('api', () => {
         expect.stringContaining('2'),
       )
     })
-  })
 
-  // renderAPI - 路径合并：相同 componentPrefix 的路径应合并为一个 DefineAPI
+    // 未传入 document 时应通过 getOpenApi3 获取文档
+    it('should use getOpenApi3 when document is not provided', async () => {
+      const getOpenApi3 = (await import('../openapi3')).default
+      vi.mocked(getOpenApi3).mockResolvedValue({
+        openapi: '3.0.0',
+        info: { title: 'test', version: '1.0.0' },
+        paths: { '/api/users': { get: { summary: 'list', responses: mockResponses } } },
+      })
+      const ejs = await import('ejs')
+      vi.mocked(ejs.renderFile).mockClear()
+
+      const { renderAPI } = await import('../api')
+      await renderAPI()
+
+      expect(getOpenApi3).toHaveBeenCalled()
+      expect(ejs.renderFile).toHaveBeenCalled()
+    })
+
+    // 根路径 / 不应参与自动导入
+    it('should skip auto-imports for root path', async () => {
+      const consola = await import('consola')
+      const { renderAPI } = await import('../api')
+      const doc = {
+        openapi: '3.0.0',
+        info: { title: 'test', version: '1.0.0' },
+        paths: { '/api/': { get: { summary: 'root', responses: mockResponses } } },
+      }
+      await renderAPI(doc)
+      expect(consola.default.success).toHaveBeenCalled()
+    })
+  })
   describe('renderAPI - path merging', () => {
     // Windows 下 resolve 会使用反斜杠，统一转为正斜杠便于断言
     const norm = (p: string) => p.replaceAll('\\', '/')
@@ -1222,14 +1310,14 @@ describe('api', () => {
       )
     })
 
-    // PACKAGE_UN_NAME / PACKAGE_AXIOS_NAME 未设置时应使用默认值
-    it('should use default package names when env not provided', async () => {
+    // 应使用 checkApiEnv 返回的包名进行自动导入（默认值由 checkApiEnv 提供）
+    it('should use package names from checkApiEnv for auto-imports', async () => {
       const env = await import('../env')
       vi.mocked(env.checkApiEnv).mockReturnValueOnce({
-        PACKAGE_SCOPE: '@scope',
-        PACKAGE_UN_NAME: undefined as unknown as string,
-        PACKAGE_AXIOS_NAME: undefined as unknown as string,
-        PACKAGE_OPENAPI_V3_NAME: undefined as unknown as string,
+        PACKAGE_SCOPE: '@custom-scope',
+        PACKAGE_UN_NAME: 'my-un',
+        PACKAGE_AXIOS_NAME: 'my-axios',
+        PACKAGE_OPENAPI_V3_NAME: 'my-openapi-v3',
       })
       const ejs = await import('ejs')
       vi.mocked(ejs.renderFile).mockClear()
@@ -1242,14 +1330,13 @@ describe('api', () => {
       await renderAPI(doc)
 
       const renderFileCalls = vi.mocked(ejs.renderFile).mock.calls
-      // 应使用默认的 axios/un 而不是自定义包名
       const autoImportCalls = renderFileCalls.filter(([templatePath]) =>
         String(templatePath).includes('unplugin-auto-import'),
       )
       expect(autoImportCalls.length).toBeGreaterThan(0)
-      // 验证默认包名 @scope/axios 和 @scope/un 被使用
-      const axiosImport = autoImportCalls.find(c => String(c[1]?.pkgName).includes('axios'))
-      const unImport = autoImportCalls.find(c => String(c[1]?.pkgName).includes('/un'))
+      // 验证 checkApiEnv 返回的自定义包名被使用
+      const axiosImport = autoImportCalls.find(c => String(c[1]?.pkgName).includes('my-axios'))
+      const unImport = autoImportCalls.find(c => String(c[1]?.pkgName).includes('my-un'))
       expect(axiosImport).toBeTruthy()
       expect(unImport).toBeTruthy()
     })
