@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.6.2
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.6.1...v0.6.2)
+
+### 🩹 Fixes
+
+- **api:** 修正列表类型响应数据属性赋值 ([9ef0a05](https://github.com/peerless-hero/cli/commit/9ef0a05))
+
+### ❤️ Contributors
+
+- Peerless_hero ([@peerless-hero](https://github.com/peerless-hero))
+
 ## v0.6.1
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.6.0...v0.6.1)
