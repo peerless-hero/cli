@@ -8,6 +8,7 @@
  *
  */
 import type { OpenAPIV3 } from 'openapi-types'
+import type { InlineConfig } from 'tsdown'
 import { readdir } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { argv, exit } from 'node:process'
@@ -42,68 +43,36 @@ import { publishNPM } from './publish'
 import { compareType, renderType } from './type'
 import { getVersion, title, updateRequestVersion } from './version'
 
+function createBuildOptions(
+  entry: string[],
+  format: 'esm' | 'cjs',
+  outDir: string,
+  root: string,
+  neverBundleDeps: string[],
+) {
+  return {
+    entry,
+    format,
+    outDir,
+    root,
+    deps: { neverBundle: neverBundleDeps },
+    unbundle: true,
+    dts: false,
+    clean: false,
+    platform: 'node',
+    logLevel: 'error',
+  } as InlineConfig
+}
+
 async function buildRequest() {
   consola.info('构建项目...')
 
   // 分别构建 ESM 和 CJS（模拟 mkdist 的两次 entry），dts 由预生成文件复制处理
   await Promise.all([
-    // axios ESM
-    build({
-      entry: [TEMP_AXIOS_ENTRY],
-      format: 'esm',
-      outDir: AXIOS_DIST_DIR,
-      unbundle: true,
-      dts: false,
-      clean: false,
-      platform: 'node',
-      root: TEMP_AXIOS_PATH,
-      deps: { neverBundle: ['axios', 'axios-extensions'] },
-      outExtensions: () => ({ js: '.mjs' }),
-      logLevel: 'error',
-    }),
-    // axios CJS
-    build({
-      entry: [TEMP_AXIOS_ENTRY],
-      format: 'cjs',
-      outDir: AXIOS_DIST_DIR,
-      unbundle: true,
-      dts: false,
-      clean: false,
-      platform: 'node',
-      root: TEMP_AXIOS_PATH,
-      deps: { neverBundle: ['axios', 'axios-extensions'] },
-      outExtensions: () => ({ js: '.cjs' }),
-      logLevel: 'error',
-    }),
-    // un ESM
-    build({
-      entry: [TEMP_UN_ENTRY],
-      format: 'esm',
-      outDir: UN_DIST_DIR,
-      unbundle: true,
-      dts: false,
-      clean: false,
-      platform: 'node',
-      root: TEMP_UN_PATH,
-      deps: { neverBundle: ['@uni-helper/uni-network'] },
-      outExtensions: () => ({ js: '.mjs' }),
-      logLevel: 'error',
-    }),
-    // un CJS
-    build({
-      entry: [TEMP_UN_ENTRY],
-      format: 'cjs',
-      outDir: UN_DIST_DIR,
-      unbundle: true,
-      dts: false,
-      clean: false,
-      platform: 'node',
-      root: TEMP_UN_PATH,
-      deps: { neverBundle: ['@uni-helper/uni-network'] },
-      outExtensions: () => ({ js: '.cjs' }),
-      logLevel: 'error',
-    }),
-    // openapi-v3: 无 .ts 源文件，直接复制
+    build(createBuildOptions([TEMP_AXIOS_ENTRY], 'esm', AXIOS_DIST_DIR, TEMP_AXIOS_PATH, ['axios', 'axios-extensions'])),
+    build(createBuildOptions([TEMP_AXIOS_ENTRY], 'cjs', AXIOS_DIST_DIR, TEMP_AXIOS_PATH, ['axios', 'axios-extensions'])),
+    build(createBuildOptions([TEMP_UN_ENTRY], 'esm', UN_DIST_DIR, TEMP_UN_PATH, ['@uni-helper/uni-network'])),
+    build(createBuildOptions([TEMP_UN_ENTRY], 'cjs', UN_DIST_DIR, TEMP_UN_PATH, ['@uni-helper/uni-network'])),
     copy(TEMP_OPENAPI_V3_PATH, PACKAGE_OPENAPI_V3_PATH, { overwrite: true }),
   ])
 
