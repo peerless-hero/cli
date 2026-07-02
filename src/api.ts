@@ -9,6 +9,7 @@
  */
 import type { OpenAPIV3 } from 'openapi-types'
 import { resolve } from 'node:path'
+import process from 'node:process'
 import consola from 'consola'
 import ejs from 'ejs'
 import { copy, outputFile } from 'fs-extra/esm'
@@ -24,6 +25,9 @@ const ACTION: Record<string, string> = {
   delete: 'remove',
   patch: 'patch',
 }
+
+const { RESULR_TYPE_PREFIX = 'Result', PAGE_TYPE_PREFIX = 'Page', LIST_TYPE_PREFIX = 'List' } = process.env
+
 /**
  * 接口方法定义
  */
@@ -117,41 +121,45 @@ export class DefineAPIMethod {
 
   resolveResultData(type: string) {
     switch (type) {
-      case 'ResultBoolean':
+      case `${RESULR_TYPE_PREFIX}Boolean`:
         this.responseDataType = 'boolean'
         break
-      case 'ResultString':
+      case `${RESULR_TYPE_PREFIX}String`:
         this.responseDataType = 'string'
         break
-      case 'ResultInteger':
+      case `${RESULR_TYPE_PREFIX}Integer`:
         this.responseDataType = 'number'
         break
-      case 'ResultLong':
+      case `${RESULR_TYPE_PREFIX}Long`:
         this.responseDataType = 'number'
         break
-      case 'ResultObject':
+      case `${RESULR_TYPE_PREFIX}Object`:
         this.responseType = 'any'
         break
-      case 'ResultMap':
+      case `${RESULR_TYPE_PREFIX}Map`:
         this.responseType = 'Record<string, any>'
         break
-      case 'ResultPage':
+      case `${RESULR_TYPE_PREFIX}${PAGE_TYPE_PREFIX}`:
         this.responseType = 'Row<any>'
         break
-      case 'ResultList':
+      case `${RESULR_TYPE_PREFIX}${LIST_TYPE_PREFIX}`:
         this.responseType = 'any[]'
         break
-      default:
-        if (type.startsWith('ResultPage')) {
-          this.responseType = `Row<${type.replace('ResultPage', '')}>`
+      default: {
+        if (type.startsWith(`${RESULR_TYPE_PREFIX}${PAGE_TYPE_PREFIX}`)) {
+          const pageType = type.replace(`${RESULR_TYPE_PREFIX}${PAGE_TYPE_PREFIX}`, '')
+          this.responseType = `Row<${pageType}>`
           return
         }
-        if (type.startsWith('ResultList')) {
-          this.responseDataType = `${type.replace('ResultList', '')}[]`
+        if (type.startsWith(`${RESULR_TYPE_PREFIX}${LIST_TYPE_PREFIX}`)) {
+          const listType = type.replace(`${RESULR_TYPE_PREFIX}${LIST_TYPE_PREFIX}`, '')
+          this.responseDataType = `${listType}[]`
           return
         }
-        this.responseDataType = type.replace('Result', '')
+        const resultName = type.replace(RESULR_TYPE_PREFIX, '')
+        this.responseDataType = resultName && /^[A-Z]/.test(resultName) ? resultName : type
         break
+      }
     }
   }
 
@@ -160,7 +168,7 @@ export class DefineAPIMethod {
   ) {
     if (!successRes || '$ref' in successRes) {
       this.responseType = resolveSchemaType(successRes)
-      if (this.responseType === 'Result')
+      if (this.responseType === RESULR_TYPE_PREFIX)
         this.responseDataType = 'null'
 
       return
@@ -174,7 +182,7 @@ export class DefineAPIMethod {
     }
     if ('$ref' in schema) {
       this.responseType = resolveSchemaType(schema)
-      if (this.responseType.startsWith('Result')) {
+      if (this.responseType.startsWith(RESULR_TYPE_PREFIX)) {
         this.resolveResultData(this.responseType)
         return
       }

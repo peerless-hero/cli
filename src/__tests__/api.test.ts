@@ -10,7 +10,7 @@
  * 通过 mock consola、fs-extra、ejs、env、openapi3、paths、type 等依赖来隔离测试。
  */
 import type { OpenAPIV3 } from 'openapi-types'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // 模拟 consola 日志模块
 vi.mock('consola', () => ({
@@ -88,6 +88,9 @@ describe('api', () => {
   // 每个用例前清空 mock 调用记录
   beforeEach(() => {
     vi.clearAllMocks()
+    process.env.RESULR_TYPE_PREFIX = 'Result'
+    process.env.PAGE_TYPE_PREFIX = 'Page'
+    process.env.LIST_TYPE_PREFIX = 'List'
   })
 
   // DefineAPIMethod：单个接口方法定义
@@ -297,6 +300,143 @@ describe('api', () => {
       const method = new DefineAPIMethod('get', { responses: mockResponses })
       method.resolveResultData('ResultList')
       expect(method.responseType).toBe('any[]')
+    })
+
+    // 替换后首字母小写时保留原值
+    it('should keep original value when replacement starts with lowercase', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('get', { responses: mockResponses })
+      method.resolveResultData('Resultable')
+      expect(method.responseDataType).toBe('Resultable')
+    })
+
+    // 替换后为空字符串时保留原值
+    it('should keep original value when replacement is empty', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('get', { responses: mockResponses })
+      method.resolveResultData('Result')
+      expect(method.responseDataType).toBe('Result')
+    })
+
+    // 自定义 RESULR_TYPE_PREFIX 前缀测试
+    describe('with custom RESULR_TYPE_PREFIX', () => {
+      beforeEach(() => {
+        process.env.RESULR_TYPE_PREFIX = 'ApiResult'
+        vi.resetModules()
+      })
+
+      afterEach(() => {
+        process.env.RESULR_TYPE_PREFIX = 'Result'
+        process.env.PAGE_TYPE_PREFIX = 'Page'
+        process.env.LIST_TYPE_PREFIX = 'List'
+        vi.resetModules()
+      })
+
+      it('should resolve with custom prefix for exact match', async () => {
+        const { DefineAPIMethod } = await import('../api')
+        const method = new DefineAPIMethod('get', { responses: mockResponses })
+        method.resolveResultData('ApiResultBoolean')
+        expect(method.responseDataType).toBe('boolean')
+      })
+
+      it('should resolve with custom prefix for wrapped type (Page)', async () => {
+        const { DefineAPIMethod } = await import('../api')
+        const method = new DefineAPIMethod('get', { responses: mockResponses })
+        method.resolveResultData('ApiResultPageUser')
+        expect(method.responseType).toBe('Row<User>')
+      })
+
+      it('should resolve with custom prefix for wrapped type (List)', async () => {
+        const { DefineAPIMethod } = await import('../api')
+        const method = new DefineAPIMethod('get', { responses: mockResponses })
+        method.resolveResultData('ApiResultListUser')
+        expect(method.responseDataType).toBe('User[]')
+      })
+
+      it('should resolve generic type with custom prefix', async () => {
+        const { DefineAPIMethod } = await import('../api')
+        const method = new DefineAPIMethod('get', { responses: mockResponses })
+        method.resolveResultData('ApiResultUserDto')
+        expect(method.responseDataType).toBe('UserDto')
+      })
+
+      it('should not match old Result prefix', async () => {
+        const { DefineAPIMethod } = await import('../api')
+        const method = new DefineAPIMethod('get', { responses: mockResponses })
+        method.resolveResultData('ResultBoolean')
+        expect(method.responseDataType).toBe('ResultBoolean')
+      })
+    })
+
+    describe('with single char RESULR_TYPE_PREFIX "R"', () => {
+      beforeEach(() => {
+        process.env.RESULR_TYPE_PREFIX = 'R'
+        vi.resetModules()
+      })
+
+      afterEach(() => {
+        process.env.RESULR_TYPE_PREFIX = 'Result'
+        process.env.PAGE_TYPE_PREFIX = 'Page'
+        process.env.LIST_TYPE_PREFIX = 'List'
+        vi.resetModules()
+      })
+
+      it('should replace when result starts with uppercase', async () => {
+        const { DefineAPIMethod } = await import('../api')
+        const method = new DefineAPIMethod('get', { responses: mockResponses })
+        method.resolveResultData('RUser')
+        expect(method.responseDataType).toBe('User')
+      })
+
+      it('should keep original when result starts with lowercase', async () => {
+        const { DefineAPIMethod } = await import('../api')
+        const method = new DefineAPIMethod('get', { responses: mockResponses })
+        method.resolveResultData('Result')
+        expect(method.responseDataType).toBe('Result')
+      })
+    })
+
+    describe('with custom PAGE_TYPE_PREFIX and LIST_TYPE_PREFIX', () => {
+      beforeEach(() => {
+        process.env.PAGE_TYPE_PREFIX = 'PageResult'
+        process.env.LIST_TYPE_PREFIX = 'ListResult'
+        vi.resetModules()
+      })
+
+      afterEach(() => {
+        process.env.RESULR_TYPE_PREFIX = 'Result'
+        process.env.PAGE_TYPE_PREFIX = 'Page'
+        process.env.LIST_TYPE_PREFIX = 'List'
+        vi.resetModules()
+      })
+
+      it('should resolve exact match for custom page prefix', async () => {
+        const { DefineAPIMethod } = await import('../api')
+        const method = new DefineAPIMethod('get', { responses: mockResponses })
+        method.resolveResultData('ResultPageResult')
+        expect(method.responseType).toBe('Row<any>')
+      })
+
+      it('should resolve wrapped type for custom page prefix', async () => {
+        const { DefineAPIMethod } = await import('../api')
+        const method = new DefineAPIMethod('get', { responses: mockResponses })
+        method.resolveResultData('ResultPageResultUser')
+        expect(method.responseType).toBe('Row<User>')
+      })
+
+      it('should resolve exact match for custom list prefix', async () => {
+        const { DefineAPIMethod } = await import('../api')
+        const method = new DefineAPIMethod('get', { responses: mockResponses })
+        method.resolveResultData('ResultListResult')
+        expect(method.responseType).toBe('any[]')
+      })
+
+      it('should resolve wrapped type for custom list prefix', async () => {
+        const { DefineAPIMethod } = await import('../api')
+        const method = new DefineAPIMethod('get', { responses: mockResponses })
+        method.resolveResultData('ResultListResultUser')
+        expect(method.responseDataType).toBe('User[]')
+      })
     })
   })
 
