@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2022-11-03 17:53:22
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2026-07-01 21:59:31
+ * @LastEditTime: 2026-07-02 20:51:10
  * @FilePath: \cli\src\api.ts
  * @Description:
  *
@@ -143,7 +143,7 @@ export class DefineAPIMethod {
         this.responseType = 'Row<any>'
         break
       case LIST_TYPE_PREFIX:
-        this.responseType = 'any[]'
+        this.responseDataType = 'any[]'
         break
       default: {
         if (type.startsWith(PAGE_TYPE_PREFIX)) {
