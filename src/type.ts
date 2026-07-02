@@ -31,7 +31,7 @@ export function textInBrackets(text = '') {
   return regExpMatchArray?.[0]
 }
 
-export function transformType(type: string | string[] = 'any', append = '') {
+export function transformType(type: string | (string | number)[] = 'any', append = '') {
   if (Array.isArray(type))
     return resolveEnumType(type)
 

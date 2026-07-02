@@ -15,7 +15,7 @@ import { getEnv } from './env'
 import { getNpmGlobalFilepath } from './paths'
 import 'dotenv/config'
 
-const _require = createRequire(import.meta.url ?? __filename)
+const _require = createRequire(import.meta.url)
 
 const { PACKAGE_SCOPE = '.', PACKAGE_OPENAPI_V3_NAME = 'openapi-v3', APIFOX_TOKEN } = env
 

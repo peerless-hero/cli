@@ -11,7 +11,7 @@ import { spawnSync } from 'node:child_process'
 import { resolve } from 'node:path'
 import { env } from 'node:process'
 
-export const TEMPLATE_DIR = resolve(import.meta.dirname || __dirname, '../template')
+export const TEMPLATE_DIR = resolve(import.meta.dirname, '../template')
 
 export function getNpmGlobalRoot() {
   return spawnSync('npm', ['root', '-g'], { encoding: 'utf-8' }).stdout.trim()
