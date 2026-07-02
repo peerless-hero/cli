@@ -1,5 +1,40 @@
 # Changelog
 
+## v0.6.0
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.5.0...v0.6.0)
+
+### 🚀 Enhancements
+
+- **api:** 支持通过环境变量自定义类型前缀 ([77af699](https://github.com/peerless-hero/cli/commit/77af699))
+
+### 🩹 Fixes
+
+- **version:** 使用warn替代info记录版本回退提示 ([1bca651](https://github.com/peerless-hero/cli/commit/1bca651))
+- **version:** 修正版本记录的键值 ([24a67e3](https://github.com/peerless-hero/cli/commit/24a67e3))
+- 移除过时的 CommonJS 兼容回退及修正枚举类型 ([448a112](https://github.com/peerless-hero/cli/commit/448a112))
+
+### 💅 Refactors
+
+- **request:** 提取构建配置为公共函数 ([02db65d](https://github.com/peerless-hero/cli/commit/02db65d))
+- 移除包名环境变量默认值 ([dbe65ee](https://github.com/peerless-hero/cli/commit/dbe65ee))
+
+### 📦 Build
+
+- **deps:** 添加 @vitest/coverage-v8 依赖 ([e999a36](https://github.com/peerless-hero/cli/commit/e999a36))
+
+### ✅ Tests
+
+- 补充核心模块的单元测试用例 ([b6a40cc](https://github.com/peerless-hero/cli/commit/b6a40cc))
+- **api:** 补充响应类型解析与请求体对比等分支测试 ([4d9faea](https://github.com/peerless-hero/cli/commit/4d9faea))
+- 补充边界条件与分支覆盖测试 ([7075710](https://github.com/peerless-hero/cli/commit/7075710))
+- 提升测试覆盖率至百分百 ([6b4fbdc](https://github.com/peerless-hero/cli/commit/6b4fbdc))
+
+### ❤️ Contributors
+
+- Zhaojinfeng <ifzhaocn@isoftstone.com>
+- Peerless_hero ([@peerless-hero](https://github.com/peerless-hero))
+
 ## v0.5.0
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.4.0...v0.5.0)
