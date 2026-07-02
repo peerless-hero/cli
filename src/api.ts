@@ -421,8 +421,8 @@ export async function renderAPI(document?: OpenAPIV3.Document) {
   const openApi3 = document || await getOpenApi3()
   const {
     PACKAGE_SCOPE,
-    PACKAGE_UN_NAME = 'un',
-    PACKAGE_AXIOS_NAME = 'axios',
+    PACKAGE_AXIOS_NAME,
+    PACKAGE_UN_NAME,
   } = checkApiEnv()
   const axiosPackageName = `${PACKAGE_SCOPE}/${PACKAGE_AXIOS_NAME}`
   const unPackageName = `${PACKAGE_SCOPE}/${PACKAGE_UN_NAME}`

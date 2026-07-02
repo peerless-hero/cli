@@ -124,9 +124,9 @@ async function buildRequest() {
 async function renderRequestReadme() {
   const {
     PACKAGE_SCOPE,
-    PACKAGE_AXIOS_NAME = 'axios',
-    PACKAGE_UN_NAME = 'un',
-    PACKAGE_OPENAPI_V3_NAME = 'openapi-v3',
+    PACKAGE_AXIOS_NAME,
+    PACKAGE_UN_NAME,
+    PACKAGE_OPENAPI_V3_NAME,
   } = checkApiEnv()
 
   const axiosPkgName = `${PACKAGE_SCOPE}/${PACKAGE_AXIOS_NAME}`

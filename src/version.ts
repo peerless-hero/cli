@@ -14,6 +14,7 @@ import consola from 'consola'
 import { outputJSON, readJSON } from 'fs-extra/esm'
 import { parse } from 'semver'
 import { name, version } from '../package.json'
+import { checkApiEnv } from './env'
 import { PACKAGE_AXIOS_PATH, PACKAGE_UN_PATH, TEMP_OPENAPI_V3_PATH } from './paths'
 
 export function getCliVersion() {
@@ -23,6 +24,12 @@ export function getCliVersion() {
 export const title = `${name} (v${version})`
 
 const npmVersionRecord: Record<string, string> = {}
+const {
+  PACKAGE_SCOPE,
+  PACKAGE_AXIOS_NAME,
+  PACKAGE_UN_NAME,
+  PACKAGE_OPENAPI_V3_NAME,
+} = checkApiEnv()
 
 export function getPackageLatestVersion(pkgName?: string) {
   if (!pkgName)
@@ -45,11 +52,7 @@ export function getPackageLatestVersion(pkgName?: string) {
 }
 
 const {
-  PACKAGE_SCOPE,
   SKIP_LATEST_VERSION,
-  PACKAGE_UN_NAME = 'un',
-  PACKAGE_AXIOS_NAME = 'axios',
-  PACKAGE_OPENAPI_V3_NAME = 'openapi-v3',
   INITIAL_VERSION = '0.0.0',
   MAX_PATCH_VERSION = '99',
 } = env

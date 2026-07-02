@@ -9,7 +9,7 @@
  */
 import { spawnSync } from 'node:child_process'
 import { resolve } from 'node:path'
-import { env } from 'node:process'
+import { checkApiEnv } from './env'
 
 export const TEMPLATE_DIR = resolve(import.meta.dirname, '../template')
 
@@ -22,11 +22,11 @@ export function getNpmGlobalFilepath(...paths: string[]) {
 }
 
 const {
-  PACKAGE_AXIOS_NAME = 'axios',
-  PACKAGE_UN_NAME = 'un',
-  PACKAGE_OPENAPI_V3_NAME = 'openapi-v3',
-  PACKAGE_SCOPE = '',
-} = env
+  PACKAGE_SCOPE,
+  PACKAGE_AXIOS_NAME,
+  PACKAGE_UN_NAME,
+  PACKAGE_OPENAPI_V3_NAME,
+} = checkApiEnv()
 
 /**
  * `axios请求包`生成目录
