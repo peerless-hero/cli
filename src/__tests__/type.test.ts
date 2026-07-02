@@ -317,6 +317,54 @@ describe('type', () => {
       prop.setDict('用户类型[user_type]')
       expect(prop.dict).toBe('user_type')
     })
+
+    // setDict 无参数时应直接返回
+    it('should return early when setDict receives no description', async () => {
+      const { DefineProperty } = await import('../type')
+      const prop = new DefineProperty('test', { type: 'string' })
+      prop.setDict()
+      expect(prop.dict).toBe('')
+    })
+
+    // 属性含有 pattern 时应添加 @pattern 注释
+    it('should add @pattern note when property has pattern', async () => {
+      const { DefineProperty } = await import('../type')
+      const prop = new DefineProperty('phone', {
+        type: 'string',
+        pattern: String.raw`^1[3-9]\d{9}$`,
+      })
+      expect(prop.notes).toContain(String.raw`@pattern ^1[3-9]\d{9}$`)
+    })
+
+    // 枚举值为数字（非字符串）时应正常处理
+    it('should handle numeric enum values', async () => {
+      const { DefineProperty } = await import('../type')
+      const prop = new DefineProperty('status', {
+        'type': 'integer',
+        'enum': [1, 2, 3],
+        'x-apifox': { enumDescriptions: { 1: 'active' } },
+      })
+      expect(prop.type).toContain('1')
+      expect(prop.type).toContain('2')
+      expect(prop.type).toContain('3')
+      expect(prop.notes).toContain('1：active')
+    })
+
+    // format 为 binary 时应解析为 MultipartFile
+    it('should resolve binary format as MultipartFile', async () => {
+      const { DefineProperty } = await import('../type')
+      const prop = new DefineProperty('file', { type: 'string', format: 'binary' })
+      expect(prop.type).toBe('MultipartFile')
+      expect(prop.defaultValue).toBe('null')
+    })
+
+    // 未知类型应走 default 分支
+    it('should handle unknown type via default case', async () => {
+      const { DefineProperty } = await import('../type')
+      const prop = new DefineProperty('unknown', { type: 'number' }, true)
+      expect(prop.type).toBe('number')
+      expect(prop.defaultValue).toBe('undefined as unknown as number')
+    })
   })
 
   // DefineProperty.compare：属性级对比
@@ -345,6 +393,29 @@ describe('type', () => {
       newProp.compare(oldProp)
       expect(newProp.diff.add).toContain('➕phone')
       expect(newProp.diff.update.some(u => u.includes('email'))).toBe(true)
+    })
+
+    // 应检测仅必填性变更的属性
+    it('should detect required status changes only', async () => {
+      const { DefineProperty } = await import('../type')
+      const newProp = new DefineProperty('user', {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          email: { type: 'string' },
+        },
+        required: ['email'],
+      })
+      const oldProp = new DefineProperty('user', {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          email: { type: 'string' },
+        },
+        required: [],
+      })
+      newProp.compare(oldProp)
+      expect(newProp.diff.update.some(u => u.includes('email') && u.includes('必填'))).toBe(true)
     })
   })
 
@@ -464,6 +535,40 @@ describe('type', () => {
       const propsArg = globalEjsCall?.[1]?.properties
       expect(propsArg).toHaveLength(1)
       expect(propsArg[0].name).toBe('ActiveDto')
+    })
+
+    // 无 schemas 时应正常渲染（properties 为空数组）
+    it('should render type with no schemas', async () => {
+      const ejs = await import('ejs')
+      vi.mocked(ejs.renderFile).mockClear()
+      const fse = await import('fs-extra/esm')
+      vi.mocked(fse.outputFile).mockClear()
+
+      const { renderType } = await import('../type')
+      await renderType({
+        openapi: '3.0.0',
+        info: { title: 'test', version: '1.0.0' },
+        paths: {},
+        components: { schemas: {} },
+      })
+
+      expect(ejs.renderFile).toHaveBeenCalled()
+      expect(fse.outputFile).toHaveBeenCalled()
+    })
+
+    // 文档无 components 时应使用默认空对象渲染
+    it('should render type without components block', async () => {
+      const ejs = await import('ejs')
+      vi.mocked(ejs.renderFile).mockClear()
+
+      const { renderType } = await import('../type')
+      await renderType({
+        openapi: '3.0.0',
+        info: { title: 'test', version: '1.0.0' },
+        paths: {},
+      })
+
+      expect(ejs.renderFile).toHaveBeenCalled()
     })
   })
 })

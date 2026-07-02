@@ -179,6 +179,19 @@ describe('api', () => {
       expect(method.requestQuery[1].name).toBe('size')
     })
 
+    // query 参数为数组类型时 type 应转换为 any[]
+    it('should convert array-type query param to any[]', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('get', {
+        parameters: [
+          { name: 'ids', in: 'query', schema: { type: 'array', items: { type: 'string' } } },
+        ],
+        responses: mockResponses,
+      })
+      expect(method.requestQuery).toHaveLength(1)
+      expect(method.requestQuery[0].type).toBe('any[]')
+    })
+
     // 遇到 MultipartFile（binary）时应重置 requestQuery 为空
     it('should reset requestQuery when encountering MultipartFile', async () => {
       const { DefineAPIMethod } = await import('../api')
@@ -209,6 +222,19 @@ describe('api', () => {
         responses: mockResponses,
       })
       expect(method.requestBody.length).toBeGreaterThan(0)
+    })
+
+    // header 参数应被忽略（default 分支）
+    it('should ignore header parameters', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('get', {
+        parameters: [
+          { name: 'X-Auth-Token', in: 'header', schema: { type: 'string' } },
+        ],
+        responses: mockResponses,
+      })
+      expect(method.requestQuery).toHaveLength(0)
+      expect(method.requestPath).toHaveLength(0)
     })
   })
 
@@ -583,6 +609,17 @@ describe('api', () => {
         },
       })
       expect(method.responseType).toBe('UserResponse')
+    })
+
+    // $ref 解析为单一 Result 类型时 responseDataType 应为 null
+    it('should set responseDataType to null when $ref resolves to Result', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('get', {
+        responses: {
+          200: { $ref: '#/components/responses/Result' },
+        },
+      })
+      expect(method.responseDataType).toBe('null')
     })
 
     // $ref schema 且不以 Result 开头时应直接使用类型名
@@ -1168,6 +1205,53 @@ describe('api', () => {
       expect(consola.default.success).toHaveBeenCalledWith(
         expect.stringContaining('已生成api文件'),
       )
+    })
+
+    // 无 paths 时应正常渲染（路径循环不执行，count 为 0）
+    it('should handle empty paths gracefully', async () => {
+      const consola = await import('consola')
+      const { renderAPI } = await import('../api')
+      const doc = {
+        openapi: '3.0.0',
+        info: { title: 'test', version: '1.0.0' },
+        paths: {},
+      }
+      await renderAPI(doc)
+      expect(consola.default.success).toHaveBeenCalledWith(
+        expect.stringContaining('0'),
+      )
+    })
+
+    // PACKAGE_UN_NAME / PACKAGE_AXIOS_NAME 未设置时应使用默认值
+    it('should use default package names when env not provided', async () => {
+      const env = await import('../env')
+      vi.mocked(env.checkApiEnv).mockReturnValueOnce({
+        PACKAGE_SCOPE: '@scope',
+        PACKAGE_UN_NAME: undefined as unknown as string,
+        PACKAGE_AXIOS_NAME: undefined as unknown as string,
+        PACKAGE_OPENAPI_V3_NAME: undefined as unknown as string,
+      })
+      const ejs = await import('ejs')
+      vi.mocked(ejs.renderFile).mockClear()
+      const { renderAPI } = await import('../api')
+      const doc = {
+        openapi: '3.0.0',
+        info: { title: 'test', version: '1.0.0' },
+        paths: { '/api/users': { get: { summary: 'list', responses: mockResponses } } },
+      }
+      await renderAPI(doc)
+
+      const renderFileCalls = vi.mocked(ejs.renderFile).mock.calls
+      // 应使用默认的 axios/un 而不是自定义包名
+      const autoImportCalls = renderFileCalls.filter(([templatePath]) =>
+        String(templatePath).includes('unplugin-auto-import'),
+      )
+      expect(autoImportCalls.length).toBeGreaterThan(0)
+      // 验证默认包名 @scope/axios 和 @scope/un 被使用
+      const axiosImport = autoImportCalls.find(c => String(c[1]?.pkgName).includes('axios'))
+      const unImport = autoImportCalls.find(c => String(c[1]?.pkgName).includes('/un'))
+      expect(axiosImport).toBeTruthy()
+      expect(unImport).toBeTruthy()
     })
   })
 

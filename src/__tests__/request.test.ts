@@ -48,9 +48,9 @@ vi.mock('tsdown', () => ({
   build: vi.fn().mockResolvedValue(undefined),
 }))
 
-// 模拟 node:fs/promises 的 readdir，返回固定文件列表
+// 模拟 node:fs/promises 的 readdir，返回混合文件列表（含非 .d.ts 文件用于测试过滤）
 vi.mock('node:fs/promises', () => ({
-  readdir: vi.fn().mockResolvedValue(['index.d.ts', 'api.d.ts']),
+  readdir: vi.fn().mockResolvedValue(['index.d.ts', 'api.d.ts', 'index.ts', 'readme.md']),
 }))
 
 // 模拟 openapi3 默认导出
@@ -203,6 +203,26 @@ describe('request', () => {
       expect(readdirCalls).toHaveLength(2)
       expect(readdirCalls.some(([p]) => norm(String(p)) === norm(paths.TEMP_AXIOS_API_DIR))).toBe(true)
       expect(readdirCalls.some(([p]) => norm(String(p)) === norm(paths.TEMP_UN_API_DIR))).toBe(true)
+    })
+
+    // 复制 .d.ts 文件时，非 .d.ts 文件（如 index.ts、readme.md）应被过滤
+    it('should only copy .d.ts files from api directories', async () => {
+      const { renderRequest } = await import('../request')
+      const fse = await import('fs-extra/esm')
+      vi.mocked(fse.copy).mockClear()
+
+      await renderRequest()
+
+      const copyCalls = vi.mocked(fse.copy).mock.calls
+      // 所有复制操作的目标路径应只包含 .d.ts 结尾的文件
+      const apiDtsCopies = copyCalls.filter(([src]) =>
+        norm(String(src)).includes('/api/') && norm(String(src)).endsWith('.d.ts'),
+      )
+      const apiNonDtsCopies = copyCalls.filter(([src]) =>
+        norm(String(src)).includes('/api/') && !norm(String(src)).endsWith('.d.ts'),
+      )
+      expect(apiDtsCopies.length).toBeGreaterThan(0)
+      expect(apiNonDtsCopies).toHaveLength(0)
     })
   })
 
