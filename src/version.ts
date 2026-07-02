@@ -40,6 +40,7 @@ export function getPackageLatestVersion(pkgName?: string) {
     // 找不到NPM包会发生在首次构建的时候，这里不用报错，返回空字符串即可
     return ''
   }
+  npmVersionRecord[pkgName] = result.stdout.trim()
   return result.stdout.trim()
 }
 
@@ -90,7 +91,7 @@ export function getNewVersion(oldVersion: string) {
     consola.warn('无法从NPM获取当前版本号，故使用初始版本号作为当前版本号', INITIAL_VERSION)
     newVersion = INITIAL_VERSION
   }
-  newVersionRecord[name] = newVersion
+  newVersionRecord[oldVersion] = newVersion
   return newVersion
 }
 
