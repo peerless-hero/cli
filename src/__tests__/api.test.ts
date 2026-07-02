@@ -266,14 +266,6 @@ describe('api', () => {
       expect(method.responseDataType).toBe('boolean')
     })
 
-    // ResultPage 包裹类型应解析为 Row<User>
-    it('should resolve response type for ResultPage wrapped type', async () => {
-      const { DefineAPIMethod } = await import('../api')
-      const method = new DefineAPIMethod('get', { responses: mockResponses })
-      method.resolveResultData('ResultPageUser')
-      expect(method.responseType).toBe('Row<User>')
-    })
-
     // ResultList 包裹类型应解析为 User[]
     it('should resolve response type for ResultList wrapped type', async () => {
       const { DefineAPIMethod } = await import('../api')
@@ -330,14 +322,6 @@ describe('api', () => {
       expect(method.responseType).toBe('Record<string, any>')
     })
 
-    // ResultPage（精确匹配）应解析为 Row<any>
-    it('should resolve response type for ResultPage exact match', async () => {
-      const { DefineAPIMethod } = await import('../api')
-      const method = new DefineAPIMethod('get', { responses: mockResponses })
-      method.resolveResultData('ResultPage')
-      expect(method.responseType).toBe('Row<any>')
-    })
-
     // ResultList（精确匹配）应解析为 any[]
     it('should resolve response type for ResultList exact match', async () => {
       const { DefineAPIMethod } = await import('../api')
@@ -383,13 +367,6 @@ describe('api', () => {
         const method = new DefineAPIMethod('get', { responses: mockResponses })
         method.resolveResultData('ApiResultBoolean')
         expect(method.responseDataType).toBe('boolean')
-      })
-
-      it('should resolve with custom prefix for wrapped type (Page)', async () => {
-        const { DefineAPIMethod } = await import('../api')
-        const method = new DefineAPIMethod('get', { responses: mockResponses })
-        method.resolveResultData('ApiResultPageUser')
-        expect(method.responseType).toBe('Row<User>')
       })
 
       it('should resolve with custom prefix for wrapped type (List)', async () => {
@@ -454,20 +431,6 @@ describe('api', () => {
         process.env.PAGE_TYPE_PREFIX = 'ResultPage'
         process.env.LIST_TYPE_PREFIX = 'ResultList'
         vi.resetModules()
-      })
-
-      it('should resolve exact match for custom page prefix', async () => {
-        const { DefineAPIMethod } = await import('../api')
-        const method = new DefineAPIMethod('get', { responses: mockResponses })
-        method.resolveResultData('ResultPage')
-        expect(method.responseType).toBe('Row<any>')
-      })
-
-      it('should resolve wrapped type for custom page prefix', async () => {
-        const { DefineAPIMethod } = await import('../api')
-        const method = new DefineAPIMethod('get', { responses: mockResponses })
-        method.resolveResultData('ResultPageUser')
-        expect(method.responseType).toBe('Row<User>')
       })
 
       it('should resolve exact match for custom list prefix', async () => {
@@ -651,6 +614,61 @@ describe('api', () => {
         },
       })
       expect(method.responseDataType).toBe('')
+    })
+
+    // $ref schema 以 ResultPage 开头时应解析为 Row<Type>
+    it('should resolve $ref schema starting with ResultPage as Row<Type>', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('get', {
+        responses: {
+          200: { description: 'paginated', content: { 'application/json': { schema: { $ref: '#/components/schemas/ResultPageUser' } } } },
+        },
+      })
+      expect(method.responseType).toBe('Row<User>')
+    })
+
+    // $ref schema 仅有 ResultPage（无具体类型）时应解析为 Row<any>
+    it('should resolve bare ResultPage $ref schema as Row<any>', async () => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('get', {
+        responses: {
+          200: { description: 'paginated', content: { 'application/json': { schema: { $ref: '#/components/schemas/ResultPage' } } } },
+        },
+      })
+      expect(method.responseType).toBe('Row<any>')
+    })
+
+    // 自定义 PAGE_TYPE_PREFIX 前缀测试 PAGE_TYPE_PREFIX 为 TableDataInfo 时
+    describe('with PAGE_TYPE_PREFIX = TableDataInfo', () => {
+      beforeEach(() => {
+        process.env.PAGE_TYPE_PREFIX = 'TableDataInfo'
+        vi.resetModules()
+      })
+
+      afterEach(() => {
+        process.env.PAGE_TYPE_PREFIX = 'ResultPage'
+        vi.resetModules()
+      })
+
+      it('should resolve TableDataInfoUser as Row<User>', async () => {
+        const { DefineAPIMethod } = await import('../api')
+        const method = new DefineAPIMethod('get', {
+          responses: {
+            200: { description: 'paginated', content: { 'application/json': { schema: { $ref: '#/components/schemas/TableDataInfoUser' } } } },
+          },
+        })
+        expect(method.responseType).toBe('Row<User>')
+      })
+
+      it('should resolve bare TableDataInfo as Row<any>', async () => {
+        const { DefineAPIMethod } = await import('../api')
+        const method = new DefineAPIMethod('get', {
+          responses: {
+            200: { description: 'paginated', content: { 'application/json': { schema: { $ref: '#/components/schemas/TableDataInfo' } } } },
+          },
+        })
+        expect(method.responseType).toBe('Row<any>')
+      })
     })
 
     // response 包含 rows 属性时解析为 Row<type>

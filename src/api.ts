@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2022-11-03 17:53:22
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2026-07-02 20:51:10
+ * @LastEditTime: 2026-07-02 21:58:58
  * @FilePath: \cli\src\api.ts
  * @Description:
  *
@@ -139,18 +139,10 @@ export class DefineAPIMethod {
       case `${RESULR_TYPE_PREFIX}Map`:
         this.responseType = 'Record<string, any>'
         break
-      case PAGE_TYPE_PREFIX:
-        this.responseType = 'Row<any>'
-        break
       case LIST_TYPE_PREFIX:
         this.responseDataType = 'any[]'
         break
       default: {
-        if (type.startsWith(PAGE_TYPE_PREFIX)) {
-          const pageType = type.replace(PAGE_TYPE_PREFIX, '')
-          this.responseType = `Row<${pageType}>`
-          return
-        }
         if (type.startsWith(LIST_TYPE_PREFIX)) {
           const listType = type.replace(LIST_TYPE_PREFIX, '')
           this.responseDataType = `${listType}[]`
@@ -182,6 +174,11 @@ export class DefineAPIMethod {
     }
     if ('$ref' in schema) {
       this.responseType = resolveSchemaType(schema)
+      if (this.responseType.startsWith(PAGE_TYPE_PREFIX)) {
+        const pageType = this.responseType.replace(PAGE_TYPE_PREFIX, '') || 'any'
+        this.responseType = `Row<${pageType}>`
+        return
+      }
       if (this.responseType.startsWith(RESULR_TYPE_PREFIX)) {
         this.resolveResultData(this.responseType)
         return
