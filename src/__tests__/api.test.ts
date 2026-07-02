@@ -89,8 +89,8 @@ describe('api', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     process.env.RESULR_TYPE_PREFIX = 'Result'
-    process.env.PAGE_TYPE_PREFIX = 'Page'
-    process.env.LIST_TYPE_PREFIX = 'List'
+    process.env.PAGE_TYPE_PREFIX = 'ResultPage'
+    process.env.LIST_TYPE_PREFIX = 'ResultList'
   })
 
   // DefineAPIMethod：单个接口方法定义
@@ -343,7 +343,7 @@ describe('api', () => {
       const { DefineAPIMethod } = await import('../api')
       const method = new DefineAPIMethod('get', { responses: mockResponses })
       method.resolveResultData('ResultList')
-      expect(method.responseType).toBe('any[]')
+      expect(method.responseDataType).toBe('any[]')
     })
 
     // 替换后首字母小写时保留原值
@@ -366,13 +366,15 @@ describe('api', () => {
     describe('with custom RESULR_TYPE_PREFIX', () => {
       beforeEach(() => {
         process.env.RESULR_TYPE_PREFIX = 'ApiResult'
+        process.env.PAGE_TYPE_PREFIX = 'ApiResultPage'
+        process.env.LIST_TYPE_PREFIX = 'ApiResultList'
         vi.resetModules()
       })
 
       afterEach(() => {
         process.env.RESULR_TYPE_PREFIX = 'Result'
-        process.env.PAGE_TYPE_PREFIX = 'Page'
-        process.env.LIST_TYPE_PREFIX = 'List'
+        process.env.PAGE_TYPE_PREFIX = 'ResultPage'
+        process.env.LIST_TYPE_PREFIX = 'ResultList'
         vi.resetModules()
       })
 
@@ -420,8 +422,8 @@ describe('api', () => {
 
       afterEach(() => {
         process.env.RESULR_TYPE_PREFIX = 'Result'
-        process.env.PAGE_TYPE_PREFIX = 'Page'
-        process.env.LIST_TYPE_PREFIX = 'List'
+        process.env.PAGE_TYPE_PREFIX = 'ResultPage'
+        process.env.LIST_TYPE_PREFIX = 'ResultList'
         vi.resetModules()
       })
 
@@ -442,43 +444,43 @@ describe('api', () => {
 
     describe('with custom PAGE_TYPE_PREFIX and LIST_TYPE_PREFIX', () => {
       beforeEach(() => {
-        process.env.PAGE_TYPE_PREFIX = 'PageResult'
-        process.env.LIST_TYPE_PREFIX = 'ListResult'
+        process.env.PAGE_TYPE_PREFIX = 'ResultPage'
+        process.env.LIST_TYPE_PREFIX = 'ResultList'
         vi.resetModules()
       })
 
       afterEach(() => {
         process.env.RESULR_TYPE_PREFIX = 'Result'
-        process.env.PAGE_TYPE_PREFIX = 'Page'
-        process.env.LIST_TYPE_PREFIX = 'List'
+        process.env.PAGE_TYPE_PREFIX = 'ResultPage'
+        process.env.LIST_TYPE_PREFIX = 'ResultList'
         vi.resetModules()
       })
 
       it('should resolve exact match for custom page prefix', async () => {
         const { DefineAPIMethod } = await import('../api')
         const method = new DefineAPIMethod('get', { responses: mockResponses })
-        method.resolveResultData('ResultPageResult')
+        method.resolveResultData('ResultPage')
         expect(method.responseType).toBe('Row<any>')
       })
 
       it('should resolve wrapped type for custom page prefix', async () => {
         const { DefineAPIMethod } = await import('../api')
         const method = new DefineAPIMethod('get', { responses: mockResponses })
-        method.resolveResultData('ResultPageResultUser')
+        method.resolveResultData('ResultPageUser')
         expect(method.responseType).toBe('Row<User>')
       })
 
       it('should resolve exact match for custom list prefix', async () => {
         const { DefineAPIMethod } = await import('../api')
         const method = new DefineAPIMethod('get', { responses: mockResponses })
-        method.resolveResultData('ResultListResult')
-        expect(method.responseType).toBe('any[]')
+        method.resolveResultData('ResultList')
+        expect(method.responseDataType).toBe('any[]')
       })
 
       it('should resolve wrapped type for custom list prefix', async () => {
         const { DefineAPIMethod } = await import('../api')
         const method = new DefineAPIMethod('get', { responses: mockResponses })
-        method.resolveResultData('ResultListResultUser')
+        method.resolveResultData('ResultListUser')
         expect(method.responseDataType).toBe('User[]')
       })
     })

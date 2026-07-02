@@ -26,7 +26,7 @@ const ACTION: Record<string, string> = {
   patch: 'patch',
 }
 
-const { RESULR_TYPE_PREFIX = 'Result', PAGE_TYPE_PREFIX = 'Page', LIST_TYPE_PREFIX = 'List' } = process.env
+const { RESULR_TYPE_PREFIX = 'Result', PAGE_TYPE_PREFIX = 'ResultPage', LIST_TYPE_PREFIX = 'ResultList' } = process.env
 
 /**
  * 接口方法定义
@@ -139,20 +139,20 @@ export class DefineAPIMethod {
       case `${RESULR_TYPE_PREFIX}Map`:
         this.responseType = 'Record<string, any>'
         break
-      case `${RESULR_TYPE_PREFIX}${PAGE_TYPE_PREFIX}`:
+      case PAGE_TYPE_PREFIX:
         this.responseType = 'Row<any>'
         break
-      case `${RESULR_TYPE_PREFIX}${LIST_TYPE_PREFIX}`:
+      case LIST_TYPE_PREFIX:
         this.responseType = 'any[]'
         break
       default: {
-        if (type.startsWith(`${RESULR_TYPE_PREFIX}${PAGE_TYPE_PREFIX}`)) {
-          const pageType = type.replace(`${RESULR_TYPE_PREFIX}${PAGE_TYPE_PREFIX}`, '')
+        if (type.startsWith(PAGE_TYPE_PREFIX)) {
+          const pageType = type.replace(PAGE_TYPE_PREFIX, '')
           this.responseType = `Row<${pageType}>`
           return
         }
-        if (type.startsWith(`${RESULR_TYPE_PREFIX}${LIST_TYPE_PREFIX}`)) {
-          const listType = type.replace(`${RESULR_TYPE_PREFIX}${LIST_TYPE_PREFIX}`, '')
+        if (type.startsWith(LIST_TYPE_PREFIX)) {
+          const listType = type.replace(LIST_TYPE_PREFIX, '')
           this.responseDataType = `${listType}[]`
           return
         }
