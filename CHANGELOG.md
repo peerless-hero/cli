@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.6.1
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.6.0...v0.6.1)
+
+### 🩹 Fixes
+
+- **api:** 修复分页和列表类型前缀拼接逻辑 ([bb9dfc3](https://github.com/peerless-hero/cli/commit/bb9dfc3))
+
+### 🤖 CI
+
+- 使用 test:coverage 替代 test:run ([1bd29da](https://github.com/peerless-hero/cli/commit/1bd29da))
+
+### ❤️ Contributors
+
+- Zhaojinfeng <ifzhaocn@isoftstone.com>
+
 ## v0.6.0
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.5.0...v0.6.0)
