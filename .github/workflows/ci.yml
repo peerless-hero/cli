@@ -73,7 +73,7 @@ jobs:
         run: nci
 
       - name: Test
-        run: nr test:run
+        run: nr test:coverage
 
       - name: Build
         run: nr build
