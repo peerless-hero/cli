@@ -21,6 +21,9 @@ interface ApifoxPlus {
 /** 提取括号内的正则 */
 const inBrackets = /(?<=\[)[^\]]+/
 
+/** 需要引号包裹的属性名正则：含 [、-、空格的属性名需要引号 */
+const needsQuote = /[\s[-]/
+
 /**
  *
  * 获取中括号内的文字
@@ -103,7 +106,7 @@ export class DefineProperty {
     schema?: (OpenAPIV3.SchemaObject & ApifoxPlus) | OpenAPIV3.ReferenceObject,
     required = false,
   ) {
-    this.name = name.includes('[') ? `'${name}'` : name
+    this.name = needsQuote.test(name) ? `'${name}'` : name
     this.required = required
     if (!schema) {
       this.type = 'any'

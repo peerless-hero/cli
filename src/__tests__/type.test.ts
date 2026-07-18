@@ -230,11 +230,16 @@ describe('type', () => {
       expect(prop.defaultValue).toBe('undefined')
     })
 
-    // 名称包含 [ 时应使用引号包裹
-    it('should wrap name with brackets when name contains [', async () => {
+    // 名称包含 [ 或 - 时应使用引号包裹
+    it.each([
+      ['items[key]', '\'items[key]\'', 'brackets ['],
+      ['my-prop', '\'my-prop\'', 'hyphen -'],
+      ['normalName', 'normalName', 'no special chars'],
+      ['blank name', '\'blank name\'', 'has blank chars'],
+    ])('should wrap name with quotes when name contains %s', async (name, expected) => {
       const { DefineProperty } = await import('../type')
-      const prop = new DefineProperty('items[key]')
-      expect(prop.name).toBe('\'items[key]\'')
+      const prop = new DefineProperty(name)
+      expect(prop.name).toBe(expected)
     })
 
     // 应解析 $ref schema 得到类型名
