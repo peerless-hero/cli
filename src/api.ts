@@ -2,7 +2,7 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2022-11-03 17:53:22
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2026-07-19 02:49:23
+ * @LastEditTime: 2026-07-19 03:35:21
  * @FilePath: \cli\src\api.ts
  * @Description:
  *
@@ -27,7 +27,7 @@ const ACTION: Record<string, string> = {
   patch: 'patch',
 }
 
-const { RESULR_TYPE_PREFIX = 'Result', PAGE_TYPE_PREFIX = 'ResultPage', LIST_TYPE_PREFIX = 'ResultList' } = process.env
+const { LIST_TYPE_PREFIX = 'List', RESULR_TYPE_PREFIX = 'Result', PAGE_TYPE_PREFIX = 'ResultPage' } = process.env
 
 /** 预编译 api.ejs 模板，避免循环中重复读取文件和编译 */
 let compiledAxiosApiTemplate: ejs.TemplateFunction | null = null
@@ -162,19 +162,36 @@ export class DefineAPIMethod {
       case `${RESULR_TYPE_PREFIX}Map`:
         this.responseType = 'Record<string, any>'
         break
-      case LIST_TYPE_PREFIX:
+      case `${RESULR_TYPE_PREFIX}List`:
         this.responseDataType = 'any[]'
         break
       default: {
-        if (type.startsWith(LIST_TYPE_PREFIX)) {
-          const listType = type.replace(LIST_TYPE_PREFIX, '')
-          this.responseDataType = `${listType}[]`
-          return
-        }
         const resultName = type.replace(RESULR_TYPE_PREFIX, '')
+        // LIST_TYPE_PREFIX 可能包含 RESULR_TYPE_PREFIX（如 ResultList），需去除重叠部分后匹配
+        const listPrefix = LIST_TYPE_PREFIX.replace(RESULR_TYPE_PREFIX, '')
+        if (listPrefix && resultName.startsWith(listPrefix)) {
+          this.responseDataType = `${resultName.replace(listPrefix, '')}[]`
+          break
+        }
         this.responseDataType = resultName && /^[A-Z]/.test(resultName) ? resultName : type
         break
       }
+    }
+  }
+
+  /** 解析 $ref 引用的类型前缀（Page → Row, List → [], Result → resolveResultData） */
+  private resolveRefType() {
+    if (this.responseType.startsWith(PAGE_TYPE_PREFIX)) {
+      const pageType = this.responseType.replace(PAGE_TYPE_PREFIX, '') || 'any'
+      this.responseType = `Row<${pageType}>`
+      return
+    }
+    if (this.responseType.startsWith(LIST_TYPE_PREFIX)) {
+      this.responseType = `${this.responseType.replace(LIST_TYPE_PREFIX, '')}[]`
+      return
+    }
+    if (this.responseType.startsWith(RESULR_TYPE_PREFIX)) {
+      this.resolveResultData(this.responseType)
     }
   }
 
@@ -192,20 +209,11 @@ export class DefineAPIMethod {
     if (!schema) {
       if (successRes.content)
         this.responseType = 'Blob'
-
       return
     }
     if ('$ref' in schema) {
       this.responseType = resolveSchemaType(schema)
-      if (this.responseType.startsWith(PAGE_TYPE_PREFIX)) {
-        const pageType = this.responseType.replace(PAGE_TYPE_PREFIX, '') || 'any'
-        this.responseType = `Row<${pageType}>`
-        return
-      }
-      if (this.responseType.startsWith(RESULR_TYPE_PREFIX)) {
-        this.resolveResultData(this.responseType)
-        return
-      }
+      this.resolveRefType()
       return
     }
     const responseRowType = schema.properties?.rows

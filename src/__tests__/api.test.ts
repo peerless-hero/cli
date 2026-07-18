@@ -248,6 +248,7 @@ describe('api', () => {
     it.each([
       ['ResultBoolean', 'responseDataType', 'boolean'],
       ['ResultListUser', 'responseDataType', 'User[]'],
+      ['ResultListOrderDetail', 'responseDataType', 'OrderDetail[]'],
       ['ResultUserDto', 'responseDataType', 'UserDto'],
       ['ResultLong', 'responseDataType', 'number'],
       ['ResultString', 'responseDataType', 'string'],
@@ -257,11 +258,11 @@ describe('api', () => {
       ['ResultList', 'responseDataType', 'any[]'],
       ['Resultable', 'responseDataType', 'Resultable'],
       ['Result', 'responseDataType', 'Result'],
-    ])('should resolve %s → %s', async (input, field, expected) => {
+    ] as const)('should resolve %s → %s', async (input, field, expected) => {
       const { DefineAPIMethod } = await import('../api')
       const method = new DefineAPIMethod('get', { responses: mockResponses })
       method.resolveResultData(input)
-      expect((method as any)[field]).toBe(expected)
+      expect(method[field]).toBe(expected)
     })
 
     // 自定义 RESULR_TYPE_PREFIX 前缀测试
@@ -281,15 +282,15 @@ describe('api', () => {
       })
 
       it.each([
-        ['ApiResultBoolean', 'responseDataType', 'boolean', 'exact match'],
-        ['ApiResultListUser', 'responseDataType', 'User[]', 'wrapped type (List)'],
-        ['ApiResultUserDto', 'responseDataType', 'UserDto', 'generic type'],
-        ['ResultBoolean', 'responseDataType', 'ResultBoolean', 'old Result prefix not matched'],
-      ])('should resolve %s → %s (%s)', async (input, field, expected) => {
+        ['ApiResultBoolean', 'responseDataType', 'boolean'], // exact match
+        ['ApiResultListUser', 'responseDataType', 'User[]'], // wrapped type (List)
+        ['ApiResultUserDto', 'responseDataType', 'UserDto'], // generic type
+        ['ResultBoolean', 'responseDataType', 'ResultBoolean'], // old Result prefix not matched
+      ] as const)('should resolve %s → %s (%s)', async (input, field, expected) => {
         const { DefineAPIMethod } = await import('../api')
         const method = new DefineAPIMethod('get', { responses: mockResponses })
         method.resolveResultData(input)
-        expect((method as any)[field]).toBe(expected)
+        expect(method[field]).toBe(expected)
       })
     })
 
@@ -505,6 +506,53 @@ describe('api', () => {
         },
       })
       expect(method.responseDataType).toBe('null')
+    })
+
+    // $ref schema 以 ResultList 开头时应解析为 Type[]（LIST_TYPE_PREFIX 分支）
+    it.each([
+      ['ResultListUser', 'User[]'],
+      ['ResultList', '[]'],
+    ])('should resolve $ref schema starting with %s as %s', async (type, expected) => {
+      const { DefineAPIMethod } = await import('../api')
+      const method = new DefineAPIMethod('get', {
+        responses: {
+          200: { description: 'list', content: { 'application/json': { schema: { $ref: `#/components/schemas/${type}` } } } },
+        },
+      })
+      expect(method.responseType).toBe(expected)
+    })
+
+    // 自定义 LIST_TYPE_PREFIX 前缀测试 resolveRefType 分支
+    describe('with custom LIST_TYPE_PREFIX = MyList', () => {
+      beforeEach(() => {
+        process.env.LIST_TYPE_PREFIX = 'MyList'
+        vi.resetModules()
+      })
+
+      afterEach(() => {
+        process.env.LIST_TYPE_PREFIX = 'ResultList'
+        vi.resetModules()
+      })
+
+      it('should resolve MyListUser as User[] via resolveRefType', async () => {
+        const { DefineAPIMethod } = await import('../api')
+        const method = new DefineAPIMethod('get', {
+          responses: {
+            200: { description: 'list', content: { 'application/json': { schema: { $ref: '#/components/schemas/MyListUser' } } } },
+          },
+        })
+        expect(method.responseType).toBe('User[]')
+      })
+
+      it('should resolve bare MyList as [] via resolveRefType', async () => {
+        const { DefineAPIMethod } = await import('../api')
+        const method = new DefineAPIMethod('get', {
+          responses: {
+            200: { description: 'list', content: { 'application/json': { schema: { $ref: '#/components/schemas/MyList' } } } },
+          },
+        })
+        expect(method.responseType).toBe('[]')
+      })
     })
 
     // $ref schema 且不以 Result 开头时应直接使用类型名
@@ -932,7 +980,7 @@ describe('api', () => {
       expect(dtsCompileIndex).toBeGreaterThanOrEqual(0)
 
       // 获取预编译函数的调用数据
-      const dtsCompiledFn = vi.mocked(ejs.compile).mock.results[dtsCompileIndex].value as any
+      const dtsCompiledFn = vi.mocked(ejs.compile).mock.results[dtsCompileIndex].value
       const dtsFnCalls = dtsCompiledFn.mock.calls
 
       // 合并后的 DefineAPI 应同时包含 get 和 post 方法
@@ -1048,7 +1096,7 @@ describe('api', () => {
       )
       expect(dtsCompileIndex).toBeGreaterThanOrEqual(0)
 
-      const dtsCompiledFn = vi.mocked(ejs.compile).mock.results[dtsCompileIndex].value as any
+      const dtsCompiledFn = vi.mocked(ejs.compile).mock.results[dtsCompileIndex].value
       const dtsFnCalls = dtsCompiledFn.mock.calls
       expect(dtsFnCalls.length).toBeGreaterThanOrEqual(1)
       const mergedAPI = dtsFnCalls[0][0]
@@ -1084,7 +1132,7 @@ describe('api', () => {
       )
       expect(dtsCompileIndex).toBeGreaterThanOrEqual(0)
 
-      const dtsCompiledFn = vi.mocked(ejs.compile).mock.results[dtsCompileIndex].value as any
+      const dtsCompiledFn = vi.mocked(ejs.compile).mock.results[dtsCompileIndex].value
       const dtsFnCalls = dtsCompiledFn.mock.calls
       expect(dtsFnCalls.length).toBeGreaterThanOrEqual(1)
       const mergedAPI = dtsFnCalls[0][0]
