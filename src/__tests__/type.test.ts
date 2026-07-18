@@ -325,36 +325,17 @@ describe('type', () => {
       expect(prop.properties[1].required).toBe(false)
     })
 
-    // setDict 方法应在描述以"字典："开头时提取字典名
-    it('should set dict via setDict method when description starts with 字典：', async () => {
+    // setDict 参数化测试：描述以"字典："开头、方括号写法、无参数、无匹配格式
+    it.each<[string | undefined, string, string]>([
+      ['字典：custom_dict', 'custom_dict', 'starts with 字典：'],
+      ['用户类型[user_type]', 'user_type', 'bracket notation'],
+      [undefined, '', 'no description'],
+      ['普通描述没有方括号', '', 'no brackets and no 字典：'],
+    ])('should set dict from %s (%s)', async (input, expected) => {
       const { DefineProperty } = await import('../type')
       const prop = new DefineProperty('test', { type: 'string' })
-      prop.setDict('字典：custom_dict')
-      expect(prop.dict).toBe('custom_dict')
-    })
-
-    // setDict 方法应从方括号写法中提取字典名
-    it('should set dict via setDict method from bracket notation', async () => {
-      const { DefineProperty } = await import('../type')
-      const prop = new DefineProperty('test', { type: 'string' })
-      prop.setDict('用户类型[user_type]')
-      expect(prop.dict).toBe('user_type')
-    })
-
-    // setDict 无参数时应直接返回
-    it('should return early when setDict receives no description', async () => {
-      const { DefineProperty } = await import('../type')
-      const prop = new DefineProperty('test', { type: 'string' })
-      prop.setDict()
-      expect(prop.dict).toBe('')
-    })
-
-    // setDict 描述无方括号且不以"字典："开头时不应设置 dict
-    it('should not set dict when description has no brackets', async () => {
-      const { DefineProperty } = await import('../type')
-      const prop = new DefineProperty('test', { type: 'string' })
-      prop.setDict('普通描述没有方括号')
-      expect(prop.dict).toBe('')
+      prop.setDict(input)
+      expect(prop.dict).toBe(expected)
     })
 
     // 属性含有 pattern 时应添加 @pattern 注释
@@ -551,7 +532,7 @@ describe('type', () => {
         },
       )
       expect(result.total).toBe(1)
-      expect(result.update.length).toBe(1)
+      expect(result.update).toHaveLength(1)
       expect(result.update[0][0]).toBe('UserDto')
     })
 

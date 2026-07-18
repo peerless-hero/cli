@@ -105,40 +105,17 @@ describe('api', () => {
 
   // DefineAPIMethod：单个接口方法定义
   describe('defineAPIMethod', () => {
-    // 应根据 HTTP 方法设置 action（get 保持 get）
-    it('should set action based on method', async () => {
+    // 根据 HTTP 方法映射 action
+    it.each([
+      ['get', 'get'],
+      ['post', 'add'],
+      ['delete', 'remove'],
+      ['put', 'update'],
+      ['patch', 'patch'],
+    ])('should set action to "%s" for %s method', async (httpMethod, action) => {
       const { DefineAPIMethod } = await import('../api')
-      const method = new DefineAPIMethod('get', { responses: mockResponses })
-      expect(method.action).toBe('get')
-      expect(method.method).toBe('get')
-    })
-
-    // post 方法应映射为 add
-    it('should set action to "add" for post method', async () => {
-      const { DefineAPIMethod } = await import('../api')
-      const method = new DefineAPIMethod('post', { responses: mockResponses })
-      expect(method.action).toBe('add')
-    })
-
-    // delete 方法应映射为 remove
-    it('should set action to "remove" for delete method', async () => {
-      const { DefineAPIMethod } = await import('../api')
-      const method = new DefineAPIMethod('delete', { responses: mockResponses })
-      expect(method.action).toBe('remove')
-    })
-
-    // put 方法应映射为 update
-    it('should set action to "update" for put method', async () => {
-      const { DefineAPIMethod } = await import('../api')
-      const method = new DefineAPIMethod('put', { responses: mockResponses })
-      expect(method.action).toBe('update')
-    })
-
-    // patch 方法保持 patch
-    it('should set action to "patch" for patch method', async () => {
-      const { DefineAPIMethod } = await import('../api')
-      const method = new DefineAPIMethod('patch', { responses: mockResponses })
-      expect(method.action).toBe('patch')
+      const method = new DefineAPIMethod(httpMethod, { responses: mockResponses })
+      expect(method.action).toBe(action)
     })
 
     // 操作标记为 deprecated 时应添加 @deprecated 注释
@@ -268,92 +245,23 @@ describe('api', () => {
 
   // DefineAPIMethod.resolveResultData：解析响应数据类型
   describe('defineAPIMethod.resolveResultData', () => {
-    // ResultBoolean 应解析为 boolean
-    it('should resolve response type for ResultBoolean', async () => {
+    it.each([
+      ['ResultBoolean', 'responseDataType', 'boolean'],
+      ['ResultListUser', 'responseDataType', 'User[]'],
+      ['ResultUserDto', 'responseDataType', 'UserDto'],
+      ['ResultLong', 'responseDataType', 'number'],
+      ['ResultString', 'responseDataType', 'string'],
+      ['ResultInteger', 'responseDataType', 'number'],
+      ['ResultObject', 'responseType', 'any'],
+      ['ResultMap', 'responseType', 'Record<string, any>'],
+      ['ResultList', 'responseDataType', 'any[]'],
+      ['Resultable', 'responseDataType', 'Resultable'],
+      ['Result', 'responseDataType', 'Result'],
+    ])('should resolve %s → %s', async (input, field, expected) => {
       const { DefineAPIMethod } = await import('../api')
       const method = new DefineAPIMethod('get', { responses: mockResponses })
-      method.resolveResultData('ResultBoolean')
-      expect(method.responseDataType).toBe('boolean')
-    })
-
-    // ResultList 包裹类型应解析为 User[]
-    it('should resolve response type for ResultList wrapped type', async () => {
-      const { DefineAPIMethod } = await import('../api')
-      const method = new DefineAPIMethod('get', { responses: mockResponses })
-      method.resolveResultData('ResultListUser')
-      expect(method.responseDataType).toBe('User[]')
-    })
-
-    // 通用 Result 泛型应解析为内部类型
-    it('should resolve generic Result type', async () => {
-      const { DefineAPIMethod } = await import('../api')
-      const method = new DefineAPIMethod('get', { responses: mockResponses })
-      method.resolveResultData('ResultUserDto')
-      expect(method.responseDataType).toBe('UserDto')
-    })
-
-    // ResultLong 应解析为 number
-    it('should resolve response type for ResultLong', async () => {
-      const { DefineAPIMethod } = await import('../api')
-      const method = new DefineAPIMethod('get', { responses: mockResponses })
-      method.resolveResultData('ResultLong')
-      expect(method.responseDataType).toBe('number')
-    })
-
-    // ResultString 应解析为 string
-    it('should resolve response type for ResultString', async () => {
-      const { DefineAPIMethod } = await import('../api')
-      const method = new DefineAPIMethod('get', { responses: mockResponses })
-      method.resolveResultData('ResultString')
-      expect(method.responseDataType).toBe('string')
-    })
-
-    // ResultInteger 应解析为 number
-    it('should resolve response type for ResultInteger', async () => {
-      const { DefineAPIMethod } = await import('../api')
-      const method = new DefineAPIMethod('get', { responses: mockResponses })
-      method.resolveResultData('ResultInteger')
-      expect(method.responseDataType).toBe('number')
-    })
-
-    // ResultObject 应设置 responseType 为 any
-    it('should resolve response type for ResultObject', async () => {
-      const { DefineAPIMethod } = await import('../api')
-      const method = new DefineAPIMethod('get', { responses: mockResponses })
-      method.resolveResultData('ResultObject')
-      expect(method.responseType).toBe('any')
-    })
-
-    // ResultMap 应解析为 Record<string, any>
-    it('should resolve response type for ResultMap', async () => {
-      const { DefineAPIMethod } = await import('../api')
-      const method = new DefineAPIMethod('get', { responses: mockResponses })
-      method.resolveResultData('ResultMap')
-      expect(method.responseType).toBe('Record<string, any>')
-    })
-
-    // ResultList（精确匹配）应解析为 any[]
-    it('should resolve response type for ResultList exact match', async () => {
-      const { DefineAPIMethod } = await import('../api')
-      const method = new DefineAPIMethod('get', { responses: mockResponses })
-      method.resolveResultData('ResultList')
-      expect(method.responseDataType).toBe('any[]')
-    })
-
-    // 替换后首字母小写时保留原值
-    it('should keep original value when replacement starts with lowercase', async () => {
-      const { DefineAPIMethod } = await import('../api')
-      const method = new DefineAPIMethod('get', { responses: mockResponses })
-      method.resolveResultData('Resultable')
-      expect(method.responseDataType).toBe('Resultable')
-    })
-
-    // 替换后为空字符串时保留原值
-    it('should keep original value when replacement is empty', async () => {
-      const { DefineAPIMethod } = await import('../api')
-      const method = new DefineAPIMethod('get', { responses: mockResponses })
-      method.resolveResultData('Result')
-      expect(method.responseDataType).toBe('Result')
+      method.resolveResultData(input)
+      expect((method as any)[field]).toBe(expected)
     })
 
     // 自定义 RESULR_TYPE_PREFIX 前缀测试
@@ -372,32 +280,16 @@ describe('api', () => {
         vi.resetModules()
       })
 
-      it('should resolve with custom prefix for exact match', async () => {
+      it.each([
+        ['ApiResultBoolean', 'responseDataType', 'boolean', 'exact match'],
+        ['ApiResultListUser', 'responseDataType', 'User[]', 'wrapped type (List)'],
+        ['ApiResultUserDto', 'responseDataType', 'UserDto', 'generic type'],
+        ['ResultBoolean', 'responseDataType', 'ResultBoolean', 'old Result prefix not matched'],
+      ])('should resolve %s → %s (%s)', async (input, field, expected) => {
         const { DefineAPIMethod } = await import('../api')
         const method = new DefineAPIMethod('get', { responses: mockResponses })
-        method.resolveResultData('ApiResultBoolean')
-        expect(method.responseDataType).toBe('boolean')
-      })
-
-      it('should resolve with custom prefix for wrapped type (List)', async () => {
-        const { DefineAPIMethod } = await import('../api')
-        const method = new DefineAPIMethod('get', { responses: mockResponses })
-        method.resolveResultData('ApiResultListUser')
-        expect(method.responseDataType).toBe('User[]')
-      })
-
-      it('should resolve generic type with custom prefix', async () => {
-        const { DefineAPIMethod } = await import('../api')
-        const method = new DefineAPIMethod('get', { responses: mockResponses })
-        method.resolveResultData('ApiResultUserDto')
-        expect(method.responseDataType).toBe('UserDto')
-      })
-
-      it('should not match old Result prefix', async () => {
-        const { DefineAPIMethod } = await import('../api')
-        const method = new DefineAPIMethod('get', { responses: mockResponses })
-        method.resolveResultData('ResultBoolean')
-        expect(method.responseDataType).toBe('ResultBoolean')
+        method.resolveResultData(input)
+        expect((method as any)[field]).toBe(expected)
       })
     })
 
