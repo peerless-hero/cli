@@ -16,4 +16,6 @@ declare type ExtraRequestConfig = import("@uni-helper/uni-network").UnConfig & {
   tip?: 'toast' | 'modal' | 'none'
   /** 不携带认证头 */
   noAuth?: boolean
+  /** 其他属性 */
+  [x: string]: any
 }

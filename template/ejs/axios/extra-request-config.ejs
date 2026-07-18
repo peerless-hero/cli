@@ -22,4 +22,6 @@ declare type ExtraRequestConfig = import("axios").AxiosRequestConfig & {
   tip?: 'modal' | 'notification' | 'message' | 'none'
   /** 不携带认证头 */
   noAuth?: boolean
+  /** 其他属性 */
+  [x: string]: any
 }
