@@ -1,5 +1,31 @@
 # Changelog
 
+## v0.6.4
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.6.3...v0.6.4)
+
+### 🚀 Enhancements
+
+- **axios,un:** 允许 ExtraRequestConfig 添加额外属性 ([cb49e2e](https://github.com/peerless-hero/cli/commit/cb49e2e))
+
+### 🔥 Performance
+
+- 预编译 api.ejs 模板优化渲染速度 ([72a5ac7](https://github.com/peerless-hero/cli/commit/72a5ac7))
+
+### 🩹 Fixes
+
+- **api:** 修复LIST_TYPE_PREFIX默认值及$ref列表类型解析 ([559f820](https://github.com/peerless-hero/cli/commit/559f820))
+
+### 💅 Refactors
+
+- **test:** 使用 it.each 重构参数化测试 ([7ae4b2d](https://github.com/peerless-hero/cli/commit/7ae4b2d))
+- 提取 needsQuote 正则常量并扩展匹配空格字符 ([97b2cae](https://github.com/peerless-hero/cli/commit/97b2cae))
+- **test:** 移除不必要的类型断言 ([e428a9d](https://github.com/peerless-hero/cli/commit/e428a9d))
+
+### ❤️ Contributors
+
+- Peerless_hero ([@peerless-hero](https://github.com/peerless-hero))
+
 ## v0.6.3
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.6.2...v0.6.3)
