@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.6.5
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.6.4...v0.6.5)
+
+### 🩹 Fixes
+
+- **type:** 修复枚举值含单引号时的处理逻辑 ([3046bb4](https://github.com/peerless-hero/cli/commit/3046bb4))
+
+### ❤️ Contributors
+
+- Peerless_hero ([@peerless-hero](https://github.com/peerless-hero))
+
 ## v0.6.4
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.6.3...v0.6.4)
