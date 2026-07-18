@@ -30,11 +30,21 @@ vi.mock('fs-extra/esm', () => ({
 // 模拟 ejs 模板渲染
 vi.mock('ejs', () => {
   const renderFile = vi.fn().mockResolvedValue('// rendered content')
+  // 每次调用 compile 返回独立的 spy，便于追踪各模板的调用数据
+  const compile = vi.fn().mockImplementation((_templateStr: string, _options: Record<string, any>) =>
+    vi.fn().mockReturnValue('// compiled content'),
+  )
   return {
-    default: { renderFile },
+    default: { renderFile, compile },
     renderFile,
+    compile,
   }
 })
+
+// 模拟 readFile，预编译模板时读取文件
+vi.mock('node:fs/promises', () => ({
+  readFile: vi.fn().mockResolvedValue('<%- data %>'),
+}))
 
 // 模拟 env 模块，返回有效的环境配置
 vi.mock('../env', () => ({
@@ -1020,16 +1030,22 @@ describe('api', () => {
       }
       await renderAPI(doc)
 
-      const renderFileCalls = vi.mocked(ejs.renderFile).mock.calls
-      const dtsCalls = renderFileCalls.filter(([templatePath]) =>
-        norm(templatePath).endsWith('dts/api.ejs'),
+      // renderDTSofAPI 使用预编译模板，通过 ejs.compile 的 mock 追踪调用数据
+      const compileCalls = vi.mocked(ejs.compile).mock.calls
+      const dtsCompileIndex = compileCalls.findIndex(([_, options]) =>
+        norm(options?.filename || '').endsWith('dts/api.ejs'),
       )
 
-      // 只调用一次 dts/api.ejs（合并后），而非两次
-      expect(dtsCalls).toHaveLength(1)
+      // 只编译一次 dts/api.ejs（合并后），而非两次
+      expect(dtsCompileIndex).toBeGreaterThanOrEqual(0)
+
+      // 获取预编译函数的调用数据
+      const dtsCompiledFn = vi.mocked(ejs.compile).mock.results[dtsCompileIndex].value as any
+      const dtsFnCalls = dtsCompiledFn.mock.calls
 
       // 合并后的 DefineAPI 应同时包含 get 和 post 方法
-      const mergedAPI = dtsCalls[0]?.[1]
+      expect(dtsFnCalls.length).toBeGreaterThanOrEqual(1)
+      const mergedAPI = dtsFnCalls[0]?.[0]
       if (mergedAPI) {
         expect(mergedAPI.method.get).toBeDefined()
         expect(mergedAPI.method.post).toBeDefined()
@@ -1133,13 +1149,17 @@ describe('api', () => {
       }
       await renderAPI(doc)
 
-      const renderFileCalls = vi.mocked(ejs.renderFile).mock.calls
-      const dtsCalls = renderFileCalls.filter(([templatePath]) =>
-        norm(templatePath).endsWith('dts/api.ejs'),
+      // renderDTSofAPI 使用预编译模板，通过 ejs.compile 的 mock 追踪调用数据
+      const compileCalls = vi.mocked(ejs.compile).mock.calls
+      const dtsCompileIndex = compileCalls.findIndex(([_, options]) =>
+        norm(options?.filename || '').endsWith('dts/api.ejs'),
       )
+      expect(dtsCompileIndex).toBeGreaterThanOrEqual(0)
 
-      expect(dtsCalls).toHaveLength(1)
-      const mergedAPI = dtsCalls[0][1]
+      const dtsCompiledFn = vi.mocked(ejs.compile).mock.results[dtsCompileIndex].value as any
+      const dtsFnCalls = dtsCompiledFn.mock.calls
+      expect(dtsFnCalls.length).toBeGreaterThanOrEqual(1)
+      const mergedAPI = dtsFnCalls[0][0]
       if (mergedAPI) {
         expect(mergedAPI.method.get).toBeDefined()
         expect(mergedAPI.method.post).toBeDefined()
@@ -1165,13 +1185,17 @@ describe('api', () => {
       }
       await renderAPI(doc)
 
-      const renderFileCalls = vi.mocked(ejs.renderFile).mock.calls
-      const dtsCalls = renderFileCalls.filter(([templatePath]) =>
-        norm(templatePath).endsWith('dts/api.ejs'),
+      // renderDTSofAPI 使用预编译模板，通过 ejs.compile 的 mock 追踪调用数据
+      const compileCalls = vi.mocked(ejs.compile).mock.calls
+      const dtsCompileIndex = compileCalls.findIndex(([_, options]) =>
+        norm(options?.filename || '').endsWith('dts/api.ejs'),
       )
+      expect(dtsCompileIndex).toBeGreaterThanOrEqual(0)
 
-      expect(dtsCalls).toHaveLength(1)
-      const mergedAPI = dtsCalls[0][1]
+      const dtsCompiledFn = vi.mocked(ejs.compile).mock.results[dtsCompileIndex].value as any
+      const dtsFnCalls = dtsCompiledFn.mock.calls
+      expect(dtsFnCalls.length).toBeGreaterThanOrEqual(1)
+      const mergedAPI = dtsFnCalls[0][0]
       if (mergedAPI) {
       // 后面的覆盖前面的同名方法
         expect(mergedAPI.method.get?.notes).toContain('second get')

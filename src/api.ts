@@ -2,12 +2,13 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2022-11-03 17:53:22
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2026-07-02 21:58:58
+ * @LastEditTime: 2026-07-19 02:49:23
  * @FilePath: \cli\src\api.ts
  * @Description:
  *
  */
 import type { OpenAPIV3 } from 'openapi-types'
+import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import process from 'node:process'
 import consola from 'consola'
@@ -27,6 +28,28 @@ const ACTION: Record<string, string> = {
 }
 
 const { RESULR_TYPE_PREFIX = 'Result', PAGE_TYPE_PREFIX = 'ResultPage', LIST_TYPE_PREFIX = 'ResultList' } = process.env
+
+/** 预编译 api.ejs 模板，避免循环中重复读取文件和编译 */
+let compiledAxiosApiTemplate: ejs.TemplateFunction | null = null
+let compiledUnApiTemplate: ejs.TemplateFunction | null = null
+let compiledDtsApiTemplate: ejs.TemplateFunction | null = null
+
+/** 预编译 api.ejs 模板路径常量（硬编码，非外部输入，无注入风险） */
+const EJS_AXIOS_API_PATH = resolve(TEMPLATE_DIR, 'ejs/axios/api.ejs')
+const EJS_UN_API_PATH = resolve(TEMPLATE_DIR, 'ejs/un/api.ejs')
+const EJS_DTS_API_PATH = resolve(TEMPLATE_DIR, 'ejs/dts/api.ejs')
+
+async function compileApiTemplates() {
+  const [axiosApiContent, unApiContent, dtsApiContent] = await Promise.all([
+    readFile(EJS_AXIOS_API_PATH, { encoding: 'utf-8' }),
+    readFile(EJS_UN_API_PATH, { encoding: 'utf-8' }),
+    readFile(EJS_DTS_API_PATH, { encoding: 'utf-8' }),
+  ])
+  // ejs.compile 模板内容来自项目内置硬编码路径文件，非外部输入，无注入风险
+  compiledAxiosApiTemplate = ejs.compile(axiosApiContent, { filename: EJS_AXIOS_API_PATH }) // NOSONAR
+  compiledUnApiTemplate = ejs.compile(unApiContent, { filename: EJS_UN_API_PATH }) // NOSONAR
+  compiledDtsApiTemplate = ejs.compile(dtsApiContent, { filename: EJS_DTS_API_PATH }) // NOSONAR
+}
 
 /**
  * 接口方法定义
@@ -214,7 +237,7 @@ export class DefineAPIMethod {
         result.update.push(thisQuery.name)
     }
     for (const otherQuery of other.requestQuery) {
-      const thisQuery = this.requestQuery.find(
+      const thisQuery = this.requestQuery.some(
         item => item.name === otherQuery.name,
       )
       if (!thisQuery)
@@ -385,18 +408,18 @@ export class DefineAPI {
   }
 }
 
-export async function renderDefineAxiosAPI(defineAPI: DefineAPI) {
-  const text = await ejs.renderFile(resolve(TEMPLATE_DIR, 'ejs/axios/api.ejs'), defineAPI)
+export function renderDefineAxiosAPI(defineAPI: DefineAPI) {
+  const text = compiledAxiosApiTemplate!(defineAPI)
   return outputFile(resolve(TEMP_AXIOS_API_DIR, `${defineAPI.componentPrefix}.ts`), text)
 }
 
-export async function renderDefineUnAPI(defineAPI: DefineAPI) {
-  const text = await ejs.renderFile(resolve(TEMPLATE_DIR, 'ejs/un/api.ejs'), defineAPI)
+export function renderDefineUnAPI(defineAPI: DefineAPI) {
+  const text = compiledUnApiTemplate!(defineAPI)
   return outputFile(resolve(TEMP_UN_API_DIR, `${defineAPI.componentPrefix}.ts`), text)
 }
 
-export async function renderDTSofAPI(defineAPI: DefineAPI) {
-  const text = await ejs.renderFile(resolve(TEMPLATE_DIR, 'ejs/dts/api.ejs'), defineAPI)
+export function renderDTSofAPI(defineAPI: DefineAPI) {
+  const text = compiledDtsApiTemplate!(defineAPI)
   return Promise.all([
     outputFile(resolve(TEMP_AXIOS_API_DIR, `${defineAPI.componentPrefix}.d.ts`), text),
     outputFile(resolve(TEMP_UN_API_DIR, `${defineAPI.componentPrefix}.d.ts`), text),
@@ -442,6 +465,7 @@ export async function renderAPI(document?: OpenAPIV3.Document) {
   let count = 0
   const pathList = ['./importsMap', './request']
   const methods = ['get', 'post', 'put', 'delete', 'patch'] as const
+  await compileApiTemplates()
   for (const [prefix, group] of pathGroups) {
     count++
     // 合并同组内所有路径的 HTTP 方法，后面的覆盖前面的同名方法
