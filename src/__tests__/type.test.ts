@@ -367,6 +367,20 @@ describe('type', () => {
       expect(prop.notes).toContain('1：active')
     })
 
+    // 枚举值包含单引号时，应移除单引号后包裹成字符串字面量（对应 resolveEnum 中 type === 'string' 分支）
+    it('should strip single quotes from enum values', async () => {
+      const { DefineProperty } = await import('../type')
+      const prop = new DefineProperty('status', {
+        type: 'string',
+        enum: ['it\'s', 'don\'t', 'leave"me"'],
+      })
+      expect(prop.type).toContain('\'its\'')
+      expect(prop.type).toContain('\'dont\'')
+      expect(prop.type).toContain('\'leave"me"\'')
+      expect(prop.type).not.toContain('it\'s')
+      expect(prop.type).not.toContain('don\'t')
+    })
+
     // format 为 binary 时应解析为 MultipartFile
     it('should resolve binary format as MultipartFile', async () => {
       const { DefineProperty } = await import('../type')

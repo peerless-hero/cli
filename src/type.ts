@@ -171,7 +171,7 @@ export class DefineProperty {
     enumDescriptions: Record<string, string> = {},
   ) {
     property.enum?.forEach((e, index, array) => {
-      if (typeof e === 'string') {
+      if (property.type === 'string') {
         const text = e.replaceAll('\'', '')
         this.type += array.length - 1 === index ? `'${text}'` : `'${text}' | `
       }
