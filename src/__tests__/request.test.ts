@@ -157,7 +157,7 @@ describe('request', () => {
       const buildCalls = vi.mocked(tsdown.build).mock.calls
       expect(buildCalls).toHaveLength(4)
       for (const [config] of buildCalls) {
-        expect((config as any).logLevel).toBe('error')
+        expect(config!.logLevel).toBe('error')
       }
     })
 
@@ -170,13 +170,13 @@ describe('request', () => {
       await renderRequest()
 
       const buildCalls = vi.mocked(tsdown.build).mock.calls
-      const entries = buildCalls.map(([config]) => (config as any).entry)
-      const outDirs = buildCalls.map(([config]) => (config as any).outDir)
+      const entries = buildCalls.map(([config]) => (config as { entry: string[] }).entry)
+      const outDirs = buildCalls.map(([config]) => (config as { outDir: string }).outDir)
 
-      expect(entries.filter((e: string[]) => e[0] === paths.TEMP_AXIOS_ENTRY)).toHaveLength(2)
-      expect(entries.filter((e: string[]) => e[0] === paths.TEMP_UN_ENTRY)).toHaveLength(2)
-      expect(outDirs.filter((d: string) => d === paths.AXIOS_DIST_DIR)).toHaveLength(2)
-      expect(outDirs.filter((d: string) => d === paths.UN_DIST_DIR)).toHaveLength(2)
+      expect(entries.filter(e => e[0] === paths.TEMP_AXIOS_ENTRY)).toHaveLength(2)
+      expect(entries.filter(e => e[0] === paths.TEMP_UN_ENTRY)).toHaveLength(2)
+      expect(outDirs.filter(d => d === paths.AXIOS_DIST_DIR)).toHaveLength(2)
+      expect(outDirs.filter(d => d === paths.UN_DIST_DIR)).toHaveLength(2)
     })
 
     // 应删除两个 _virtual 虚拟目录

@@ -126,7 +126,7 @@ describe('openapi3', () => {
       const result = await openapi3()
 
       expect(result.openapi).toBe('3.0.0')
-      expect((result as any).default).toBeUndefined()
+      expect((result as unknown as Record<string, unknown>).default).toBeUndefined()
     })
 
     // 数据源为 global_dir 时应从 npm 全局目录读取 JSON 文件

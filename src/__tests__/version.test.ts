@@ -213,12 +213,12 @@ describe('version', () => {
     it('should fallback to axios package when openapi-v3 not found', async () => {
       process.env.SKIP_LATEST_VERSION = ''
       const childProcess = await import('node:child_process')
-      vi.mocked(childProcess.spawnSync).mockImplementation(((_cmd: string, args?: readonly string[]) => {
+      vi.mocked(childProcess.spawnSync).mockImplementation((_cmd, args) => {
         const pkgName = args?.[1] ?? ''
         if (pkgName === '@test/openapi-v3')
-          return { stdout: '', stderr: 'not found', status: 1, pid: 0, output: [] as string[], signal: null }
-        return { stdout: '1.5.0\n', stderr: '', status: 0, pid: 1, output: [] as string[], signal: null }
-      }) as any)
+          return { stdout: '', stderr: 'not found', status: 1, pid: 0, output: [], signal: null }
+        return { stdout: '1.5.0\n', stderr: '', status: 0, pid: 1, output: [], signal: null }
+      })
 
       const { getVersion } = await import('../version')
       const result = getVersion()
@@ -230,12 +230,12 @@ describe('version', () => {
     it('should fallback to un package when openapi-v3 and axios not found', async () => {
       process.env.SKIP_LATEST_VERSION = ''
       const childProcess = await import('node:child_process')
-      vi.mocked(childProcess.spawnSync).mockImplementation(((_cmd: string, args?: readonly string[]) => {
+      vi.mocked(childProcess.spawnSync).mockImplementation((_cmd, args) => {
         const pkgName = args?.[1] ?? ''
         if (pkgName === '@test/un')
-          return { stdout: '3.0.0\n', stderr: '', status: 0, pid: 1, output: [] as string[], signal: null }
-        return { stdout: '', stderr: 'not found', status: 1, pid: 0, output: [] as string[], signal: null }
-      }) as any)
+          return { stdout: '3.0.0\n', stderr: '', status: 0, pid: 1, output: [], signal: null }
+        return { stdout: '', stderr: 'not found', status: 1, pid: 0, output: [], signal: null }
+      })
 
       const { getVersion } = await import('../version')
       const result = getVersion()
