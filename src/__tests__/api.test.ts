@@ -307,18 +307,29 @@ describe('api', () => {
         vi.resetModules()
       })
 
-      it('should replace when result starts with uppercase', async () => {
+      it.each([
+        ['RUser', 'User'],
+        ['RListUser', 'User[]'],
+        ['Result', 'Result'],
+      ])('should resolve %s → %s', async (input, expected) => {
         const { DefineAPIMethod } = await import('../api')
         const method = new DefineAPIMethod('get', { responses: mockResponses })
-        method.resolveResultData('RUser')
-        expect(method.responseDataType).toBe('User')
+        method.resolveResultData(input)
+        expect(method.responseDataType).toBe(expected)
       })
-
-      it('should keep original when result starts with lowercase', async () => {
+      it.each([
+        ['RListUserVo', 'RListUserVo', 'UserVo[]'],
+        ['ListUser', 'User[]', ''],
+        ['RList', 'RList', 'any[]'],
+      ])('should resolve $ref schema starting with %s as %s', async (type, responseTypeExpected, responseDataTypeExpected) => {
         const { DefineAPIMethod } = await import('../api')
-        const method = new DefineAPIMethod('get', { responses: mockResponses })
-        method.resolveResultData('Result')
-        expect(method.responseDataType).toBe('Result')
+        const method = new DefineAPIMethod('get', {
+          responses: {
+            200: { description: 'list', content: { 'application/json': { schema: { $ref: `#/components/schemas/${type}` } } } },
+          },
+        })
+        expect(method.responseDataType).toBe(responseDataTypeExpected)
+        expect(method.responseType).toBe(responseTypeExpected)
       })
     })
 
@@ -510,16 +521,18 @@ describe('api', () => {
 
     // $ref schema 以 ResultList 开头时应解析为 Type[]（LIST_TYPE_PREFIX 分支）
     it.each([
-      ['ResultListUser', 'User[]'],
-      ['ResultList', '[]'],
-    ])('should resolve $ref schema starting with %s as %s', async (type, expected) => {
+      ['ResultListUser', 'ResultListUser', 'User[]'],
+      ['ListUser', 'User[]', ''],
+      ['ResultList', 'ResultList', 'any[]'],
+    ])('should resolve $ref schema starting with %s as %s', async (type, responseTypeExpected, responseDataTypeExpected) => {
       const { DefineAPIMethod } = await import('../api')
       const method = new DefineAPIMethod('get', {
         responses: {
           200: { description: 'list', content: { 'application/json': { schema: { $ref: `#/components/schemas/${type}` } } } },
         },
       })
-      expect(method.responseType).toBe(expected)
+      expect(method.responseDataType).toBe(responseDataTypeExpected)
+      expect(method.responseType).toBe(responseTypeExpected)
     })
 
     // 自定义 LIST_TYPE_PREFIX 前缀测试 resolveRefType 分支
