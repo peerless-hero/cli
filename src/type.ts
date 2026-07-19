@@ -169,8 +169,7 @@ export class DefineProperty {
     property: OpenAPIV3.SchemaObject,
     enumDescriptions: Record<string, string> = {},
   ) {
-    const enumValues = property.enum ?? []
-    const typeParts = (enumValues as (string | number)[]).map((e) => {
+    const typeParts = (property.enum as any[]).map((e) => {
       const key = String(e)
       if (enumDescriptions[key])
         this.notes.push(`${e}：${enumDescriptions[key]}`)
