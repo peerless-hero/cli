@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.6.6
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.6.5...v0.6.6)
+
+### 🩹 Fixes
+
+- **api:** 修复类型前缀部分重叠时的列表类型推断 ([828d530](https://github.com/peerless-hero/cli/commit/828d530))
+
+### ✅ Tests
+
+- **api:** 优化响应类型解析测试用例 ([c76389c](https://github.com/peerless-hero/cli/commit/c76389c))
+
+### ❤️ Contributors
+
+- Peerless_hero ([@peerless-hero](https://github.com/peerless-hero))
+
 ## v0.6.5
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.6.4...v0.6.5)
