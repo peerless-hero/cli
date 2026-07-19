@@ -50,12 +50,11 @@ export function transformType(type: string | (string | number)[] = 'any', append
   }
 }
 
-function resolveEnumType(items: any[]) {
-  let res = ''
-  items.forEach((item) => {
-    res += typeof item === 'string' ? `'${item.replaceAll('\'', '"')}' | ` : `${item} | `
-  })
-  return `${res}''`
+function resolveEnumType(items: (string | number)[]) {
+  const parts = items.map(item =>
+    typeof item === 'string' ? `'${item.replaceAll('\'', '"')}'` : String(item),
+  )
+  return [...parts, '\'\''].join(' | ')
 }
 
 export function resolveSchemaType(
@@ -170,17 +169,16 @@ export class DefineProperty {
     property: OpenAPIV3.SchemaObject,
     enumDescriptions: Record<string, string> = {},
   ) {
-    property.enum?.forEach((e, index, array) => {
-      if (property.type === 'string') {
-        const text = e.replaceAll('\'', '')
-        this.type += array.length - 1 === index ? `'${text}'` : `'${text}' | `
-      }
-      else {
-        this.type += array.length - 1 === index ? `${e}` : `${e} | `
-      }
-      if (enumDescriptions[e])
-        this.notes.push(`${e}：${enumDescriptions[e]}`)
+    const enumValues = property.enum ?? []
+    const typeParts = (enumValues as (string | number)[]).map((e) => {
+      const key = String(e)
+      if (enumDescriptions[key])
+        this.notes.push(`${e}：${enumDescriptions[key]}`)
+      return property.type === 'string'
+        ? `'${String(e).replaceAll('\'', '')}'`
+        : String(e)
     })
+    this.type = typeParts.join(' | ')
   }
 
   resolveType(property: OpenAPIV3.SchemaObject) {

@@ -29,6 +29,23 @@ const ACTION: Record<string, string> = {
 
 const { LIST_TYPE_PREFIX = 'List', RESULR_TYPE_PREFIX = 'Result', PAGE_TYPE_PREFIX = 'ResultPage' } = process.env
 
+/** 支持的 HTTP 方法 */
+const METHODS = ['get', 'post', 'put', 'delete', 'patch'] as const
+
+/**
+ * 查找 LIST_TYPE_PREFIX 的最长后缀（首字母大写），使其为 str 的前缀。
+ * 用于处理 LIST_TYPE_PREFIX 与 RESULR_TYPE_PREFIX 部分重叠的情况
+ * （如 RESULR_TYPE_PREFIX='R'、LIST_TYPE_PREFIX='ResultList' 时，列表标记应为 'List'）。
+ */
+function longestListSuffix(prefix: string, str: string): string {
+  for (let i = 0; i < prefix.length; i++) {
+    const suffix = prefix.slice(i)
+    if (suffix && /^[A-Z]/.test(suffix) && str.startsWith(suffix))
+      return suffix
+  }
+  return ''
+}
+
 /** 预编译 api.ejs 模板，避免循环中重复读取文件和编译 */
 let compiledAxiosApiTemplate: ejs.TemplateFunction | null = null
 let compiledUnApiTemplate: ejs.TemplateFunction | null = null
@@ -167,10 +184,11 @@ export class DefineAPIMethod {
         break
       default: {
         const resultName = type.replace(RESULR_TYPE_PREFIX, '')
-        // LIST_TYPE_PREFIX 可能包含 RESULR_TYPE_PREFIX（如 ResultList），需去除重叠部分后匹配
-        const listPrefix = LIST_TYPE_PREFIX.replace(RESULR_TYPE_PREFIX, '')
-        if (listPrefix && resultName.startsWith(listPrefix)) {
-          this.responseDataType = `${resultName.replace(listPrefix, '')}[]`
+        // LIST_TYPE_PREFIX 可能包含 RESULR_TYPE_PREFIX（如 ResultList），
+        // 需去除重叠部分后匹配；用最长后缀法处理部分重叠（如 R + ResultList → List）
+        const listPrefix = longestListSuffix(LIST_TYPE_PREFIX, resultName)
+        if (listPrefix) {
+          this.responseDataType = `${resultName.slice(listPrefix.length)}[]`
           break
         }
         this.responseDataType = resultName && /^[A-Z]/.test(resultName) ? resultName : type
@@ -186,12 +204,16 @@ export class DefineAPIMethod {
       this.responseType = `Row<${pageType}>`
       return
     }
-    if (this.responseType.startsWith(LIST_TYPE_PREFIX)) {
-      this.responseType = `${this.responseType.replace(LIST_TYPE_PREFIX, '')}[]`
-      return
-    }
+    // 先检查 RESULR_TYPE_PREFIX，因为 LIST_TYPE_PREFIX 可能以 RESULR_TYPE_PREFIX 开头
+    // （如 ResultList 以 Result 开头），优先匹配 RESULR_TYPE_PREFIX 以走 resolveResultData
     if (this.responseType.startsWith(RESULR_TYPE_PREFIX)) {
       this.resolveResultData(this.responseType)
+      return
+    }
+    // 再检查 LIST_TYPE_PREFIX 的最长后缀作为列表标记（如 ResultList 中的 List）
+    const listPrefix = longestListSuffix(LIST_TYPE_PREFIX, this.responseType)
+    if (listPrefix) {
+      this.responseType = `${this.responseType.slice(listPrefix.length)}[]`
     }
   }
 
@@ -320,30 +342,13 @@ export class DefineAPI {
   constructor(path: string, pathItem: OpenAPIV3.PathItemObject = {}) {
     this.path = path.replace('/api', '')
     this.init()
-    if (pathItem.post) {
-      const method = new DefineAPIMethod('post', pathItem.post)
-      this.method.post = method
-      this.exports.push(method.action + this.name)
-    }
-    if (pathItem.delete) {
-      const method = new DefineAPIMethod('delete', pathItem.delete)
-      this.method.delete = method
-      this.exports.push(method.action + this.name)
-    }
-    if (pathItem.put) {
-      const method = new DefineAPIMethod('put', pathItem.put)
-      this.method.put = method
-      this.exports.push(method.action + this.name)
-    }
-    if (pathItem.patch) {
-      const method = new DefineAPIMethod('patch', pathItem.patch)
-      this.method.patch = method
-      this.exports.push(method.action + this.name)
-    }
-    if (pathItem.get) {
-      const method = new DefineAPIMethod('get', pathItem.get)
-      this.method.get = method
-      this.exports.push(method.action + this.name)
+    for (const method of METHODS) {
+      const operation = pathItem[method]
+      if (operation) {
+        const apiMethod = new DefineAPIMethod(method, operation)
+        this.method[method] = apiMethod
+        this.exports.push(apiMethod.action + this.name)
+      }
     }
   }
 
@@ -408,11 +413,8 @@ export class DefineAPI {
   }
 
   compare(other: DefineAPI) {
-    this.compareMethod(other, 'get')
-    this.compareMethod(other, 'post')
-    this.compareMethod(other, 'put')
-    this.compareMethod(other, 'patch')
-    this.compareMethod(other, 'delete')
+    for (const method of METHODS)
+      this.compareMethod(other, method)
   }
 }
 
@@ -472,14 +474,13 @@ export async function renderAPI(document?: OpenAPIV3.Document) {
 
   let count = 0
   const pathList = ['./importsMap', './request']
-  const methods = ['get', 'post', 'put', 'delete', 'patch'] as const
   await compileApiTemplates()
   for (const [prefix, group] of pathGroups) {
     count++
     // 合并同组内所有路径的 HTTP 方法，后面的覆盖前面的同名方法
     const mergedPathItem: OpenAPIV3.PathItemObject = {}
     for (const { pathItem } of group) {
-      for (const method of methods) {
+      for (const method of METHODS) {
         if (pathItem[method])
           mergedPathItem[method] = pathItem[method]
       }
