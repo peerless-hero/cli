@@ -14,7 +14,7 @@ export default defineConfig({
     include: ['src/**/*.test.ts'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json-summary'],
+      reporter: ['text', 'json-summary', 'lcov'],
     },
   },
 })
