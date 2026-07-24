@@ -4,6 +4,10 @@
 [![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=q1nck7g935vzx2udr86mh0fpbeislo_peerless-hero-cli)](https://sonarcloud.io/summary/new_code?id=q1nck7g935vzx2udr86mh0fpbeislo_peerless-hero-cli)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=q1nck7g935vzx2udr86mh0fpbeislo_peerless-hero-cli&metric=coverage)](https://sonarcloud.io/summary/new_code?id=q1nck7g935vzx2udr86mh0fpbeislo_peerless-hero-cli)
 
+| Statements                 | Branches               | Functions                | Lines            |
+| -------------------------- | ----------------------- | ------------------------ | ---------------- |
+| ![Statements](https://img.shields.io/badge/statements-100%25-brightgreen.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-100%25-brightgreen.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-100%25-brightgreen.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-100%25-brightgreen.svg?style=flat) |
+
 基于 **OpenAPI v3** 规范自动生成 NPM 可发布请求模块的 CLI 工具。
 
 ## 项目概述

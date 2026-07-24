@@ -31,7 +31,10 @@ jobs:
         run: nci
 
       - name: Test
-        run: nr test:run
+        run: nr test:coverage
+
+      - name: Generate badges
+        run: nr badges
 
       - name: Build
         run: nr build

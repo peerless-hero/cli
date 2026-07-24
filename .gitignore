@@ -3,6 +3,7 @@
 .idea
 *.log
 *.tgz
+badges
 coverage
 dist
 lib-cov
