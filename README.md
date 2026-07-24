@@ -1,5 +1,9 @@
 # @peerless_hero/cli
 
+[![npm version](https://img.shields.io/npm/v/@peerless_hero/cli?logo=npm)](https://www.npmjs.com/package/@peerless_hero/cli)
+[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=q1nck7g935vzx2udr86mh0fpbeislo_peerless-hero-cli)](https://sonarcloud.io/summary/new_code?id=q1nck7g935vzx2udr86mh0fpbeislo_peerless-hero-cli)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=q1nck7g935vzx2udr86mh0fpbeislo_peerless-hero-cli&metric=coverage)](https://sonarcloud.io/summary/new_code?id=q1nck7g935vzx2udr86mh0fpbeislo_peerless-hero-cli)
+
 基于 **OpenAPI v3** 规范自动生成 NPM 可发布请求模块的 CLI 工具。
 
 ## 项目概述
