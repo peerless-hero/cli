@@ -737,6 +737,15 @@ describe('api', () => {
       expect(api.url).toContain('${')
     })
 
+    // 复杂路径参数时
+    it('should handle complex path parameters', async () => {
+      const { DefineAPI } = await import('../api')
+      const api = new DefineAPI('/api/order-payment/by-bill/{billId}')
+      expect(api.name).toBe('OrderPaymentByBillByBillId')
+      // eslint-disable-next-line no-template-curly-in-string
+      expect(api.url).toBe('/order-payment/by-bill/${billId}')
+    })
+
     // 应为每个 HTTP 方法创建 DefineAPIMethod 并加入导出列表
     it('should create DefineAPIMethod for each HTTP method', async () => {
       const { DefineAPI } = await import('../api')
