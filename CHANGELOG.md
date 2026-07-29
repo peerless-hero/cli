@@ -1,5 +1,36 @@
 # Changelog
 
+## v0.7.0
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.6.6...v0.7.0)
+
+### 🚀 Enhancements
+
+- **test:** 添加测试覆盖率徽章生成 ([c7d7d1d](https://github.com/peerless-hero/cli/commit/c7d7d1d))
+- 添加导入OpenAPI到Apifox的功能 ([526d639](https://github.com/peerless-hero/cli/commit/526d639))
+
+### 💅 Refactors
+
+- **type:** 简化 enum 取值逻辑 ([5d4c3a4](https://github.com/peerless-hero/cli/commit/5d4c3a4))
+
+### 🏡 Chore
+
+- 更新 LICENSE 版权信息 ([b9a9093](https://github.com/peerless-hero/cli/commit/b9a9093))
+
+### ✅ Tests
+
+- **api:** 添加复杂路径参数的测试用例 ([691ec01](https://github.com/peerless-hero/cli/commit/691ec01))
+
+### 🤖 CI
+
+- 添加 SonarQube 代码扫描集成 ([2fb01cb](https://github.com/peerless-hero/cli/commit/2fb01cb))
+- 配置 SonarCloud 代码扫描与覆盖率 ([d86112f](https://github.com/peerless-hero/cli/commit/d86112f))
+- 跳过 src/commands/ 下的所有文件（api.ts、changelog.ts、cli.ts、index.ts、request.ts、type.ts、version.ts），不计入覆盖率统计，也不分析代码质量。 ([3146a80](https://github.com/peerless-hero/cli/commit/3146a80))
+
+### ❤️ Contributors
+
+- Peerless_hero ([@peerless-hero](https://github.com/peerless-hero))
+
 ## v0.6.6
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.6.5...v0.6.6)
