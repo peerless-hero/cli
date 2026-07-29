@@ -2,13 +2,14 @@
  * @Author: peerless_hero peerless_hero@outlook.com
  * @Date: 2026-07-01 02:22:23
  * @LastEditors: peerless_hero peerless_hero@outlook.com
- * @LastEditTime: 2026-07-01 02:28:40
+ * @LastEditTime: 2026-07-28 20:52:27
  * @FilePath: \cli\src\commands\cli.ts
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ * @Description: cli调用
  */
 import { argv, exit } from 'node:process'
 import { renderAPI } from '../api'
 import { renderChangelog } from '../changelog'
+import { importToApifox } from '../openapi3'
 import { renderRequest } from '../request'
 import { renderType } from '../type'
 import { outputVersion } from '../version'
@@ -19,23 +20,27 @@ interface Command {
 }
 
 const commands: Record<string, Command> = {
-  api: {
+  'api': {
     description: 'Generate api service template.',
     run: renderAPI,
   },
-  changelog: {
+  'apifox-import': {
+    description: 'Import OpenAPI definitions to Apifox.',
+    run: importToApifox,
+  },
+  'changelog': {
     description: 'Generate changelog files compare with previous version.',
     run: renderChangelog,
   },
-  request: {
+  'request': {
     description: 'Generate request modules by OpenAPIv3.',
     run: renderRequest,
   },
-  type: {
+  'type': {
     description: 'Generate `.d.ts` files by OpenAPIv3.',
     run: renderType,
   },
-  version: {
+  'version': {
     description: 'Display the version of the cli.',
     run: outputVersion,
   },
@@ -64,7 +69,7 @@ async function main() {
   await command.run()
 }
 
-main().catch((err) => {
+main().catch((err) => { // NOSONAR
   console.error(err)
   exit(1)
 })

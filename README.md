@@ -23,6 +23,7 @@
 - **API 类型定义生成**（`type`）：根据 OpenAPI v3 的 `components.schemas` 生成 `.d.ts` 类型定义文件
 - **API 封装生成**（`api`）：生成单个 API 接口服务模板（TS + DTS），支持 Axios 和 Uni-App 双输出
 - **变更日志生成**（`changelog`）：对比新旧 OpenAPI v3 文档，自动生成 API 接口和模型类型的差异变更日志（Markdown）
+- **Apifox 导入**（`apifox-import`）：将本地 OpenAPI / Swagger（v1/v2/v3）文档导入到 Apifox 项目，支持路径前缀替换与覆盖策略配置
 - **Webhook 通知**：支持将变更日志推送到**企业微信群**和**钉钉群**
 - **NPM 自动发布**：支持 `--publish` 参数一键发布生成的子包
 
@@ -72,6 +73,25 @@ GLOBAL_OPENAPI_PATH=/path/to/OpenAPIv3.json
 ```bash
 # 无需额外配置，会自动从 @scope/openapi-v3 包导入
 ```
+
+#### `apifox-import`（导入到 Apifox）
+
+通过 `cli apifox-import` 将本地 OpenAPI / Swagger 文档导入 Apifox 项目时使用：
+
+```bash
+APIFOX_PROJECT_ID=your_project_id
+OPENAPI_PATH=/path/to/OpenAPI.json
+```
+
+| 变量名 | 是否必填 | 说明 | 默认值 |
+|---|---|---|---|
+| `APIFOX_PROJECT_ID` | 必填 | 目标 Apifox 项目 ID | - |
+| `OPENAPI_PATH` | 必填 | 本地 OpenAPI / Swagger 文档路径 | - |
+| `APIFOX_ENDPOINT_OVERWRITE_BEHAVIOR` | 可选 | 匹配到相同接口时的覆盖模式 | `KEEP_EXISTING` |
+| `APIFOX_SCHEMA_OVERWRITE_BEHAVIOR` | 可选 | 匹配到相同数据模型时的覆盖模式 | `OVERWRITE_EXISTING` |
+| `APIFOX_PREFIX_SOURCE` | 可选 | 待替换的接口路径前缀（需配合 `APIFOX_PREFIX_TARGET` 使用） | - |
+| `APIFOX_PREFIX_TARGET` | 可选 | 替换后的接口路径前缀；单独设置时将所有路径起始的 `/` 替换 | - |
+| `APIFOX_TARGET_ENDPOINT_FOLDER_ID` | 可选 | 导入到的接口分组文件夹 ID | - |
 
 ### 其他可选变量
 
@@ -149,6 +169,36 @@ cli changelog
 cli changelog --generate-local --webhook-wecom
 ```
 
+### `cli apifox-import`
+
+将本地 OpenAPI / Swagger（v1/v2/v3）文档导入到 Apifox 项目。导入前会自动精简文档，仅保留 `paths`、`components.schemas`（V3）或 `basePath`/`definitions`/`paths`/`schemes`（V2/V1），并归一化 `swagger` 为 `2.0`。
+
+- OpenAPI v3：提取 `openapi`、`paths`、`components.schemas`
+- Swagger v2 / v1：提取 `basePath`、`definitions`、`paths`、`schemes`，并将 `swagger` 归一化为 `2.0`
+
+支持通过环境变量配置：
+
+| 变量 | 说明 |
+|---|---|
+| `APIFOX_PREFIX_SOURCE` + `APIFOX_PREFIX_TARGET` | 将接口路径前缀整体替换后导入（例如 `/api` → `/v2`） |
+| `APIFOX_PREFIX_TARGET`（单独设置） | 将所有路径起始的 `/` 替换为目标前缀 |
+| `APIFOX_ENDPOINT_OVERWRITE_BEHAVIOR` | 相同接口的覆盖模式，`KEEP_EXISTING`（默认）或 `UPDATE_EXISTING` |
+| `APIFOX_SCHEMA_OVERWRITE_BEHAVIOR` | 相同数据模型的覆盖模式，`OVERWRITE_EXISTING`（默认）或 `KEEP_EXISTING` |
+| `APIFOX_TARGET_ENDPOINT_FOLDER_ID` | 指定导入到的接口分组文件夹 ID |
+
+```bash
+# 以默认覆盖策略导入
+APIFOX_PROJECT_ID=your_project_id OPENAPI_PATH=./openapi.json cli apifox-import
+
+# 替换路径前缀并导入到指定分组
+APIFOX_PROJECT_ID=your_project_id \
+OPENAPI_PATH=./openapi.json \
+APIFOX_PREFIX_SOURCE=/api \
+APIFOX_PREFIX_TARGET=/v2 \
+APIFOX_TARGET_ENDPOINT_FOLDER_ID=123 \
+cli apifox-import
+```
+
 ### `cli request`
 
 **核心命令**。从 OpenAPI v3 文档生成完整的请求模块，产出 3 个 NPM 子包并存放在 `packages/` 目录下。
@@ -204,6 +254,7 @@ yarn dev version         # 显示版本
 yarn dev api             # 生成 api
 yarn dev request         # 生成请求模块
 yarn dev changelog       # 生成变更日志
+yarn dev apifox-import  # 导入 OpenAPI 文档到 Apifox
 yarn dev type            # 生成类型定义
 
 # 或使用已构建的产物

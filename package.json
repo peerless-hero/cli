@@ -51,6 +51,7 @@
     "build": "tsdown",
     "dev": "tsx src/commands/cli.ts",
     "dev:api": "tsx src/commands/api.ts",
+    "dev:apifox-import": "tsx src/commands/apifox-import.ts",
     "dev:changelog": "tsx src/commands/changelog.ts",
     "dev:request": "tsx src/commands/request.ts",
     "dev:type": "tsx src/commands/type.ts",
