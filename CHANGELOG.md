@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.7.2
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.7.1...v0.7.2)
+
+### 🩹 Fixes
+
+- **type:** 列表包装的基础类型映射为 TS 类型（如 ListString → string[]） ([2e55400](https://github.com/peerless-hero/cli/commit/2e55400))
+
+### ❤️ Contributors
+
+- Peerless_hero ([@peerless-hero](https://github.com/peerless-hero))
+
 ## v0.7.1
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.7.0...v0.7.1)
