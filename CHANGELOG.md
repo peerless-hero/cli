@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.7.1
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.7.0...v0.7.1)
+
+### 🩹 Fixes
+
+- **type:** 枚举类型判断改用值类型，修复 Apifox 枚举数组对象片段解析 ([9f257d1](https://github.com/peerless-hero/cli/commit/9f257d1))
+
+### ❤️ Contributors
+
+- Peerless_hero ([@peerless-hero](https://github.com/peerless-hero))
+
 ## v0.7.0
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.6.6...v0.7.0)
