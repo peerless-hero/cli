@@ -330,6 +330,49 @@ describe('type', () => {
       expect(prop.properties[1].required).toBe(false)
     })
 
+    // 应解析来自 Apifox 的带枚举数组对象片段（tranTpDsc）
+    it('should resolve apifox object fragment with enum array property (tranTpDsc)', async () => {
+      const { DefineProperty } = await import('../type')
+      const fragment: OpenAPIV3.SchemaObject = {
+        type: 'object',
+        properties: {
+          tranTpDsc: {
+            title: '类型',
+            type: 'array',
+            items: {
+              title: '类型',
+              type: 'string',
+              enum: [
+                '01',
+                '02',
+                '03',
+                '04',
+                '05',
+                '06',
+              ],
+            },
+            enum: [
+              '01',
+              '02',
+              '03',
+              '04',
+              '05',
+              '06',
+            ],
+          },
+        },
+      }
+      const prop = new DefineProperty('tranTpDscFragment', fragment)
+      expect(prop.type).toBe('any')
+      expect(prop.defaultValue).toBe('null')
+      expect(prop.properties).toHaveLength(1)
+      const tranTpDsc = prop.properties[0]
+      expect(tranTpDsc.name).toBe('tranTpDsc')
+      expect(tranTpDsc.title).toBe('类型')
+      // 枚举值应为带引号的字符串字面量，避免生成 01 | 02 ... 这类裸标识符
+      expect(tranTpDsc.type).toBe('\'01\' | \'02\' | \'03\' | \'04\' | \'05\' | \'06\'')
+    })
+
     // setDict 参数化测试：描述以"字典："开头、方括号写法、无参数、无匹配格式
     it.each<[string | undefined, string, string]>([
       ['字典：custom_dict', 'custom_dict', 'starts with 字典：'],
@@ -361,10 +404,8 @@ describe('type', () => {
         'enum': [1, 2, 3],
         'x-apifox': { enumDescriptions: { 1: 'active' } },
       })
-      expect(prop.type).toContain('1')
-      expect(prop.type).toContain('2')
-      expect(prop.type).toContain('3')
-      expect(prop.notes).toContain('1：active')
+      expect(prop.type).toBe('1 | 2 | 3')
+      expect(prop.notes).toEqual(['1：active'])
     })
 
     // 枚举值包含单引号时，应移除单引号后包裹成字符串字面量（对应 resolveEnum 中 type === 'string' 分支）

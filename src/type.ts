@@ -173,7 +173,7 @@ export class DefineProperty {
       const key = String(e)
       if (enumDescriptions[key])
         this.notes.push(`${e}：${enumDescriptions[key]}`)
-      return property.type === 'string'
+      return typeof e === 'string'
         ? `'${String(e).replaceAll('\'', '')}'`
         : String(e)
     })
