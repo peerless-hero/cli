@@ -255,6 +255,7 @@ describe('api', () => {
       ['ResultInteger', 'responseDataType', 'number'],
       ['ResultObject', 'responseType', 'any'],
       ['ResultMap', 'responseType', 'Record<string, any>'],
+      ['ResultListString', 'responseDataType', 'string[]'],
       ['ResultList', 'responseDataType', 'any[]'],
       ['Resultable', 'responseDataType', 'Resultable'],
       ['Result', 'responseDataType', 'Result'],

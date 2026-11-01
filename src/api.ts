@@ -27,6 +27,14 @@ const ACTION: Record<string, string> = {
   patch: 'patch',
 }
 
+/** 列表包装的基础类型映射（如 ListString → string[]） */
+const PRIMITIVE_TYPES: Record<string, string> = {
+  Boolean: 'boolean',
+  String: 'string',
+  Integer: 'number',
+  Long: 'number',
+}
+
 const { LIST_TYPE_PREFIX = 'List', RESULR_TYPE_PREFIX = 'Result', PAGE_TYPE_PREFIX = 'ResultPage' } = process.env
 
 /** 支持的 HTTP 方法 */
@@ -188,7 +196,8 @@ export class DefineAPIMethod {
         // 需去除重叠部分后匹配；用最长后缀法处理部分重叠（如 R + ResultList → List）
         const listPrefix = longestListSuffix(LIST_TYPE_PREFIX, resultName)
         if (listPrefix) {
-          this.responseDataType = `${resultName.slice(listPrefix.length)}[]`
+          const itemType = resultName.slice(listPrefix.length)
+          this.responseDataType = `${PRIMITIVE_TYPES[itemType] ?? itemType}[]`
           break
         }
         this.responseDataType = resultName && /^[A-Z]/.test(resultName) ? resultName : type
