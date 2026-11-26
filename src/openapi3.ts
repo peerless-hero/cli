@@ -145,9 +145,11 @@ export async function importToApifox() {
     input = input.replaceAll(searchValue, replaceValue)
     consola.info('Prefix replace: ', searchValue, replaceValue)
   }
-  await fetch(`https://api.apifox.com/v1/projects/${projectId}/import-openapi?locale=zh-CN`, {
+  const res = await fetch(`https://api.apifox.com/v1/projects/${projectId}/import-openapi?locale=zh-CN`, {
     headers: {
       'content-type': 'application/json',
+      'X-Apifox-Api-Version': '2024-03-28',
+      'Authorization': `Bearer ${APIFOX_TOKEN}`,
     },
     method: 'POST',
     body: JSON.stringify({
@@ -161,6 +163,10 @@ export async function importToApifox() {
       },
     }),
   })
+  if (!res.ok)
+    throw new Error(`Apifox 导入失败：HTTP ${res.status} ${JSON.stringify(await res.json())}`)
+  const { data } = await res.json() as { data: { counters: Record<string, number> } }
+  consola.info('Apifox counters:', data.counters)
   consola.success('Successfully import to Apifox')
 }
 
