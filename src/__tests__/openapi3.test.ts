@@ -375,6 +375,12 @@ describe('openapi3', () => {
       delete process.env.APIFOX_PREFIX_SOURCE
       delete process.env.APIFOX_PREFIX_TARGET
       delete process.env.APIFOX_TARGET_ENDPOINT_FOLDER_ID
+      process.env.APIFOX_TOKEN = 'import-token'
+      // 默认模拟导入成功的响应（含 ok 与 counters）
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ data: { counters: { endpointCreated: 1, endpointIgnored: 0 } } }),
+      })
     })
 
     const openapiDoc = {
@@ -588,6 +594,62 @@ describe('openapi3', () => {
 
       const { importToApifox } = await import('../openapi3')
       await expect(importToApifox()).rejects.toThrow('Invalid OpenAPI version')
+    })
+
+    // 导入请求应携带 Bearer token 与 Apifox API 版本头
+    it('should send Authorization header and X-Apifox-Api-Version when importing', async () => {
+      await mockImportEnv()
+      const fse = await import('fs-extra/esm')
+      vi.mocked(fse.readJSON).mockResolvedValue(openapiDoc)
+
+      const { importToApifox } = await import('../openapi3')
+      await importToApifox()
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Authorization': 'Bearer import-token',
+            'X-Apifox-Api-Version': '2024-03-28',
+          }),
+        }),
+      )
+    })
+
+    // 响应非 2xx（如 403 无权限）时应抛出包含状态码与响应体的错误，而不是打印成功
+    it('should throw with status and body when Apifox returns non-2xx response', async () => {
+      await mockImportEnv()
+      const fse = await import('fs-extra/esm')
+      vi.mocked(fse.readJSON).mockResolvedValue(openapiDoc)
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 403,
+        json: () => Promise.resolve({ success: false, errorCode: '403012', errorMessage: 'No project maintainer privilege' }),
+      })
+
+      const { importToApifox } = await import('../openapi3')
+      await expect(importToApifox()).rejects.toThrow(/403.*No project maintainer privilege/)
+
+      // 失败时不应打印成功日志
+      const consolaMock = await import('consola')
+      expect(vi.mocked(consolaMock.default.success)).not.toHaveBeenCalled()
+    })
+
+    // 成功时应打印 Apifox 返回的导入统计 counters
+    it('should log counters returned by Apifox on success', async () => {
+      await mockImportEnv()
+      const fse = await import('fs-extra/esm')
+      vi.mocked(fse.readJSON).mockResolvedValue(openapiDoc)
+
+      const { importToApifox } = await import('../openapi3')
+      await importToApifox()
+
+      const consolaMock = await import('consola')
+      expect(vi.mocked(consolaMock.default.info)).toHaveBeenCalledWith(
+        'Apifox counters:',
+        expect.objectContaining({ endpointCreated: 1, endpointIgnored: 0 }),
+      )
     })
   })
 })
