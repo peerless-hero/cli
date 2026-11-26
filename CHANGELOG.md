@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.7.3
+
+[compare changes](https://github.com/peerless-hero/cli/compare/v0.7.2...v0.7.3)
+
+### 🚀 Enhancements
+
+- **openapi3:** 导入 Apifox 时增加鉴权，校验响应并输出导入统计 ([38c168f](https://github.com/peerless-hero/cli/commit/38c168f))
+
+### ✅ Tests
+
+- **openapi3:** 增加导入请求鉴权头、非2xx错误与统计日志的测试用例 ([3fcebb3](https://github.com/peerless-hero/cli/commit/3fcebb3))
+
+### ❤️ Contributors
+
+- Peerless_hero ([@peerless-hero](https://github.com/peerless-hero))
+
 ## v0.7.2
 
 [compare changes](https://github.com/peerless-hero/cli/compare/v0.7.1...v0.7.2)
